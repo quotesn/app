@@ -194,92 +194,55 @@ main {
   font-style: normal;
 }
 
-/* Category button */
-.category-btn {
-  margin: 0 auto 2.5rem;
+/* Undo Icon and Generate Button */
+.quote-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3.2rem;
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+}
+.undo-icon {
   display: flex;
   align-items: center;
-  gap: .7rem;
-  background: var(--card);
-  border-radius: 2rem;
-  border: none;
-  box-shadow: inset 5px 5px 10px var(--sh-dark), inset -5px -5px 10px var(--sh-light);
-  padding: .8rem 1.5rem;
-  font-size: 1.1rem;
+  justify-content: center;
+  font-size: 2.1rem;
   color: var(--primary);
+  background: none;
+  border: none;
+  outline: none;
   cursor: pointer;
-  font-weight: 600;
+  border-radius: 50%;
+  transition: color 0.25s, transform 0.2s, background 0.2s;
+  padding: 0.1em 0.2em;
+  margin-right: 0.3rem;
+  user-select: none;
 }
-.category-btn i { color: var(--primary);}
-
-/* Modal Menu */
-.modal {
-  display: none;
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(40,30,70,0.14);
-  z-index: 999;
-  align-items: center; justify-content: center;
+.undo-icon:hover,
+.undo-icon:focus {
+  color: var(--gold);
+  background: rgba(124,93,240,0.08);
+  transform: scale(1.18) rotate(-18deg);
 }
-.modal.open { display: flex; }
-.modal-content {
-  background: var(--menu-bg);
-  border-radius: 1.5rem;
-  box-shadow: 8px 8px 32px var(--sh-dark), -8px -8px 32px var(--sh-light);
-  max-width: 400px; width: 94vw; max-height: 90vh; overflow-y: auto;
-  margin: 0 auto; padding: 2rem 0; position: relative;
-  display: flex; flex-direction: column; gap: 0.5rem;
+.undo-icon:active {
+  color: var(--primary);
+  background: rgba(255,215,0,0.13);
+  transform: scale(0.97) rotate(0deg);
 }
-.close-btn {
-  position: absolute; top: 1.2rem; right: 1.2rem;
-  background: none; border: none; color: var(--primary);
-  font-size: 1.5rem; cursor: pointer;
+@media (max-width: 600px) {
+  .quote-actions {
+    gap: 1.7rem;
+  }
+  .undo-icon {
+    font-size: 1.6rem;
+  }
 }
-.section { border-top: 1px solid var(--sh-dark);}
-.section-btn {
-  width: 100%; padding: 0.8rem 1.2rem; background: var(--menu-bg); border: none;
-  display: flex; align-items: center; gap: 0.85rem; cursor: pointer;
-  font-size: 1.07rem; font-weight: 500;
-  border-radius: 1rem; transition: background .2s;
-  color: var(--menu-text);
-}
-.section-btn:hover, .section.open .section-btn { background: var(--menu-hover);}
-.section-icon { font-size: 1.3em; color: var(--primary);}
-.section-list { display: none; list-style: none; padding-left: 1.2rem; background: var(--menu-bg);}
-.section.open .section-list { display: block; }
-.section-list li { margin: 0.5rem 0; }
-.section-list a, .section-list span {
-  text-decoration: none; color: var(--menu-text) !important; font-size: 1.05rem;
-  border-radius: 0.6rem; display: flex; align-items: center; gap: .7rem; padding: .38rem .7rem;
-  background: var(--menu-bg);
-}
-.section-list a:hover { background: var(--menu-hover); color: var(--primary) !important;}
-.has-children > span { display: flex; align-items: center; justify-content: space-between; cursor: pointer;}
-.has-children .nested-list { display: none; margin-left: 1.2rem; background: var(--menu-bg);}
-.has-children.open .nested-list { display: block; }
-.nested-list a i { font-size: 1.1em; color: var(--primary);}
-.section-list .fa-face-smile { color: var(--gold)!important; }
-.author-search-wrapper {
-  display: none; padding: 0.5rem 0.5rem 0.5rem 1.2rem; width: 90%;
-}
-.section.search-section.open .author-search-wrapper { display: block; }
-.author-search-wrapper input {
-  width: 90%; max-width: 220px; padding: 0.6rem 1rem; border: none; border-radius: 2rem;
-  background: var(--menu-bg); border: 1.5px solid var(--primary); color: var(--menu-text); font-size: 1rem;
-  margin-bottom: 0.5rem; text-align: left;
-}
-.suggestions-list {
-  list-style: none; margin-top: 0.5rem; max-height: 120px; overflow-y: auto;
-  background: var(--menu-bg); border: 1.5px solid var(--primary); border-radius: 1rem;
-  box-shadow: 4px 4px 12px var(--sh-dark), -4px -4px 12px var(--sh-light);
-  color: var(--menu-text);
-}
-.suggestions-list li { padding: 0.5rem 1rem; cursor: pointer; color: var(--primary); transition: background 0.2s;}
-.suggestions-list li:hover { background: rgba(124,93,240,0.15); color: #fff;}
 
 /* Action buttons */
 .action-buttons {
   display: flex; justify-content: center; align-items: center;
-  max-width: 480px; margin: 2.5rem auto 0; gap: 9rem; /* Double the Generate button size */
+  max-width: 480px; margin: 2.5rem auto 0; gap: 2rem;
   position: relative; z-index: 10;
 }
 .icon-btn {
@@ -327,7 +290,6 @@ main {
   transition: box-shadow .3s, transform .1s;
   overflow: hidden;
   z-index: 200;
-  -webkit-tap-highlight-color: transparent;
 }
 @media (max-width: 600px) {
   .generate-btn {
@@ -345,54 +307,6 @@ main {
   pointer-events: none; z-index: 10;
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
-.generate-btn .magic-animate {
-  animation: wand-sparkle 0.4s;
-}
-@keyframes wand-sparkle {
-  0% { color: var(--primary);}
-  50% { color: var(--gold);}
-  100% { color: var(--primary);}
-}
-.quote-box.glow {
-  background: var(--menu-hover);
-  box-shadow: 0 0 30px var(--gold), 8px 8px 16px var(--sh-dark), -8px -8px 16px var(--sh-light);
-}
-
-/* Go Back Button */
-.back-btn {
-  position: fixed;
-  left: calc(50% - 3.2rem);
-  bottom: 5.5rem;
-  transform: translateX(-100%);
-  width: 2.3rem;
-  height: 2.3rem;
-  background: var(--card);
-  color: var(--primary);
-  border: none;
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--sh-dark);
-  cursor: pointer;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 201;
-  opacity: 0.85;
-  transition: background .2s, color .2s;
-}
-.back-btn:active, .back-btn:focus {
-  background: var(--primary);
-  color: #fff;
-}
-@media (max-width: 600px) {
-  .back-btn {
-    bottom: 6.5rem;
-    width: 2rem;
-    height: 2rem;
-    font-size: 1rem;
-    left: calc(50% - 2.5rem);
-  }
-}
 
 /* Feedback Button */
 .feedback-btn {
@@ -453,7 +367,7 @@ footer {
   white-space: normal;
   word-break: break-word;
 }
-footer .wow-link, footer .author-link {
+footer .author-link {
   font-weight: bold;
   color: var(--primary);
   text-decoration: none;
