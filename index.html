@@ -1,63 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WOW Quotes - Daily Inspiration & Wisdom</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="Words of Wisdom - Inspirational Quotes App. Get inspired by beautiful quotes, search by author, and share wisdom with the world.">
+  <meta name="keywords" content="quotes, wisdom, inspiration, motivation, author quotes, wordsofwisdom.in, share quotes, daily quotes, positive thinking, happiness, love, resilience, mindfulness, affirmations, life lessons, famous quotes">
+  <title>Words of Wisdom</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <!-- If you have a logo, add it here. Example: -->
+  <!-- <link rel="logo" type="image/png" href="logo.png"> -->
+  <link rel="stylesheet" href="style.css">
+  <!-- All fonts for per-category support -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display:700,400|Poppins:400,600|Montserrat:400,700|Roboto+Slab:400,700|Lora:400,700|Nunito:400,700|Bree+Serif|Dancing+Script:400,700|Merriweather:400,700|Lato:400,700|Ubuntu:400,700|Oswald:400,700|Quicksand:400,700|Crimson+Text:400,700|Josefin+Slab:400,700|Cabin:400,700|Cormorant+Garamond:400,700|Georgia:400,700|Noto+Nastaliq+Urdu:400,700|Libre+Baskerville:400,700|Abel:400,700|Spectral:400,700|Fira+Sans:400,700|EB+Garamond:400,700|Source+Serif+Pro:400,700|Raleway:400,700|PT+Serif:400,700|Cormorant:400,700|Work+Sans:400,700|Open+Sans:400,700">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
   <header>
-    <a href="#" class="home-btn" aria-label="Home"><i class="fa-solid fa-house"></i></a>
-    <h1>WOW Quotes</h1>
+    <a href="/" class="home-btn" title="Home"><i class="fas fa-home"></i></a>
+    <!-- If you want a logo, uncomment below and set src -->
+    <!-- <img src="logo.png" alt="Words of Wisdom Logo" class="logo"> -->
+    <h1>Words of Wisdom</h1>
     <div class="toggle-wrap">
-      <label class="theme-toggle">
-        <input type="checkbox" id="themeSwitch" />
+      <label class="theme-toggle" title="Toggle dark mode">
+        <input type="checkbox" id="themeSwitch">
         <span class="slider"></span>
       </label>
     </div>
   </header>
+
   <main>
-    <div class="quote-box neomorphic" id="quoteBox">
-      <span id="quoteMark" class="quote-mark" aria-hidden="true">“</span>
-      <p id="quoteText">Click “Inspire Me” to get inspired!</p>
-      <p id="quoteAuthor" class="author"></p>
+    <div class="neomorphic quote-box" id="quoteBox">
+      <span class="quote-mark" id="quoteMark">“</span>
+      <div id="quoteText">✨ Loading Wisdom...</div>
+      <span class="author" id="quoteAuthor"></span>
     </div>
-    <div class="quote-actions">
-      <span id="undoIcon" class="undo-icon" title="Previous Quote">
-        <i class="fa-solid fa-rotate-left"></i>
-      </span>
-      <button id="generateBtn" class="generate-btn" title="Inspire Me">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
+    <button class="category-btn" id="openMenuBtn">
+      <i class="fas fa-layer-group"></i>
+      <span id="currentCategory">Inspiration</span>
+      <i class="fas fa-chevron-down"></i>
+    </button>
+
+    <div class="action-buttons">
+      <button id="shareBtn" class="icon-btn" title="Share">
+        <i class="fas fa-share-alt"></i>
+        <span class="btn-tooltip">Share</span>
+      </button>
+      <button id="copyBtn" class="icon-btn" title="Copy">
+        <i class="fas fa-copy"></i>
+        <span class="btn-tooltip">Copy</span>
+      </button>
+      <button id="undoBtn" class="icon-btn undo-btn" title="Undo" aria-label="Undo" tabindex="0" disabled>
+        <i class="fas fa-undo"></i>
+        <span class="btn-tooltip">Undo</span>
       </button>
     </div>
-    <div class="action-buttons">
-      <button id="shareBtn" class="icon-btn" title="Share"><i class="fa-solid fa-share-nodes"></i><span class="btn-tooltip">Share</span></button>
-      <button id="copyBtn" class="icon-btn" title="Copy to clipboard"><i class="fa-solid fa-copy"></i><span class="btn-tooltip">Copy</span></button>
-    </div>
+    <button id="generateBtn" class="generate-btn" title="Inspire Me">
+      <i class="fas fa-magic"></i>
+    </button>
   </main>
-  <footer>
-    <div>WOW Quotes App. Made with ❤️ by <a href="#" class="author-link" target="_blank" rel="noopener">Abdullah Khan</a></div>
-  </footer>
-  <!-- Feedback Button -->
-  <span id="feedbackBtn" class="feedback-btn" title="Feedback"><i class="fa-regular fa-message"></i></span>
-  <div id="feedbackModal" class="feedback-modal">
-    <div class="feedback-modal-content">
-      <button class="close-feedback" title="Close">&times;</button>
-      <h3>Feedback</h3>
-      <textarea id="feedbackText" placeholder="Your feedback..."></textarea>
-      <button id="submitFeedback">Submit</button>
-      <div style="margin-top:1rem;font-size:0.95em;">
-        <a href="/policy" target="_blank">Policy</a> &middot; <a href="/terms" target="_blank">T&amp;C</a>
+
+  <!-- Category/Author Modal -->
+  <div id="categoryModal" class="modal">
+    <div class="modal-content">
+      <button id="closeMenuBtn" class="close-btn"><i class="fas fa-times"></i></button>
+      <div id="categoryMenu"></div>
+      <div class="author-search-wrapper">
+        <input type="text" id="authorSearchInput" placeholder="Type author name...">
+        <ul class="suggestions-list" id="authorSuggestions"></ul>
       </div>
     </div>
   </div>
+
+  <!-- Feedback Button & Modal -->
+  <button id="feedbackBtn" class="feedback-btn" title="Feedback">
+    <i class="fas fa-comment-alt"></i>
+  </button>
+  <div id="feedbackModal" class="modal">
+    <div class="modal-content feedback-modal">
+      <button id="closeFeedbackBtn" class="close-btn"><i class="fas fa-times"></i></button>
+      <h3>Send Feedback</h3>
+      <p>We'd love to hear your thoughts on Words of Wisdom!</p>
+      <form id="feedbackForm">
+        <textarea id="feedbackText" placeholder="Your feedback..." required></textarea>
+        <button type="submit" class="submit-btn">Submit</button>
+      </form>
+      <div class="policy-links">
+        <a href="https://www.wordsofwisdom.in/p/privacy-policy.html" target="_blank">Privacy Policy</a>
+        |
+        <a href="/terms.html" target="_blank">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>© 2025 <a class="wow-link" href="https://www.wordsofwisdom.in/" target="_blank">wordsofwisdom.in</a> - Quotes to Inspire Your Day</span>
+  </footer>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
