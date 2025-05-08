@@ -368,7 +368,7 @@ footer {
 footer {
   text-align: center;     /* center align content */
   padding: 0.5rem 0;      /* reduced from 1rem */
-  font-size: 0.75rem;    /* smaller text */
+  font-size: 0.875rem;    /* smaller text */
   font-weight: normal;    /* regular weight */
 }
 
