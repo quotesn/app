@@ -345,33 +345,17 @@ main {
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
 
-/* Footer - Compact Version */
-footer {
-  width: 100vw;
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  text-align: center;
-  padding: 0.35rem 1rem; /* reduced vertical padding */
-  color: var(--primary);
-  background: var(--card);
-  box-shadow: 0 -1px 8px var(--sh-dark);
-  z-index: 150;
-  font-size: clamp(0.68rem, 2vw, 0.85rem); /* reduced font size */
-  line-height: 1.2;
-  white-space: normal;
-  word-break: break-word;
-}
-
-footer .wow-link,
-footer .author-link {
-  font-weight: 400;
+footer a {
   color: var(--primary);
   text-decoration: none;
   margin-top: 0.25rem;
   font-size: inherit;
   letter-spacing: 0.01em;
+}
+
+footer a:hover {
+  color: green;          /* ← your green hover color */
+  text-decoration: none; /* ensure no underline appears */
 }
 
 footer .author-link:hover,
