@@ -46,7 +46,9 @@ html, body {
 /* let main content grow */
 main {
   flex: 1 0 auto;
-  padding-bottom: 4rem; /* reserve space for floating button + footer */
+  padding-bottom: 6rem; /* reserve space for floating button + footer */
+}
+
 }
 
 body {
