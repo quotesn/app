@@ -345,43 +345,27 @@ main {
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
 
-/* Footer - reduced size */
+/* Footer */
 footer {
   width: 100vw;
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  text-align: center;
-  padding: 0.5rem;            /* half the previous padding */
-  color: var(--primary);
-  background: var(--card);
-  box-shadow: 0 -1px 8px var(--sh-dark);
+  position: fixed; left: 0; right: 0; bottom: 0;
+  text-align: center; padding: 1rem; color: var(--primary);
+  background: var(--card); box-shadow: 0 -1px 8px var(--sh-dark);
   z-index: 150;
-  font-size: clamp(0.75rem, 2vw, 0.9rem);  /* smaller text */
-  line-height: 1.2;
+  font-size: clamp(0.85rem, 2.5vw, 1.08rem);
+  line-height: 1.3;
   white-space: normal;
   word-break: break-word;
 }
-
-/* Footer ----------------------------- */
-footer {
-  text-align: center;     /* center align content */
-  padding: 0.5rem 0;      /* reduced from 1rem */
-  font-size: 0.875rem;    /* smaller text */
-  font-weight: normal;    /* regular weight */
-}
-
-footer a {
+footer .wow-link, footer .author-link {
+  font-weight: normal;
   color: var(--primary);
   text-decoration: none;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
   font-size: inherit;
-  font-weight: normal;
   letter-spacing: 0.01em;
 }
-
-footer a:hover {
-  color: blue;
-  text-decoration: none;
+footer .author-link:hover,
+footer .author-link:focus {
+  text-decoration: underline;
 }
