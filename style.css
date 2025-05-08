@@ -345,25 +345,18 @@ main {
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
 
-/* make the footer bar thinner */
 footer {
-  padding: 0.25rem 1rem;      /* half the vertical padding */
-  font-size: 0.75rem;         /* shrink text to 75% */
-  line-height: 1.2;           /* tighten up the text */
-  background-color: #fafafa;  /* optional: lighten it so it recedes */
-  color: #666;                /* optional: lower contrast */
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  text-align: center;
+  color: #666;
 }
 
-/* make footer links smaller too */
 footer a {
-  font-size: 0.75rem;
-  margin-left: 0.5rem;
-  color: #888;
+  color: #007acc;
   text-decoration: none;
 }
 
-@media (max-width: 600px) {
-  footer {
-    font-size: 0.65rem;       /* even tinier on small screens */
-  }
+footer a:hover {
+  text-decoration: underline;
 }
