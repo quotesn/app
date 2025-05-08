@@ -112,7 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Render Categories Menu ---
   function renderMenu() {
     categoryMenu.innerHTML = "";
-    // Render your categories and author search here as per your existing logic
+    // Render categories and author search menu as per your current logic.
+    // For brevity, this depends on your categories.json structure.
+    // You may use your existing recursive rendering code here.
   }
 
   // --- Font application ---
