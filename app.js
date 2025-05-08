@@ -50,12 +50,24 @@ document.addEventListener("DOMContentLoaded", () => {
         categoryModal = document.getElementById("categoryModal"),
         closeMenuBtn = document.getElementById("closeMenuBtn"),
         currentCategory = document.getElementById("currentCategory"),
-        categoryMenu = document.getElementById("categoryMenu");
+        categoryMenu = document.getElementById("categoryMenu"),
+        backBtn = document.getElementById("backBtn"),
+        feedbackBtn = document.getElementById("feedbackBtn"),
+        feedbackModal = document.getElementById("feedbackModal"),
+        closeFeedback = document.querySelector(".close-feedback"),
+        feedbackText = document.getElementById("feedbackText"),
+        submitFeedback = document.getElementById("submitFeedback");
 
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = "inspiration";
+
+  let quoteHistory = [];
+  let currentAuthorQuotes = [];
+  let currentAuthorIndex = 0;
+  let authorMode = false;
+  let currentAuthorName = "";
 
   // --- Load categories and quotes dynamically ---
   async function loadCategoriesAndQuotes() {
@@ -108,7 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderCategoryList(catArray, parentUl) {
       catArray.forEach(cat => {
         if (cat.isSearch) {
-          // Search by Author section
           const sec = document.createElement("div");
           sec.className = "section search-section";
           sec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-user section-icon"></i>Search by Author <i class="fa-solid fa-chevron-down"></i></button>
@@ -129,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
           if (cat.children) {
             cat.children.forEach(child => {
               if (child.children) {
-                // Subcategory
                 const li = document.createElement("li");
                 li.className = "has-children";
                 li.innerHTML = `<span>
@@ -163,7 +173,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     renderCategoryList(categories, categoryMenu);
 
-    // Accordion
     categoryMenu.querySelectorAll('.section-btn').forEach(btn => {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -173,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.closest('.section').classList.toggle('open');
       });
     });
-    // Subcategory toggles
+
     categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
       span.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -181,17 +190,22 @@ document.addEventListener("DOMContentLoaded", () => {
         li.classList.toggle('open');
       });
     });
-    // Category selection
+
     categoryMenu.querySelectorAll('.section-list a, .nested-list a').forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
         selectedCat = link.dataset.cat;
         currentCategory.textContent = link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim();
+        authorMode = false;
+        currentAuthorQuotes = [];
+        currentAuthorIndex = 0;
+        currentAuthorName = "";
+        quoteHistory = [];
         closeMenu();
-        displayQuote();
+        displayQuote(true);
       });
     });
-    // Author search logic
+
     const authorInput = categoryMenu.querySelector("#authorSearch");
     const authorList = categoryMenu.querySelector("#authorList");
     if (authorInput && authorList) {
@@ -199,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const q = authorInput.value.toLowerCase();
         authorList.innerHTML = "";
         if (!q) return;
-        // Collect matching authors
         Object.keys(authors)
           .filter(name => name.includes(q))
           .slice(0, 10)
@@ -207,14 +220,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const li = document.createElement("li");
             li.textContent = name;
             li.addEventListener("click", () => {
-              // Show a random quote by this author
               const found = authors[name];
               if (found && found.length) {
-                showQuote(found[Math.floor(Math.random() * found.length)], found[0].category);
+                currentAuthorQuotes = found;
+                currentAuthorIndex = 0;
+                authorMode = true;
+                currentAuthorName = name;
+                showQuote(currentAuthorQuotes[currentAuthorIndex], currentAuthorQuotes[currentAuthorIndex].category);
+                closeMenu();
               }
               authorInput.value = "";
               authorList.innerHTML = "";
-              closeMenu();
             });
             authorList.appendChild(li);
           });
@@ -222,7 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- Modal Menu Open/Close ---
   function openMenu() {
     renderMenu();
     categoryModal.classList.add("open");
@@ -238,7 +253,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === categoryModal) closeMenu();
   });
 
-  // --- Quote display ---
   function showQuote(item, cat) {
     let fonts = fontMap[cat];
     if (!Array.isArray(fonts) || fonts.length !== 2) fonts = defaultFonts;
@@ -251,55 +265,91 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
       qAuth.textContent = "";
     } else {
-      // Use horizontal bar (―, U+2015) instead of dash
       qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
     }
-    // Curly quote mark: always visible except for affirmations
     if (cat === "goodvibes_affirmations") {
       quoteMark.style.opacity = 0;
     } else {
       quoteMark.textContent = "“";
       quoteMark.style.opacity = 0.18;
     }
-  }
-  function displayQuote() {
-    const pool = quotes[selectedCat] || [];
-    if (!pool.length) {
-      qText.textContent = "Sorry, no quotes found for this category.";
-      qAuth.textContent = "";
-      return;
-    }
-    showQuote(pool[Math.floor(Math.random() * pool.length)], selectedCat);
+    speakQuote();
   }
 
-  // --- Ripple for buttons ---
-  [genBtn, shareBtn, copyBtn].forEach(btn => {
-    btn.addEventListener('click', e => {
-      const ripple = document.createElement('span');
-      ripple.className = 'ripple';
-      const rect = btn.getBoundingClientRect();
-      ripple.style.left = (e.clientX - rect.left) + 'px';
-      ripple.style.top = (e.clientY - rect.top) + 'px';
-      btn.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 700);
+  function displayQuote(pushToHistory = true) {
+    if (authorMode && currentAuthorQuotes.length) {
+      if (pushToHistory) quoteHistory.push({...currentAuthorQuotes[currentAuthorIndex], cat: currentAuthorQuotes[currentAuthorIndex].category});
+      showQuote(currentAuthorQuotes[currentAuthorIndex], currentAuthorQuotes[currentAuthorIndex].category);
+    } else {
+      const pool = quotes[selectedCat] || [];
+      if (!pool.length) {
+        qText.textContent = "Sorry, no quotes found for this category.";
+        qAuth.textContent = "";
+        return;
+      }
+      const randomQuote = pool[Math.floor(Math.random() * pool.length)];
+      if (pushToHistory) quoteHistory.push({...randomQuote, cat: selectedCat});
+      showQuote(randomQuote, selectedCat);
+    }
+  }
+
+  // Back button
+  backBtn.addEventListener("click", () => {
+    if (quoteHistory.length > 1) {
+      quoteHistory.pop();
+      const prev = quoteHistory[quoteHistory.length - 1];
+      if (prev) showQuote(prev, prev.cat);
+    }
+  });
+
+  // Generate button cycles author quotes or random
+  genBtn.addEventListener("click", () => {
+    if (authorMode && currentAuthorQuotes.length) {
+      currentAuthorIndex = (currentAuthorIndex + 1) % currentAuthorQuotes.length;
+      displayQuote(true);
+    } else {
+      displayQuote(true);
+    }
+  });
+
+  // Ripple effect and glow on generate button touch
+  genBtn.addEventListener('touchstart', () => {
+    genBtn.querySelector('i').classList.add('magic-animate');
+    quoteBox.classList.add('glow');
+    setTimeout(() => {
+      genBtn.querySelector('i').classList.remove('magic-animate');
+      quoteBox.classList.remove('glow');
+    }, 400);
+  }, {passive: true});
+
+  // Share as PNG with watermark
+  shareBtn.addEventListener("click", () => {
+    html2canvas(quoteBox, {backgroundColor: null, scale: 2}).then(canvas => {
+      const ctx = canvas.getContext("2d");
+      ctx.font = "bold 32px Poppins";
+      ctx.fillStyle = "rgba(124,93,240,0.7)";
+      ctx.textAlign = "right";
+      ctx.fillText("wordsofwisdom.in", canvas.width - 40, canvas.height - 30);
+      canvas.toBlob(blob => {
+        if (navigator.canShare && navigator.canShare({ files: [new File([blob], "quote.png", {type: blob.type})] })) {
+          navigator.share({
+            files: [new File([blob], "quote.png", {type: blob.type})],
+            title: "WOW Quote",
+            text: qText.textContent + " " + qAuth.textContent
+          });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "quote.png";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      }, "image/png");
     });
   });
 
-  // --- Share/Copy logic ---
-  shareBtn.addEventListener("click", () => {
-    const textToShare = `${qText.textContent} ${qAuth.textContent}`.trim();
-    if (navigator.share) {
-      navigator.share({
-        title: 'WOW Quote',
-        text: textToShare,
-        url: window.location.href
-      }).catch(() => {
-        window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
-      });
-    } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
-    }
-  });
+  // Copy to clipboard
   copyBtn.addEventListener("click", () => {
     const textToCopy = `${qText.textContent} ${qAuth.textContent}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
@@ -313,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --- Theme switcher ---
+  // Theme switcher
   const savedTheme = localStorage.getItem("wowDark");
   if (savedTheme === "true") {
     themeSw.checked = true;
@@ -325,12 +375,45 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("wowDark", isDark);
   });
 
-  // --- Generate Quote Button ---
-  genBtn.addEventListener("click", displayQuote);
+  // Feedback modal
+  feedbackBtn.addEventListener("click", () => feedbackModal.classList.add("open"));
+  closeFeedback.addEventListener("click", () => feedbackModal.classList.remove("open"));
+  submitFeedback.addEventListener("click", () => {
+    const text = feedbackText.value.trim();
+    if (text) {
+      window.open(`mailto:your@email.com?subject=WOW%20Quotes%20Feedback&body=${encodeURIComponent(text)}`);
+      feedbackModal.classList.remove("open");
+      feedbackText.value = "";
+    }
+  });
 
-  // --- Init ---
+  // Speak quote
+  function speakQuote() {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const text = qText.textContent + " " + qAuth.textContent.replace(/^―\s*/, "");
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.lang = 'en-US';
+    window.speechSynthesis.speak(utter);
+  }
+
+  // Ripple effect for buttons
+  [genBtn, shareBtn, copyBtn].forEach(btn => {
+    btn.addEventListener('click', e => {
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const rect = btn.getBoundingClientRect();
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top = (e.clientY - rect.top) + 'px';
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    });
+  });
+
+  // Init
   (async function(){
-    // Show loading message until quotes are loaded
     qText.textContent = "✨ Loading Wisdom...";
     qAuth.textContent = "";
     quoteMark.textContent = "“";
@@ -341,12 +424,10 @@ document.addEventListener("DOMContentLoaded", () => {
     await loadCategoriesAndQuotes();
     renderMenu();
 
-    // After loading, show a quote from Inspiration
     if (quotes["inspiration"] && quotes["inspiration"].length > 0) {
-      showQuote(
-        quotes["inspiration"][Math.floor(Math.random() * quotes["inspiration"].length)],
-        "inspiration"
-      );
+      const firstQuote = quotes["inspiration"][Math.floor(Math.random() * quotes["inspiration"].length)];
+      quoteHistory.push({...firstQuote, cat: "inspiration"});
+      showQuote(firstQuote, "inspiration");
     } else {
       qText.textContent = "No inspiration quotes found. Please check your data.";
       qAuth.textContent = "";
