@@ -35,21 +35,6 @@ body.dark {
   --toggle-knob: #232336;
   --toggle-shadow: 0 2px 8px rgba(255,215,0,0.13);
 }
-/* make the page a column so footer sticks to bottom */
-html, body {
-  height: 100%;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* let main content grow */
-main {
-  flex: 1 0 auto;
-  padding-bottom: 6rem; /* reserve space for floating button + footer */
-}
-
-}
 
 body {
   min-height: 100vh;
@@ -360,22 +345,36 @@ main {
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
 
-/* compact footer */
+/* Footer - Compact Version */
 footer {
-  flex-shrink: 0;
-  padding: 0.25rem 1rem;   /* very slim vertical padding */
-  font-size: 0.7rem;       /* small but legible */
+  width: 100vw;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
   text-align: center;
-  color: #666;
+  padding: 0.35rem 1rem; /* reduced vertical padding */
+  color: var(--primary);
+  background: var(--card);
+  box-shadow: 0 -1px 8px var(--sh-dark);
+  z-index: 150;
+  font-size: clamp(0.68rem, 2vw, 0.85rem); /* reduced font size */
+  line-height: 1.2;
+  white-space: normal;
+  word-break: break-word;
 }
 
-/* bold, themed link */
-footer a {
+footer .wow-link,
+footer .author-link {
   font-weight: bold;
-  color: var(--theme-primary);  /* or replace with your hex, e.g. #007acc */
+  color: var(--primary);
   text-decoration: none;
+  margin-top: 0.25rem;
+  font-size: inherit;
+  letter-spacing: 0.01em;
 }
 
-footer a:hover {
+footer .author-link:hover,
+footer .author-link:focus {
   text-decoration: underline;
 }
