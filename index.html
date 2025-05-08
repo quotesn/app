@@ -1,103 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <meta name="description" content="Words of Wisdom - Inspirational Quotes App. Get inspired by beautiful quotes, search by author, and share wisdom with the world.">
-  <meta name="keywords" content="quotes, wisdom, inspiration, motivation, author quotes, wordsofwisdom.in, share quotes, daily quotes, positive thinking, happiness, love, resilience, mindfulness, affirmations, life lessons, famous quotes">
-  <title>Words of Wisdom</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display:700,400|Poppins:400,600|Montserrat:400,700|Roboto+Slab:400,700|Lora:400,700|Nunito:400,700|Bree+Serif|Dancing+Script:400,700|Merriweather:400,700|Lato:400,700|Ubuntu:400,700|Oswald:400,700|Quicksand:400,700|Crimson+Text:400,700|Josefin+Slab:400,700|Cabin:400,700|Cormorant+Garamond:400,700|Georgia:400,700|Noto+Nastaliq+Urdu:400,700|Libre+Baskerville:400,700|Abel:400,700|Spectral:400,700|Fira+Sans:400,700|EB+Garamond:400,700|Source+Serif+Pro:400,700|Raleway:400,700|PT+Serif:400,700|Cormorant:400,700|Work+Sans:400,700|Open+Sans:400,700">
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-yH2fT0nKZ1LJg5dQHcQ7kLkF8h6jF3Qy9zQ7kLkF8h6jF3Qy9zQ7kLkF8h6jF3Qy9zQ7kLkF8h6jF3Qy9zQ7kA=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WOW Quotes - Daily Inspiration & Wisdom</title>
+  <meta name="description" content="Discover inspiring and uplifting quotes daily with Words of Wisdom. Get daily doses of wisdom, share with friends and stay positive. Explore categories like Resilience, Mindfulness, Love and Motivation. Enjoy a modern design with easy sharing and dark/light themes." />
+  <meta name="keywords" content="quotes app, inspirational quotes, motivational quotes, wisdom quotes, daily quotes, shareable quotes, positive quotes, resilience quotes, mindfulness quotes, love quotes, motivation quotes, daily inspiration" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="WOW Quotes - Daily Inspiration & Wisdom" />
+  <meta property="og:description" content="Get daily doses of wisdom! Discover powerful quotes across themes like Resilience, Mindfulness, Love, and Motivation – ready to inspire and uplift you." />
+  <meta property="og:image" content="https://quotes-app.wordsofwisdom.in/images/app_logo.png" />
+  <meta property="og:url" content="https://quotes-app.wordsofwisdom.in" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="WOW Quotes - Daily Inspiration & Wisdom" />
+  <meta name="twitter:description" content="Discover inspiring and uplifting quotes daily with Words of Wisdom. Share effortlessly!" />
+  <meta name="twitter:image" content="https://quotes-app.wordsofwisdom.in/images/app_logo.png" />
+
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500&family=Montserrat:wght@600&family=Roboto+Slab:wght@400&family=Lora:wght@400&family=Bree+Serif&family=Dancing+Script&family=Merriweather&family=Nunito&family=Ubuntu&family=Oswald&family=Quicksand&family=Crimson+Text&family=Josefin+Slab&family=Cabin&family=Cormorant+Garamond&family=Libre+Baskerville&family=Abel&family=Roboto&family=Spectral&family=Fira+Sans&family=EB+Garamond&family=Source+Serif+Pro&family=Raleway&family=PT+Serif&family=Open+Sans&family=Work+Sans&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- html2canvas for PNG export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+  <div id="loading-wisdom">✨ Loading Wisdom...</div>
   <header>
-    <a href="/" class="home-btn" title="Home"><i class="fas fa-home"></i></a>
-    <h1>Words of Wisdom</h1>
+    <a href="https://www.wordsofwisdom.in" class="home-btn" aria-label="Home" target="_blank" rel="noopener">
+      <i class="fa-solid fa-house"></i>
+    </a>
+    <h1>WOW Quotes</h1>
     <div class="toggle-wrap">
-      <label class="theme-toggle" title="Toggle dark mode">
-        <input type="checkbox" id="themeSwitch">
+      <label class="theme-toggle">
+        <input type="checkbox" id="themeSwitch" />
         <span class="slider"></span>
       </label>
     </div>
   </header>
-
   <main>
-    <div class="neomorphic quote-box" id="quoteBox">
-      <span class="quote-mark" id="quoteMark">“</span>
-      <div id="quoteText">✨ Loading Wisdom...</div>
-      <span class="author" id="quoteAuthor"></span>
+    <div class="quote-box neomorphic" id="quoteBox">
+      <span id="quoteMark" class="quote-mark">“</span>
+      <p id="quoteText">Click “Inspire Me” to get inspired!</p>
+      <p id="quoteAuthor" class="author"></p>
     </div>
-    <button class="category-btn" id="openMenuBtn">
-      <i class="fas fa-layer-group"></i>
-      <span id="currentCategory">Inspiration</span>
-      <i class="fas fa-chevron-down"></i>
+    <button id="openMenuBtn" class="category-btn">
+      <i class="fa-solid fa-bars"></i> <span id="currentCategory">Inspiration</span>
     </button>
+    <div id="categoryModal" class="modal">
+      <div class="modal-content">
+        <button id="closeMenuBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+        <div id="categoryMenu" class="menu-sections"></div>
+      </div>
+    </div>
 
+    <!-- Action Buttons -->
     <div class="action-buttons">
+      <button id="undoBtn" class="icon-btn" title="Back">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      <button id="generateBtn" class="generate-btn">Inspire Me</button>
       <button id="shareBtn" class="icon-btn" title="Share">
-        <i class="fas fa-share-alt"></i>
-        <span class="btn-tooltip">Share</span>
+        <i class="fa-solid fa-share-nodes"></i>
       </button>
       <button id="copyBtn" class="icon-btn" title="Copy">
-        <i class="fas fa-copy"></i>
-        <span class="btn-tooltip">Copy</span>
-      </button>
-      <button id="undoBtn" class="icon-btn undo-btn" title="Undo" aria-label="Undo" tabindex="0" disabled>
-        <i class="fas fa-undo"></i>
-        <span class="btn-tooltip">Undo</span>
+        <i class="fa-solid fa-clipboard"></i>
       </button>
     </div>
-    <button id="generateBtn" class="generate-btn" title="Inspire Me">
-      <i class="fas fa-magic"></i>
+
+    <!-- Feedback -->
+    <button id="feedbackBtn" class="feedback-btn" title="Feedback">
+      <i class="fa-solid fa-comment-dots"></i>
     </button>
+    <div id="feedbackModal" class="modal">
+      <div class="modal-content">
+        <button id="closeFeedbackBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+        <h2>Feedback</h2>
+        <textarea id="feedbackText" placeholder="Your comments..." rows="4"></textarea>
+        <div class="links">
+          <a href="/privacy.html" target="_blank">Privacy Policy</a>
+          <a href="/terms.html" target="_blank">Terms & Conditions</a>
+        </div>
+        <button id="submitFeedbackBtn" class="section-btn">Submit</button>
+      </div>
+    </div>
   </main>
-
-  <!-- Category/Author Modal -->
-  <div id="categoryModal" class="modal">
-    <div class="modal-content">
-      <button id="closeMenuBtn" class="close-btn"><i class="fas fa-times"></i></button>
-      <div id="categoryMenu"></div>
-      <div class="author-search-wrapper">
-        <input type="text" id="authorSearchInput" placeholder="Type author name...">
-        <ul class="suggestions-list" id="authorSuggestions"></ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Feedback Button & Modal -->
-  <button id="feedbackBtn" class="feedback-btn" title="Feedback">
-    <i class="fas fa-comment-alt"></i>
-  </button>
-  <div id="feedbackModal" class="modal">
-    <div class="modal-content feedback-modal">
-      <button id="closeFeedbackBtn" class="close-btn"><i class="fas fa-times"></i></button>
-      <h3>Send Feedback</h3>
-      <p>We'd love to hear your thoughts on Words of Wisdom!</p>
-      <form id="feedbackForm">
-        <textarea id="feedbackText" placeholder="Your feedback..." required></textarea>
-        <button type="submit" class="submit-btn">Submit</button>
-      </form>
-      <div class="policy-links">
-        <a href="https://www.wordsofwisdom.in/p/privacy-policy.html" target="_blank">Privacy Policy</a>
-        |
-        <a href="/terms.html" target="_blank">Terms of Service</a>
-      </div>
-    </div>
-  </div>
-
   <footer>
-    <span>© 2025 <a class="wow-link" href="https://www.wordsofwisdom.in/" target="_blank">wordsofwisdom.in</a> - Quotes to Inspire Your Day</span>
+    <p>© 2025 <a href="https://wordsofwisdom.in" class="wow-link">Words of Wisdom Media</a>. All rights reserved.</p>
   </footer>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"
-          integrity="sha384-4p9q5Xn5C8v7q7g2V8h6jF3Qy9zQ7kLkF8h6jF3Qy9zQ7kLkF8h6jF3Qy9zQ7kLk"
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer"></script>
+
+  <!-- App Script -->
   <script src="app.js"></script>
 </body>
 </html>
