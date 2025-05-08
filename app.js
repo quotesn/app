@@ -112,9 +112,37 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Render Categories Menu ---
   function renderMenu() {
     categoryMenu.innerHTML = "";
-    // Render categories and author search menu as per your current logic.
-    // For brevity, this depends on your categories.json structure.
-    // You may use your existing recursive rendering code here.
+    function renderCategoryList(catArray, parentUl) {
+      catArray.forEach(cat => {
+        if (cat.isSearch) {
+          // Search by Author section
+          // Already present in modal, so skip here
+        } else {
+          const li = document.createElement("li");
+          li.className = "category-item";
+          li.innerHTML = `<span>${cat.icon ? `<i class="${cat.icon}"></i>` : ""}${cat.name}</span>`;
+          li.addEventListener("click", () => {
+            selectedCat = cat.id;
+            currentCategory.textContent = cat.name;
+            categoryModal.classList.remove("open");
+            generateQuote();
+          });
+          if (parentUl) parentUl.appendChild(li);
+          else categoryMenu.appendChild(li);
+          if (cat.children) {
+            const ul = document.createElement("ul");
+            ul.className = "nested-list";
+            li.appendChild(ul);
+            renderCategoryList(cat.children, ul);
+          }
+        }
+      });
+    }
+    // Build a flat list for categories (no deep nesting for clarity)
+    const ul = document.createElement("ul");
+    ul.className = "section-list";
+    renderCategoryList(categories, ul);
+    categoryMenu.appendChild(ul);
   }
 
   // --- Font application ---
@@ -198,7 +226,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.magicSound) window.magicSound.play();
   }
 
-  window.magicSound = new Audio("assets/sounds/magic-sound.mp3");
+  // Use a reliable magic sound URL
+  window.magicSound = new Audio("https://cdn.jsdelivr.net/gh/PerplexityAI-Open/sfx-public/magic-wand-leszek_szary.mp3");
   window.magicSound.volume = 0.5;
 
   genBtn.addEventListener("click", (e) => {
@@ -272,85 +301,3 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(`${qText.textContent} - ${qAuth.textContent}`);
     }
   }
-
-  // --- Copy Button ---
-  copyBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(`${qText.textContent} - ${qAuth.textContent}`).then(() => {
-      copyBtn.classList.add("copied-feedback");
-      setTimeout(() => copyBtn.classList.remove("copied-feedback"), 1000);
-    });
-  });
-
-  // --- Category Modal ---
-  openMenuBtn.addEventListener("click", () => categoryModal.classList.add("open"));
-  closeMenuBtn.addEventListener("click", () => categoryModal.classList.remove("open"));
-
-  // --- Author Search ---
-  authorSearchInput.addEventListener("input", (e) => {
-    const searchTerm = e.target.value.toLowerCase().trim();
-    authorSuggestions.innerHTML = "";
-    if (searchTerm.length < 2) return;
-    const matchingAuthors = Object.keys(authors)
-      .filter(author => author.includes(searchTerm))
-      .sort()
-      .slice(0, 10);
-    matchingAuthors.forEach(author => {
-      const li = document.createElement("li");
-      li.textContent = author.charAt(0).toUpperCase() + author.slice(1);
-      li.addEventListener("click", () => selectAuthor(author));
-      authorSuggestions.appendChild(li);
-    });
-    authorSuggestions.style.display = matchingAuthors.length ? "block" : "none";
-  });
-  function selectAuthor(authorName) {
-    authorQuotes = authors[authorName] || [];
-    if (!authorQuotes.length) {
-      alert("No quotes found for this author");
-      return;
-    }
-    authorSearchInput.value = authorName;
-    authorSuggestions.innerHTML = "";
-    authorSuggestions.style.display = "none";
-    displayMode = "author";
-    currentAuthorQuoteIndex = 0;
-    displayAuthorQuote();
-    currentCategory.textContent = `${authorName.charAt(0).toUpperCase() + authorName.slice(1)} (${authorQuotes.length} quotes)`;
-    categoryModal.classList.remove("open");
-  }
-  function displayAuthorQuote() {
-    if (!authorQuotes.length) return;
-    const quote = authorQuotes[currentAuthorQuoteIndex];
-    qText.textContent = quote.text;
-    qAuth.textContent = Object.keys(authors).find(a => authors[a].includes(quote)) || "";
-    applyCategoryFont(quote.category);
-    quoteBox.classList.add("quote-glow");
-    setTimeout(() => quoteBox.classList.remove("quote-glow"), 800);
-    currentAuthorQuoteIndex = (currentAuthorQuoteIndex + 1) % authorQuotes.length;
-  }
-
-  // --- Feedback Modal ---
-  feedbackBtn.addEventListener("click", () => feedbackModal.classList.add("open"));
-  closeFeedbackBtn.addEventListener("click", () => feedbackModal.classList.remove("open"));
-  feedbackForm.addEventListener("submit", function(e) {
-    e.preventDefault();
-    const feedback = feedbackText.value.trim();
-    if (!feedback) return;
-    const subject = encodeURIComponent("Words of Wisdom App Feedback");
-    const body = encodeURIComponent(feedback);
-    window.location.href = `mailto:info@wordsofwisdom.in?subject=${subject}&body=${body}`;
-    feedbackModal.classList.remove("open");
-    feedbackText.value = "";
-  });
-
-  // --- Theme Switch ---
-  themeSw.addEventListener("change", () => {
-    document.body.classList.toggle("dark", themeSw.checked);
-    localStorage.setItem("wow-theme", themeSw.checked ? "dark" : "light");
-  });
-  const savedTheme = localStorage.getItem("wow-theme");
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark");
-    themeSw.checked = true;
-  }
-  loadCategoriesAndQuotes();
-});
