@@ -1,37 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // DOM refs
-  const qText = document.getElementById("quoteText"),
-    qAuth = document.getElementById("quoteAuthor"),
-    quoteBox = document.getElementById("quoteBox"),
-    genBtn = document.getElementById("generateBtn"),
-    shareBtn = document.getElementById("shareBtn"),
-    copyBtn = document.getElementById("copyBtn"),
-    undoBtn = document.getElementById("undoBtn"),
-    themeSw = document.getElementById("themeSwitch"),
-    openMenuBtn = document.getElementById("openMenuBtn"),
-    categoryModal = document.getElementById("categoryModal"),
-    closeMenuBtn = document.getElementById("closeMenuBtn"),
-    currentCategory = document.getElementById("currentCategory"),
-    categoryMenu = document.getElementById("categoryMenu"),
-    authorSearchInput = document.getElementById("authorSearchInput"),
-    authorSuggestions = document.getElementById("authorSuggestions"),
-    feedbackBtn = document.getElementById("feedbackBtn"),
-    feedbackModal = document.getElementById("feedbackModal"),
-    closeFeedbackBtn = document.getElementById("closeFeedbackBtn"),
-    feedbackForm = document.getElementById("feedbackForm"),
-    feedbackText = document.getElementById("feedbackText");
-
-  // State
-  let categories = [];
-  let quotes = {};
-  let authors = {};
-  let selectedCat = "inspiration";
-  let previousQuote = null;
-  let displayMode = "category";
-  let authorQuotes = [];
-  let currentAuthorQuoteIndex = 0;
-
-  // Per-category fonts
+  // --- Fonts ---
   const defaultFonts = ['Playfair Display', 'Poppins'];
   const fontMap = {
     inspiration: ['Playfair Display', 'Poppins'],
@@ -69,13 +37,38 @@ document.addEventListener("DOMContentLoaded", () => {
     oneword: ['Montserrat', 'Montserrat']
   };
 
-  function applyCategoryFont(cat) {
-    const fonts = fontMap[cat] || defaultFonts;
-    qText.style.fontFamily = fonts[0] + ', serif, sans-serif';
-    qAuth.style.fontFamily = fonts[1] + ', serif, sans-serif';
-  }
+  // --- DOM refs ---
+  const qText = document.getElementById("quoteText"),
+    qAuth = document.getElementById("quoteAuthor"),
+    quoteBox = document.getElementById("quoteBox"),
+    genBtn = document.getElementById("generateBtn"),
+    shareBtn = document.getElementById("shareBtn"),
+    copyBtn = document.getElementById("copyBtn"),
+    undoBtn = document.getElementById("undoBtn"),
+    themeSw = document.getElementById("themeSwitch"),
+    openMenuBtn = document.getElementById("openMenuBtn"),
+    categoryModal = document.getElementById("categoryModal"),
+    closeMenuBtn = document.getElementById("closeMenuBtn"),
+    currentCategory = document.getElementById("currentCategory"),
+    categoryMenu = document.getElementById("categoryMenu"),
+    authorSearchInput = document.getElementById("authorSearchInput"),
+    authorSuggestions = document.getElementById("authorSuggestions"),
+    feedbackBtn = document.getElementById("feedbackBtn"),
+    feedbackModal = document.getElementById("feedbackModal"),
+    closeFeedbackBtn = document.getElementById("closeFeedbackBtn"),
+    feedbackForm = document.getElementById("feedbackForm"),
+    feedbackText = document.getElementById("feedbackText");
 
-  // Load categories and quotes
+  let categories = [];
+  let quotes = {};
+  let authors = {};
+  let selectedCat = "inspiration";
+  let previousQuote = null;
+  let displayMode = "category"; // or "author"
+  let authorQuotes = [];
+  let currentAuthorQuoteIndex = 0;
+
+  // --- Load categories and quotes dynamically ---
   async function loadCategoriesAndQuotes() {
     try {
       const catRes = await fetch('data/categories.json');
@@ -117,24 +110,50 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Render menu
+  // --- Render Categories Menu ---
   function renderMenu() {
     categoryMenu.innerHTML = "";
-    categories.forEach(cat => {
-      const btn = document.createElement("button");
-      btn.textContent = cat.name;
-      btn.className = "section-btn";
-      btn.onclick = () => {
-        selectedCat = cat.id;
-        currentCategory.textContent = cat.name;
-        categoryModal.classList.remove("open");
-        generateQuote();
-      };
-      categoryMenu.appendChild(btn);
-    });
+    function renderCategoryList(catArray, parentUl) {
+      catArray.forEach(cat => {
+        if (cat.isSearch) {
+          // Search by Author section
+          // Already present in modal, so skip here
+        } else {
+          const li = document.createElement("li");
+          li.className = "category-item";
+          li.innerHTML = `<span>${cat.icon ? `<i class="${cat.icon}"></i>` : ""}${cat.name}</span>`;
+          li.addEventListener("click", () => {
+            selectedCat = cat.id;
+            currentCategory.textContent = cat.name;
+            categoryModal.classList.remove("open");
+            generateQuote();
+          });
+          if (parentUl) parentUl.appendChild(li);
+          else categoryMenu.appendChild(li);
+          if (cat.children) {
+            const ul = document.createElement("ul");
+            ul.className = "nested-list";
+            li.appendChild(ul);
+            renderCategoryList(cat.children, ul);
+          }
+        }
+      });
+    }
+    // Build a flat list for categories (no deep nesting for clarity)
+    const ul = document.createElement("ul");
+    ul.className = "section-list";
+    renderCategoryList(categories, ul);
+    categoryMenu.appendChild(ul);
   }
 
-  // Quote generation
+  // --- Font application ---
+  function applyCategoryFont(cat) {
+    const fonts = fontMap[cat] || defaultFonts;
+    qText.style.fontFamily = fonts[0] + ', serif, sans-serif';
+    qAuth.style.fontFamily = fonts[1] + ', serif, sans-serif';
+  }
+
+  // --- Quote Generation ---
   function generateQuote() {
     if (qText.textContent && qAuth.textContent) {
       previousQuote = {
@@ -178,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Generate button effects
+  // --- Generate Button Touch/Click Effects ---
   function createRipple(event) {
     const button = event.currentTarget;
     button.classList.add("touched");
@@ -228,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, { passive: true });
 
-  // Share as PNG with watermark
+  // --- Share as PNG with Watermark ---
   shareBtn.addEventListener("click", async () => {
     const watermark = document.createElement("div");
     watermark.classList.add("quote-watermark");
@@ -283,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Copy Button
+  // --- Copy Button ---
   copyBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(`${qText.textContent} - ${qAuth.textContent}`).then(() => {
       copyBtn.classList.add("copied-feedback");
@@ -291,11 +310,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Category Modal
+  // --- Category Modal ---
   openMenuBtn.addEventListener("click", () => categoryModal.classList.add("open"));
   closeMenuBtn.addEventListener("click", () => categoryModal.classList.remove("open"));
 
-  // Author Search
+  // --- Author Search ---
   authorSearchInput.addEventListener("input", (e) => {
     const searchTerm = e.target.value.toLowerCase().trim();
     authorSuggestions.innerHTML = "";
@@ -338,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentAuthorQuoteIndex = (currentAuthorQuoteIndex + 1) % authorQuotes.length;
   }
 
-  // Feedback Modal
+  // --- Feedback Modal ---
   feedbackBtn.addEventListener("click", () => feedbackModal.classList.add("open"));
   closeFeedbackBtn.addEventListener("click", () => feedbackModal.classList.remove("open"));
   feedbackForm.addEventListener("submit", function(e) {
@@ -352,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
     feedbackText.value = "";
   });
 
-  // Theme Switch
+  // --- Theme Switch ---
   themeSw.addEventListener("change", () => {
     document.body.classList.toggle("dark", themeSw.checked);
     localStorage.setItem("wow-theme", themeSw.checked ? "dark" : "light");
