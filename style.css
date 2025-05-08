@@ -364,16 +364,24 @@ footer {
   word-break: break-word;
 }
 
-footer .wow-link,
-footer .author-link {
+/* Footer ----------------------------- */
+footer {
+  text-align: center;     /* center align content */
+  padding: 0.5rem 0;      /* reduced from 1rem */
+  font-size: 0.875rem;    /* smaller text */
+  font-weight: normal;    /* regular weight */
+}
+
+footer a {
   color: var(--primary);
   text-decoration: none;
-  margin-top: 0.25rem;        /* reduced margin */
+  margin-top: 0.25rem;
   font-size: inherit;
+  font-weight: normal;
   letter-spacing: 0.01em;
 }
 
-footer .author-link:hover,
-footer .author-link:focus {
-  text-decoration: underline;
+footer a:hover {
+  color: green;
+  text-decoration: none;
 }
