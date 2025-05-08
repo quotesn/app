@@ -279,7 +279,7 @@ main {
 /* Action buttons */
 .action-buttons {
   display: flex; justify-content: center; align-items: center;
-  max-width: 480px; margin: 2.5rem auto 0; gap: 2rem;
+  max-width: 480px; margin: 2.5rem auto 0; gap: 9rem; /* Double the Generate button size */
   position: relative; z-index: 10;
 }
 .icon-btn {
@@ -327,6 +327,7 @@ main {
   transition: box-shadow .3s, transform .1s;
   overflow: hidden;
   z-index: 200;
+  -webkit-tap-highlight-color: transparent;
 }
 @media (max-width: 600px) {
   .generate-btn {
@@ -344,6 +345,101 @@ main {
   pointer-events: none; z-index: 10;
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
+.generate-btn .magic-animate {
+  animation: wand-sparkle 0.4s;
+}
+@keyframes wand-sparkle {
+  0% { color: var(--primary);}
+  50% { color: var(--gold);}
+  100% { color: var(--primary);}
+}
+.quote-box.glow {
+  background: var(--menu-hover);
+  box-shadow: 0 0 30px var(--gold), 8px 8px 16px var(--sh-dark), -8px -8px 16px var(--sh-light);
+}
+
+/* Go Back Button */
+.back-btn {
+  position: fixed;
+  left: calc(50% - 3.2rem);
+  bottom: 5.5rem;
+  transform: translateX(-100%);
+  width: 2.3rem;
+  height: 2.3rem;
+  background: var(--card);
+  color: var(--primary);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--sh-dark);
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 201;
+  opacity: 0.85;
+  transition: background .2s, color .2s;
+}
+.back-btn:active, .back-btn:focus {
+  background: var(--primary);
+  color: #fff;
+}
+@media (max-width: 600px) {
+  .back-btn {
+    bottom: 6.5rem;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+    left: calc(50% - 2.5rem);
+  }
+}
+
+/* Feedback Button */
+.feedback-btn {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 6.5rem;
+  z-index: 9999;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 16px var(--sh-dark);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: background .2s;
+}
+.feedback-btn:hover { background: var(--gold); color: var(--primary);}
+.feedback-modal {
+  display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.28); z-index: 10000; align-items: center; justify-content: center;
+}
+.feedback-modal.open { display: flex; }
+.feedback-modal-content {
+  background: var(--card);
+  border-radius: 1.2rem;
+  padding: 2rem 2rem 1rem;
+  max-width: 350px; width: 92vw;
+  box-shadow: 0 4px 24px var(--sh-dark);
+  text-align: center;
+  position: relative;
+}
+.close-feedback {
+  position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none; font-size: 1.6rem; color: var(--primary); cursor: pointer;
+}
+#feedbackText {
+  width: 100%; min-height: 70px; border-radius: 0.7rem; border: 1.5px solid var(--primary);
+  padding: 0.7rem; margin-top: 1rem; font-size: 1rem;
+}
+#submitFeedback {
+  margin-top: 1rem;
+  background: var(--primary); color: #fff; border: none; border-radius: 1rem;
+  padding: 0.5rem 1.5rem; font-size: 1.07rem; cursor: pointer;
+}
 
 /* Footer */
 footer {
@@ -352,7 +448,7 @@ footer {
   text-align: center; padding: 1rem; color: var(--primary);
   background: var(--card); box-shadow: 0 -1px 8px var(--sh-dark);
   z-index: 150;
-  font-size: clamp(0.85rem, 2.5vw, 1.08rem);
+  font-size: 0.85rem;
   line-height: 1.3;
   white-space: normal;
   word-break: break-word;
