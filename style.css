@@ -366,7 +366,6 @@ footer {
 
 footer .wow-link,
 footer .author-link {
-  font-weight: bold;
   color: var(--primary);
   text-decoration: none;
   margin-top: 0.25rem;        /* reduced margin */
