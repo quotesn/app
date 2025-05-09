@@ -142,7 +142,7 @@ main {
   position: relative;
 }
 
-/* Special Banner (above header, with close button) */
+/* Banner above header with close button */
 .special-banner {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -168,6 +168,7 @@ main {
   cursor: pointer;
 }
 
+/* Quote box */
 .neomorphic {
   background: var(--card);
   border-radius: 1rem;
@@ -218,9 +219,7 @@ main {
   opacity: 1;
   transition: opacity 0.3s;
 }
-.fade-out {
-  opacity: 0 !important;
-}
+.fade-out { opacity: 0 !important; }
 
 .author {
   display: block;
@@ -320,29 +319,40 @@ main {
 .suggestions-list li { padding: 0.5rem 1rem; cursor: pointer; color: var(--primary); transition: background 0.2s;}
 .suggestions-list li:hover { background: rgba(124,93,240,0.15); color: #fff;}
 
-/* Action buttons */
+/* Action buttons - share, copy, heart centered and spaced */
 .action-buttons {
-  display: flex; justify-content: center; align-items: center;
-  max-width: 480px; margin: 2.5rem auto 0; gap: 2rem;
-  position: relative; z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 480px;
+  margin: 2.5rem auto 0;
+  gap: 0;
+  position: relative;
+  z-index: 10;
 }
+.action-buttons .icon-btn {
+  margin: 0 2.5rem;
+}
+.action-buttons .icon-btn:first-child { margin-left: 0; }
+.action-buttons .icon-btn:last-child { margin-right: 0; }
 
-/* Share Menu - above generate button */
+/* Share Menu - overlays above everything */
 #shareMenu {
   display: none;
   position: fixed;
   left: 50%;
-  bottom: 7.5rem;
+  bottom: 9.5rem;
   transform: translateX(-50%);
   background: var(--card);
   border-radius: 1rem;
   box-shadow: 0 2px 12px var(--sh-dark);
-  padding: 0.7rem 1rem;
-  gap: 1.2rem;
+  padding: 0.7rem 1.2rem;
+  gap: 1.4rem;
   justify-content: center;
-  z-index: 999;
+  z-index: 3000;
   width: max-content;
   min-width: 240px;
+  opacity: 1;
 }
 #shareMenu.open { display: flex; }
 .share-option {
@@ -414,10 +424,7 @@ main {
     height: 4rem;
     font-size: 1.7rem;
   }
-  .action-buttons {
-    gap: 1.2rem;
-    margin-bottom: 1.2rem;
-  }
+  .action-buttons .icon-btn { margin: 0 1.2rem; }
   #shareMenu {
     min-width: 180px;
     font-size: 1.1rem;
