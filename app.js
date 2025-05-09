@@ -1,43 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // --- Fonts ---
-  const defaultFonts = ['Playfair Display', 'Poppins'];
-  const fontMap = {
-    inspiration: ['Playfair Display', 'Poppins'],
-    motivation: ['Montserrat', 'Roboto Slab'],
-    positivethinking: ['Lora', 'Nunito'],
-    happiness: ['Bree Serif', 'Poppins'],
-    love: ['Dancing Script', 'Poppins'],
-    gratitude: ['Merriweather', 'Lato'],
-    resilience: ['Ubuntu', 'Open Sans'],
-    courage: ['Oswald', 'Lato'],
-    change: ['Quicksand', 'Roboto Slab'],
-    lifelessons: ['Crimson Text', 'Nunito'],
-    dreams: ['Josefin Slab', 'Poppins'],
-    kindness: ['Cabin', 'Poppins'],
-    beauty: ['Cormorant Garamond', 'Poppins'],
-    wisdom: ['Georgia', 'Open Sans'],
-    sufiwisdom: ['Noto Nastaliq Urdu', 'Poppins'],
-    truth: ['Libre Baskerville', 'Poppins'],
-    time: ['Abel', 'Roboto'],
-    mortality: ['Spectral', 'Lora'],
-    freedom: ['Merriweather', 'Roboto'],
-    society: ['Fira Sans', 'Roboto Slab'],
-    learning: ['EB Garamond', 'Poppins'],
-    simplicity: ['Source Serif Pro', 'Nunito'],
-    selfcare: ['Poppins', 'Poppins'],
-    mindfulness: ['Raleway', 'Poppins'],
-    selfknowledge: ['PT Serif', 'Roboto'],
-    innerpeace: ['Lora', 'Poppins'],
-    spirituality: ['Cormorant', 'Poppins'],
-    adversity: ['Work Sans', 'Poppins'],
-    urdu_aqwal: ['Noto Nastaliq Urdu', 'Noto Nastaliq Urdu'],
-    urdu_ashaar: ['Noto Nastaliq Urdu', 'Noto Nastaliq Urdu'],
-    goodvibes_affirmations: ['Poppins', 'Poppins'],
-    goodvibes_messages: ['Poppins', 'Poppins'],
-    oneword: ['Montserrat', 'Montserrat']
-  };
-
-  // --- DOM refs ---
+  // DOM references
   const qText = document.getElementById("quoteText"),
         qAuth = document.getElementById("quoteAuthor"),
         quoteBox = document.getElementById("quoteBox"),
@@ -96,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       collectCategories(categories);
 
-      // Load user-generated quotes
+      // Load user-generated quotes (if any)
       if (localStorage.getItem('userQuotes')) {
         quotes['user'] = JSON.parse(localStorage.getItem('userQuotes'));
         buildAuthorIndex(quotes['user'], 'user');
@@ -245,7 +207,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const q = authorInput.value.toLowerCase();
         authorList.innerHTML = "";
         if (!q) return;
-        // Collect matching authors
         Object.keys(authors)
           .filter(name => name.includes(q))
           .slice(0, 10)
@@ -253,7 +214,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const li = document.createElement("li");
             li.textContent = name;
             li.addEventListener("click", () => {
-              // Show a random quote by this author
               const found = authors[name];
               if (found && found.length) {
                 showQuote(found[Math.floor(Math.random() * found.length)], found[0].category);
@@ -289,26 +249,16 @@ document.addEventListener("DOMContentLoaded", () => {
     qText.classList.add('fade-out');
     qAuth.classList.add('fade-out');
     setTimeout(() => {
-      let fonts = fontMap[cat];
-      if (!Array.isArray(fonts) || fonts.length !== 2) fonts = defaultFonts;
-      const [qFont, aFont] = fonts;
       const txt = item.text || item.quote || item.message || "Quote text missing.";
       const by = item.author || item.by || "";
-      qText.style.fontFamily = `'${qFont}', serif, sans-serif`;
-      qAuth.style.fontFamily = `'${aFont}', serif, sans-serif`;
       qText.textContent = txt;
       if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
         qAuth.textContent = "";
       } else {
         qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
       }
-      // Curly quote mark: always visible except for affirmations
-      if (cat === "goodvibes_affirmations") {
-        quoteMark.style.opacity = 0;
-      } else {
-        quoteMark.textContent = "“";
-        quoteMark.style.opacity = 0.18;
-      }
+      quoteMark.textContent = "“";
+      quoteMark.style.opacity = 0.18;
       qText.classList.remove('fade-out');
       qAuth.classList.remove('fade-out');
       lastQuote = { text: txt, author: by, category: cat };
@@ -317,12 +267,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function displayQuote() {
     let pool = [];
-    // Merge user quotes if in 'user' category
     if (selectedCat === 'user' && quotes['user']) {
       pool = quotes['user'];
     } else {
       pool = quotes[selectedCat] || [];
-      // Optionally, merge user quotes into all categories
       if (quotes['user']) pool = pool.concat(quotes['user']);
     }
     if (!pool.length) {
@@ -351,7 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
   shareBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     shareMenu.classList.toggle("open");
-    // Close if clicked outside
     document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
   });
   function closeShareMenuOnClickOutside(event) {
@@ -441,8 +388,188 @@ document.addEventListener("DOMContentLoaded", () => {
     streakBadge.textContent = count > 1 ? `🔥 ${count} day streak!` : '';
   }
 
-  // --- Personalization: Category Usage ---
+  // --- Category Usage Tracking ---
   function recordCategoryUse(cat) {
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     usage[cat] = (usage[cat] || 0) + 1;
-    localStorage.setItem('catUsage', JSON.stringify
+    localStorage.setItem('catUsage', JSON.stringify(usage));
+  }
+  function getTopCategory() {
+    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
+    return Object.entries(usage).sort((a,b) => b[1]-a[1])[0]?.[0];
+  }
+
+  // --- Custom Google Forms Submission ---
+  customQuoteForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    fetch('https://docs.google.com/forms/d/e/1FAIpQLSeU-hh_OJNZlqjlon_URo_XXoOYkAOkssnt1Gn7OrRayQfmcg/formResponse', {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData
+    }).then(() => {
+      quoteFormSuccess.style.display = '';
+      setTimeout(() => {
+        quoteFormSuccess.style.display = 'none';
+        form.reset();
+        submitQuoteModal.classList.remove('open');
+        document.body.style.overflow = "";
+      }, 2000);
+    });
+  });
+
+  submitQuoteBtn.addEventListener('click', () => {
+    submitQuoteModal.classList.add('open');
+    document.body.style.overflow = "hidden";
+    customQuoteForm.reset();
+    quoteFormSuccess.style.display = "none";
+  });
+  closeSubmitQuoteModal.addEventListener('click', () => {
+    submitQuoteModal.classList.remove('open');
+    document.body.style.overflow = "";
+  });
+
+  // --- Favorites Modal Logic ---
+  let allFavorites = [];
+  fetch('data/all_favorites.json')
+    .then(res => res.json())
+    .then(data => { allFavorites = data; });
+
+  function openFavoritesModal(tab = 'all') {
+    favModal.classList.add('open');
+    document.body.style.overflow = "hidden";
+    showFavoritesTab(tab);
+  }
+  closeFavModal.addEventListener('click', () => {
+    favModal.classList.remove('open');
+    document.body.style.overflow = "";
+  });
+  tabAllFavs.addEventListener('click', () => showFavoritesTab('all'));
+  tabMyFavs.addEventListener('click', () => showFavoritesTab('my'));
+
+  function showFavoritesTab(tab) {
+    tabAllFavs.classList.toggle('selected', tab === 'all');
+    tabMyFavs.classList.toggle('selected', tab === 'my');
+    if (tab === 'all') {
+      favQuotesList.innerHTML = allFavorites.length
+        ? allFavorites.map(q => `
+          <div class="fav-quote">
+            <p>${q.text}</p>
+            <p class="author">${q.author || ''}</p>
+          </div>
+        `).join('')
+        : "<p>No favorites yet.</p>";
+    } else {
+      const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+      favQuotesList.innerHTML = favs.length
+        ? favs.map((q, idx) => `
+          <div class="fav-quote">
+            <p>${q.text}</p>
+            <p class="author">${q.author || ''}</p>
+            <div class="fav-actions">
+              <button onclick="removeFavorite(${idx})" title="Remove"><i class="fa-solid fa-trash"></i></button>
+              <button onclick="copyFavorite('${encodeURIComponent(q.text)}','${encodeURIComponent(q.author || '')}')" title="Copy"><i class="fa-solid fa-copy"></i></button>
+              <button onclick="shareFavorite('${encodeURIComponent(q.text)}','${encodeURIComponent(q.author || '')}')" title="Share"><i class="fa-solid fa-share-nodes"></i></button>
+            </div>
+          </div>
+        `).join('')
+        : "<p>No favorites yet.</p>";
+    }
+  }
+  window.removeFavorite = function(idx) {
+    let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+    favs.splice(idx, 1);
+    localStorage.setItem('favQuotes', JSON.stringify(favs));
+    showFavoritesTab('my');
+  };
+  window.copyFavorite = function(text, author) {
+    const t = decodeURIComponent(text);
+    const a = decodeURIComponent(author);
+    navigator.clipboard.writeText(`${t} ${a}`.trim());
+  };
+  window.shareFavorite = function(text, author) {
+    const t = decodeURIComponent(text);
+    const a = decodeURIComponent(author);
+    const shareText = `${t} ${a}`.trim();
+    if (navigator.share) {
+      navigator.share({ title: 'WOW Quote', text: shareText });
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
+    }
+  };
+
+  // --- Daily Quote Notifications ---
+  if ('Notification' in window && Notification.permission !== 'denied') {
+    Notification.requestPermission();
+  }
+  function sendDailyQuoteNotification() {
+    if (Notification.permission === 'granted') {
+      const text = `${qText.textContent} ${qAuth.textContent}`.trim();
+      new Notification('WOW Quote of the Day', { body: text });
+    }
+  }
+  function scheduleDailyNotification() {
+    const now = new Date();
+    const target = new Date();
+    target.setHours(9, 0, 0, 0);
+    if (now > target) target.setDate(target.getDate() + 1);
+    setTimeout(() => {
+      sendDailyQuoteNotification();
+      setInterval(sendDailyQuoteNotification, 24 * 60 * 60 * 1000);
+    }, target - now);
+  }
+  scheduleDailyNotification();
+
+  // --- Time-Sensitive Content Example ---
+  function checkSpecialDay() {
+    const today = new Date();
+    if (today.getDay() === 1) { // Monday
+      specialBanner.textContent = "Monday Motivation! Start your week inspired.";
+      specialBanner.style.display = "block";
+      currentCategory.textContent = "Monday Motivation";
+      selectedCat = "motivation";
+      displayQuote();
+    }
+  }
+  window.addEventListener('load', checkSpecialDay);
+
+  // --- Accessibility: Keyboard navigation ---
+  document.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") {
+      categoryModal.classList.remove("open");
+      submitQuoteModal.classList.remove("open");
+      shareMenu.classList.remove("open");
+      favModal.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+    if (e.key === "Enter" && document.activeElement === genBtn) {
+      displayQuote();
+    }
+  });
+
+  // --- Init ---
+  (async function(){
+    qText.textContent = "✨ Loading Wisdom...";
+    qAuth.textContent = "";
+    quoteMark.textContent = "“";
+    quoteMark.style.opacity = 0.18;
+    currentCategory.textContent = "Inspiration";
+    selectedCat = "inspiration";
+
+    await loadCategoriesAndQuotes();
+    renderMenu();
+
+    if (quotes["inspiration"] && quotes["inspiration"].length > 0) {
+      showQuote(
+        quotes["inspiration"][Math.floor(Math.random() * quotes["inspiration"].length)],
+        "inspiration"
+      );
+    } else {
+      qText.textContent = "No inspiration quotes found. Please check your data.";
+      qAuth.textContent = "";
+    }
+    let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
+    showStreak(streak.count);
+  })();
+});
