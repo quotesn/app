@@ -39,26 +39,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- DOM refs ---
   const qText = document.getElementById("quoteText"),
-    qAuth = document.getElementById("quoteAuthor"),
-    quoteBox = document.getElementById("quoteBox"),
-    quoteMark = document.getElementById("quoteMark"),
-    genBtn = document.getElementById("generateBtn"),
-    shareBtn = document.getElementById("shareBtn"),
-    copyBtn = document.getElementById("copyBtn"),
-    undoBtn = document.getElementById("undoBtn"),
-    themeSw = document.getElementById("themeSwitch"),
-    openMenuBtn = document.getElementById("openMenuBtn"),
-    categoryModal = document.getElementById("categoryModal"),
-    closeMenuBtn = document.getElementById("closeMenuBtn"),
-    currentCategory = document.getElementById("currentCategory"),
-    categoryMenu = document.getElementById("categoryMenu");
+        qAuth = document.getElementById("quoteAuthor"),
+        quoteBox = document.getElementById("quoteBox"),
+        quoteMark = document.getElementById("quoteMark"),
+        genBtn = document.getElementById("generateBtn"),
+        shareBtn = document.getElementById("shareBtn"),
+        copyBtn = document.getElementById("copyBtn"),
+        themeSw = document.getElementById("themeSwitch"),
+        openMenuBtn = document.getElementById("openMenuBtn"),
+        categoryModal = document.getElementById("categoryModal"),
+        closeMenuBtn = document.getElementById("closeMenuBtn"),
+        currentCategory = document.getElementById("currentCategory"),
+        categoryMenu = document.getElementById("categoryMenu");
 
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = "inspiration";
 
-  // --- Undo Feature (NEW) ---
+  // --- Undo Feature ---
   let quoteHistory = [];
   let currentQuote = null;
 
@@ -67,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const catRes = await fetch('data/categories.json');
       categories = await catRes.json();
+
       const quotePromises = [];
       function collectCategories(catArray) {
         catArray.forEach(cat => {
@@ -84,7 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
       collectCategories(categories);
+
       await Promise.all(quotePromises);
+
     } catch (err) {
       console.error('Failed to load categories or quotes:', err);
     }
@@ -96,14 +98,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (by) {
         const authorKey = by.toLowerCase().trim();
         if (!authors[authorKey]) authors[authorKey] = [];
-        authors[authorKey].push({ text: quote.text || quote.quote || quote.message, category: categoryId });
+        authors[authorKey].push({
+          text: quote.text || quote.quote || quote.message,
+          category: categoryId
+        });
       }
     });
   }
 
   // --- Render Categories Menu ---
   function renderMenu() {
-    if (!categoryMenu) return;
     categoryMenu.innerHTML = "";
     function renderCategoryList(catArray, parentUl) {
       catArray.forEach(cat => {
@@ -111,127 +115,299 @@ document.addEventListener("DOMContentLoaded", () => {
           // Search by Author section
           const sec = document.createElement("div");
           sec.className = "section search-section";
-          sec.innerHTML = ``;
+          sec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-user section-icon"></i>Search by Author <i class="fa-solid fa-chevron-down"></i></button>
+            <div class="author-search-wrapper">
+              <input id="authorSearch" type="text" placeholder="Type author name…" autocomplete="off" />
+              <ul id="authorList" class="suggestions-list"></ul>
+            </div>`;
           categoryMenu.appendChild(sec);
         } else {
           const sec = document.createElement("div");
           sec.className = "section";
-          sec.innerHTML = ``;
+          sec.innerHTML = `<button class="section-btn">
+            ${cat.icon ? `<i class="fa-solid ${cat.icon} section-icon"></i>` : ""}
+            ${cat.name} <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <ul class="section-list"></ul>`;
+          const ul = sec.querySelector(".section-list");
+          if (cat.children) {
+            cat.children.forEach(child => {
+              if (child.children) {
+                // Subcategory
+                const li = document.createElement("li");
+                li.className = "has-children";
+                li.innerHTML = `<span>
+                  ${child.icon ? `<i class="fa-solid ${child.icon}"></i>` : ""}
+                  ${child.name} <i class="fa-solid fa-caret-right"></i>
+                </span>
+                <ul class="nested-list"></ul>`;
+                const subul = li.querySelector(".nested-list");
+                child.children.forEach(sub => {
+                  const subli = document.createElement("li");
+                  subli.innerHTML = `<a href="#" data-cat="${sub.id}">
+                    ${sub.icon ? `<i class="fa-solid ${sub.icon}"></i>` : ""}
+                    ${sub.name}
+                  </a>`;
+                  subul.appendChild(subli);
+                });
+                ul.appendChild(li);
+              } else {
+                const li = document.createElement("li");
+                li.innerHTML = `<a href="#" data-cat="${child.id}">
+                  ${child.icon ? `<i class="fa-solid ${child.icon}"></i>` : ""}
+                  ${child.name}
+                </a>`;
+                ul.appendChild(li);
+              }
+            });
+          }
           categoryMenu.appendChild(sec);
         }
       });
     }
     renderCategoryList(categories, categoryMenu);
-  }
 
-  // --- Show Random Quote from current category ---
-  function showRandomQuote() {
-    const quoteArr = quotes[selectedCat] || [];
-    if (!quoteArr.length) {
-      setQuote({ text: "No quotes found for this category.", author: "" });
-      return;
+    // Accordion
+    categoryMenu.querySelectorAll('.section-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        categoryMenu.querySelectorAll('.section').forEach(sec => {
+          if (sec.querySelector('.section-btn') !== btn) sec.classList.remove('open');
+        });
+        btn.closest('.section').classList.toggle('open');
+      });
+    });
+    // Subcategory toggles
+    categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
+      span.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const li = span.parentElement;
+        li.classList.toggle('open');
+      });
+    });
+    // Category selection
+    categoryMenu.querySelectorAll('.section-list a, .nested-list a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        selectedCat = link.dataset.cat;
+        currentCategory.textContent = link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim();
+        closeMenu();
+        displayQuote();
+      });
+    });
+    // Author search logic
+    const authorInput = categoryMenu.querySelector("#authorSearch");
+    const authorList = categoryMenu.querySelector("#authorList");
+    if (authorInput && authorList) {
+      authorInput.addEventListener("input", () => {
+        const q = authorInput.value.toLowerCase();
+        authorList.innerHTML = "";
+        if (!q) return;
+        // Collect matching authors
+        Object.keys(authors)
+          .filter(name => name.includes(q))
+          .slice(0, 10)
+          .forEach(name => {
+            const li = document.createElement("li");
+            li.textContent = name;
+            li.addEventListener("click", () => {
+              // Show a random quote by this author
+              const found = authors[name];
+              if (found && found.length) {
+                showQuoteWithUndo(found[Math.floor(Math.random() * found.length)], found[0].category);
+              }
+              authorInput.value = "";
+              authorList.innerHTML = "";
+              closeMenu();
+            });
+            authorList.appendChild(li);
+          });
+      });
     }
-    let newQuote;
-    do {
-      newQuote = quoteArr[Math.floor(Math.random() * quoteArr.length)];
-    } while (currentQuote && newQuote && (newQuote.text || newQuote.quote || newQuote.message) === (currentQuote.text || currentQuote.quote || currentQuote.message) && quoteArr.length > 1);
-    setQuote(newQuote);
   }
 
-  // --- Set Quote (modular, used everywhere) ---
-  function setQuote(quoteObj, pushToHistory = true) {
-    // --- Undo logic: push current quote to history unless restoring from Undo ---
-    if (pushToHistory && currentQuote) {
-      quoteHistory.push(currentQuote);
+  // --- Modal Menu Open/Close ---
+  function openMenu() {
+    renderMenu();
+    categoryModal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeMenu() {
+    categoryModal.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  openMenuBtn.addEventListener("click", openMenu);
+  closeMenuBtn.addEventListener("click", closeMenu);
+  categoryModal.addEventListener("click", function(e) {
+    if (e.target === categoryModal) closeMenu();
+  });
+
+  // --- Quote display ---
+  function showQuote(item, cat) {
+    let fonts = fontMap[cat];
+    if (!Array.isArray(fonts) || fonts.length !== 2) fonts = defaultFonts;
+    const [qFont, aFont] = fonts;
+    const txt = item.text || item.quote || item.message || "Quote text missing.";
+    const by = item.author || item.by || "";
+    qText.style.fontFamily = `'${qFont}', serif, sans-serif`;
+    qAuth.style.fontFamily = `'${aFont}', serif, sans-serif`;
+    qText.textContent = txt;
+    if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
+      qAuth.textContent = "";
+    } else {
+      // Use horizontal bar (―, U+2015) instead of dash
+      qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
+    }
+    // Curly quote mark: always visible except for affirmations
+    if (cat === "goodvibes_affirmations") {
+      quoteMark.style.opacity = 0;
+    } else {
+      quoteMark.textContent = "“";
+      quoteMark.style.opacity = 0.18;
+    }
+    // --- Undo logic: push previous quote to history unless restoring from Undo ---
+    if (currentQuote) {
+      quoteHistory.push({
+        item: currentQuote.item,
+        cat: currentQuote.cat
+      });
       if (quoteHistory.length > 3) quoteHistory.shift();
     }
-    const text = quoteObj.text || quoteObj.quote || quoteObj.message || "";
-    const author = quoteObj.author || quoteObj.by || "";
-    qText.textContent = text;
-    qAuth.textContent = author ? `- ${author}` : "";
-    currentQuote = quoteObj;
-    // Font change (optional, based on category)
-    const fonts = fontMap[selectedCat] || defaultFonts;
-    qText.style.fontFamily = fonts[0] + ", " + fonts[1] + ", serif";
+    currentQuote = { item, cat };
   }
 
-  // --- Generate Quote Handler ---
-  genBtn && genBtn.addEventListener("click", () => {
-    showRandomQuote();
+  // Helper: showQuote with Undo bypass
+  function showQuoteWithUndo(item, cat, pushToHistory = true) {
+    if (pushToHistory && currentQuote) {
+      quoteHistory.push({
+        item: currentQuote.item,
+        cat: currentQuote.cat
+      });
+      if (quoteHistory.length > 3) quoteHistory.shift();
+    }
+    let fonts = fontMap[cat];
+    if (!Array.isArray(fonts) || fonts.length !== 2) fonts = defaultFonts;
+    const [qFont, aFont] = fonts;
+    const txt = item.text || item.quote || item.message || "Quote text missing.";
+    const by = item.author || item.by || "";
+    qText.style.fontFamily = `'${qFont}', serif, sans-serif`;
+    qAuth.style.fontFamily = `'${aFont}', serif, sans-serif`;
+    qText.textContent = txt;
+    if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
+      qAuth.textContent = "";
+    } else {
+      qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
+    }
+    if (cat === "goodvibes_affirmations") {
+      quoteMark.style.opacity = 0;
+    } else {
+      quoteMark.textContent = "“";
+      quoteMark.style.opacity = 0.18;
+    }
+    currentQuote = { item, cat };
+  }
+
+  function displayQuote(pushToHistory = true) {
+    const pool = quotes[selectedCat] || [];
+    if (!pool.length) {
+      qText.textContent = "Sorry, no quotes found for this category.";
+      qAuth.textContent = "";
+      return;
+    }
+    const randomItem = pool[Math.floor(Math.random() * pool.length)];
+    showQuoteWithUndo(randomItem, selectedCat, pushToHistory);
+  }
+
+  // --- Undo Button Logic ---
+  // (Add this just before the ripple and share/copy logic)
+  if (window.undoBtn) {
+    undoBtn.addEventListener("click", function() {
+      if (quoteHistory.length === 0) return;
+      const prev = quoteHistory.pop();
+      if (prev && prev.item && prev.cat) {
+        showQuoteWithUndo(prev.item, prev.cat, false);
+      }
+    });
+  }
+
+  // --- Ripple for buttons ---
+  [genBtn, shareBtn, copyBtn].forEach(btn => {
+    btn.addEventListener('click', e => {
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const rect = btn.getBoundingClientRect();
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top = (e.clientY - rect.top) + 'px';
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    });
   });
 
-  // --- Undo Handler (NEW) ---
-  undoBtn && undoBtn.addEventListener("click", () => {
-    if (quoteHistory.length === 0) return;
-    const prevQuote = quoteHistory.pop();
-    setQuote(prevQuote, false);
-  });
-
-  // --- Share & Copy logic (unchanged) ---
-  shareBtn && shareBtn.addEventListener("click", () => {
-    const text = `${qText.textContent} ${qAuth.textContent}`;
+  // --- Share/Copy logic ---
+  shareBtn.addEventListener("click", () => {
+    const textToShare = `${qText.textContent} ${qAuth.textContent}`.trim();
     if (navigator.share) {
-      navigator.share({ text }).catch(() => {});
+      navigator.share({
+        title: 'WOW Quote',
+        text: textToShare,
+        url: window.location.href
+      }).catch(() => {
+        window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
+      });
     } else {
-      alert('Sharing is not supported in this browser.');
+      window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
     }
   });
-
-  copyBtn && copyBtn.addEventListener("click", () => {
-    const text = `${qText.textContent} ${qAuth.textContent}`;
-    navigator.clipboard.writeText(text).then(() => {
+  copyBtn.addEventListener("click", () => {
+    const textToCopy = `${qText.textContent} ${qAuth.textContent}`.trim();
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      const originalIcon = copyBtn.querySelector("i").className;
+      copyBtn.querySelector("i").className = "fa-solid fa-check";
       copyBtn.classList.add('copied-feedback');
-      setTimeout(() => copyBtn.classList.remove('copied-feedback'), 800);
+      setTimeout(() => {
+        copyBtn.querySelector("i").className = originalIcon;
+        copyBtn.classList.remove('copied-feedback');
+      }, 1200);
     });
   });
 
-  // --- Category Modal logic (unchanged) ---
-  openMenuBtn && openMenuBtn.addEventListener("click", () => {
-    if (categoryModal) categoryModal.classList.add("open");
-    renderMenu();
-  });
-  closeMenuBtn && closeMenuBtn.addEventListener("click", () => {
-    if (categoryModal) categoryModal.classList.remove("open");
-  });
-
-  // --- Theme Toggle (unchanged, but modern) ---
-  if (themeSw) {
-    if (localStorage.getItem('wow-theme') === 'dark') {
-      document.body.classList.add('dark');
-      themeSw.checked = true;
-    }
-    themeSw.addEventListener('change', () => {
-      if (themeSw.checked) {
-        document.body.classList.add('dark');
-        localStorage.setItem('wow-theme', 'dark');
-      } else {
-        document.body.classList.remove('dark');
-        localStorage.setItem('wow-theme', 'light');
-      }
-    });
+  // --- Theme switcher ---
+  const savedTheme = localStorage.getItem("wowDark");
+  if (savedTheme === "true") {
+    themeSw.checked = true;
+    document.body.classList.add("dark");
   }
+  themeSw.addEventListener("change", () => {
+    const isDark = themeSw.checked;
+    document.body.classList.toggle("dark", isDark);
+    localStorage.setItem("wowDark", isDark);
+  });
 
-  // --- Initial Load ---
-  (async function init() {
+  // --- Generate Quote Button ---
+  genBtn.addEventListener("click", () => displayQuote());
+
+  // --- Init ---
+  (async function(){
+    // Show loading message until quotes are loaded
+    qText.textContent = "✨ Loading Wisdom...";
+    qAuth.textContent = "";
+    quoteMark.textContent = "“";
+    quoteMark.style.opacity = 0.18;
+    currentCategory.textContent = "Inspiration";
+    selectedCat = "inspiration";
+
     await loadCategoriesAndQuotes();
-    // Set initial category and quote
-    if (categories.length > 0) {
-      let firstCatId = selectedCat;
-      function findFirstCat(catArray) {
-        for (const cat of catArray) {
-          if (cat.file) return cat.id;
-          if (cat.children) {
-            const found = findFirstCat(cat.children);
-            if (found) return found;
-          }
-        }
-      }
-      firstCatId = findFirstCat(categories) || selectedCat;
-      selectedCat = firstCatId;
-      currentCategory.textContent = (categories.find(c => c.id === firstCatId)?.name) || firstCatId;
-      showRandomQuote();
+    renderMenu();
+
+    // After loading, show a quote from Inspiration
+    if (quotes["inspiration"] && quotes["inspiration"].length > 0) {
+      showQuoteWithUndo(
+        quotes["inspiration"][Math.floor(Math.random() * quotes["inspiration"].length)],
+        "inspiration"
+      );
     } else {
-      setQuote({ text: "Loading categories failed.", author: "" });
+      qText.textContent = "No inspiration quotes found. Please check your data.";
+      qAuth.textContent = "";
     }
   })();
 });
