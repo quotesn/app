@@ -142,6 +142,19 @@ main {
   position: relative;
 }
 
+/* Time-sensitive banner */
+.special-banner {
+  background: linear-gradient(90deg, #ffd700 0%, #7c5df0 100%);
+  color: #222;
+  font-weight: bold;
+  text-align: center;
+  padding: 1rem;
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+  display: none;
+}
+.special-banner.show { display: block; }
+
 /* Quote box */
 .neomorphic {
   background: var(--card);
@@ -406,6 +419,67 @@ main {
   pointer-events: none; z-index: 10;
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
+
+/* Favorites Modal */
+.fav-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.fav-tab {
+  background: var(--menu-bg);
+  border: 1.5px solid var(--primary);
+  border-radius: 1rem 1rem 0 0;
+  padding: 0.5rem 1.2rem;
+  font-size: 1.07rem;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.fav-tab.selected, .fav-tab:focus {
+  background: var(--primary);
+  color: #fff;
+}
+.fav-quote {
+  background: var(--card);
+  border-radius: 1rem;
+  box-shadow: 2px 2px 8px var(--sh-dark), -2px -2px 8px var(--sh-light);
+  margin-bottom: 1.1rem;
+  padding: 1rem 1.2rem;
+  position: relative;
+  text-align: left;
+}
+.fav-quote p {
+  margin: 0 0 0.2rem 0;
+}
+.fav-quote .author {
+  font-size: 0.98rem;
+  color: var(--primary);
+  text-align: right;
+  margin-top: 0.2rem;
+}
+.fav-quote .fav-actions {
+  display: flex;
+  gap: 0.7rem;
+  position: absolute;
+  top: 1rem; right: 1.2rem;
+}
+.fav-quote button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s;
+}
+.fav-quote button:hover {
+  background: var(--menu-hover);
+  color: var(--gold);
+}
 
 /* Footer */
 footer {
