@@ -264,6 +264,8 @@ main {
   background: none; border: none; color: var(--primary);
   font-size: 1.5rem; cursor: pointer;
 }
+
+/* Category Menu & Sections */
 .section { border-top: 1px solid var(--sh-dark);}
 .section-btn {
   width: 100%; padding: 0.8rem 1.2rem; background: var(--menu-bg); border: none;
@@ -462,9 +464,8 @@ main {
 }
 .fav-quote .fav-actions {
   display: flex;
-  gap: 0.7rem;
-  position: absolute;
-  top: 1rem; right: 1.2rem;
+  gap: 1.2rem;
+  margin-top: 0.2rem;
 }
 .fav-quote button {
   background: none;
@@ -475,32 +476,87 @@ main {
   padding: 0.2rem;
   border-radius: 50%;
   transition: background 0.2s, color 0.2s;
+  vertical-align: middle;
 }
 .fav-quote button:hover {
   background: var(--menu-hover);
   color: var(--gold);
 }
 
-/* Footer */
-footer {
-  width: 100vw;
-  position: fixed; left: 0; right: 0; bottom: 0;
-  text-align: center; padding: 1rem; color: var(--primary);
-  background: var(--card); box-shadow: 0 -1px 8px var(--sh-dark);
-  z-index: 150;
-  font-size: clamp(0.85rem, 2.5vw, 1.08rem);
-  line-height: 1.3;
-  white-space: normal;
-  word-break: break-word;
+/* Submit a Quote Modal */
+#customQuoteForm button[type="submit"] {
+  display: block;
+  margin: 1.5rem auto 0 auto;
+  width: 60%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.08rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.7rem 0;
+  box-shadow: 0 4px 16px var(--sh-dark), 0 1px 0 #fff inset;
+  cursor: pointer;
+  transition: background .2s, color .2s, box-shadow .2s;
+  outline: none;
+  position: relative;
+}
+body.dark #customQuoteForm button[type="submit"] {
+  background: #a084f7;
+  color: #fff;
+  box-shadow: 0 4px 16px #2a2450, 0 1px 0 #232336 inset;
+}
+#customQuoteForm button[type="submit"]:hover,
+#customQuoteForm button[type="submit"]:focus {
+  background: #b39ddb;
+  color: #fff;
+  box-shadow: 0 6px 20px var(--primary), 0 1px 0 #fff inset;
+}
+#customQuoteForm input[type="text"] {
+  background: var(--card);
+  border: 1.5px solid var(--primary);
+  border-radius: 1.2rem;
+  padding: 0.7rem 1.1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  font-size: 1.03rem;
+  box-shadow: 2px 2px 8px var(--sh-dark), -2px -2px 8px var(--sh-light);
+  transition: border .2s;
+}
+#customQuoteForm input[type="text"]:focus {
+  border: 2px solid var(--primary);
+  outline: none;
+}
+#quoteFormSuccess {
+  display: none;
+  color: var(--primary);
+  margin-top: 1.2rem;
+  text-align: center;
+  font-size: 1.01rem;
+  font-weight: 500;
 }
 
-/* Footer branding and accessibility */
-footer .wow-link, footer .author-link {
-  font-weight: bold;
+/* Footer: minimal, half header height, not bold */
+footer {
+  width: 100vw;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  text-align: center;
+  padding: 0.6rem 0 0.3rem 0;
+  background: var(--card);
+  box-shadow: 0 -1px 8px var(--sh-dark);
+  z-index: 150;
+  font-size: 0.92rem;
+  color: var(--primary);
+  font-weight: normal;
+  line-height: 1.2;
+}
+footer .author-link {
+  font-weight: normal;
   color: var(--primary);
   text-decoration: none;
-  margin-top: 0.5rem;
-  font-size: 1.08rem;
+  margin-left: 0.2rem;
+  font-size: inherit;
   letter-spacing: 0.01em;
 }
 footer .author-link:hover,
