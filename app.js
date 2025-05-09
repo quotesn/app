@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
         categoryMenu = document.getElementById("categoryMenu"),
         streakBadge = document.getElementById("streakBadge"),
         shareMenu = document.getElementById("shareMenu"),
-        submitQuoteBtn = document.getElementById("submitQuoteBtn"),
         submitQuoteModal = document.getElementById("submitQuoteModal"),
         closeSubmitQuoteModal = document.getElementById("closeSubmitQuoteModal"),
         customQuoteForm = document.getElementById("customQuoteForm"),
@@ -34,12 +33,103 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedCat = "inspiration";
   let lastQuote = null;
 
+  // --- Rotating time-sensitive banners and categories (28-day cycle) ---
+  const bannerThemes = [
+    {cat: "inspiration",    text: "Ignite fresh ideas to fuel your week."},
+    {cat: "motivation",     text: "Power up your ambition and take the lead."},
+    {cat: "positivethinking", text: "Spotlight on optimism-see possibilities."},
+    {cat: "happiness",      text: "Embrace joy in every passing moment."},
+    {cat: "love",           text: "Let compassion guide your connections."},
+    {cat: "gratitude",      text: "Honor today with a thankful heart."},
+    {cat: "resilience",     text: "Stand strong-your strength shines through."},
+    {cat: "courage",        text: "Step forward with unwavering bravery."},
+    {cat: "change",         text: "Welcome new paths with open arms."},
+    {cat: "lifelessons",    text: "Learn, grow, and carry wisdom onward."},
+    {cat: "dreams",         text: "Chase bold visions beyond the horizon."},
+    {cat: "kindness",       text: "Extend a gesture that brightens someone’s day."},
+    {cat: "beauty",         text: "Discover the elegance in simplicity."},
+    {cat: "wisdom",         text: "Let insight illuminate your choices."},
+    {cat: "sufiwisdom",     text: "Find depth in every sacred whisper."},
+    {cat: "truth",          text: "Stand firm in authentic clarity."},
+    {cat: "time",           text: "Value each moment’s fleeting gift."},
+    {cat: "mortality",      text: "Reflect on life’s precious fragility."},
+    {cat: "freedom",        text: "Celebrate the power of choice."},
+    {cat: "society",        text: "Shape community with integrity."},
+    {cat: "learning",       text: "Feed your mind with new discoveries."},
+    {cat: "simplicity",     text: "Simplify to amplify what matters most."},
+    {cat: "selfcare",       text: "Prioritize the well-being you deserve."},
+    {cat: "mindfulness",    text: "Anchor yourself in this present breath."},
+    {cat: "selfknowledge",  text: "Turn inward to unlock your true depth."},
+    {cat: "innerpeace",     text: "Cultivate calm amid the daily rush."},
+    {cat: "spirituality",   text: "Connect with what lies beyond the seen."},
+    {cat: "perseverance",   text: "Advance onward-steady and unyielding."}
+  ];
+  const bannerStyles = {
+    inspiration:    { color: "#7c5df0", icon: "💡" },
+    motivation:     { color: "#ff9800", icon: "⚡" },
+    positivethinking: { color: "#43b581", icon: "🌈" },
+    happiness:      { color: "#ffd700", icon: "😊" },
+    love:           { color: "#e57373", icon: "❤️" },
+    gratitude:      { color: "#4caf50", icon: "🙏" },
+    resilience:     { color: "#2196f3", icon: "🛡️" },
+    courage:        { color: "#ff5722", icon: "🦁" },
+    change:         { color: "#00bcd4", icon: "🔄" },
+    lifelessons:    { color: "#3f51b5", icon: "📚" },
+    dreams:         { color: "#9c27b0", icon: "🌠" },
+    kindness:       { color: "#8bc34a", icon: "🤝" },
+    beauty:         { color: "#f06292", icon: "🌸" },
+    wisdom:         { color: "#607d8b", icon: "🦉" },
+    sufiwisdom:     { color: "#009688", icon: "🕊️" },
+    truth:          { color: "#795548", icon: "🔎" },
+    time:           { color: "#607d8b", icon: "⏳" },
+    mortality:      { color: "#455a64", icon: "🌑" },
+    freedom:        { color: "#00bfae", icon: "🕊️" },
+    society:        { color: "#ffb300", icon: "🌍" },
+    learning:       { color: "#3949ab", icon: "🧠" },
+    simplicity:     { color: "#bdbdbd", icon: "🍃" },
+    selfcare:       { color: "#f48fb1", icon: "🛁" },
+    mindfulness:    { color: "#aeea00", icon: "🧘" },
+    selfknowledge:  { color: "#ab47bc", icon: "🔮" },
+    innerpeace:     { color: "#81d4fa", icon: "🌊" },
+    spirituality:   { color: "#ba68c8", icon: "✨" },
+    perseverance:   { color: "#6d4c41", icon: "🚀" }
+  };
+
+  function showRotatingBanner() {
+    const today = new Date();
+    const startDate = new Date("2025-05-05"); // Rotation anchor (Monday)
+    const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+    const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
+    const theme = bannerThemes[idx];
+    const todayStr = today.toISOString().slice(0,10);
+    const lastBannerDate = localStorage.getItem("wowBannerDate");
+    if (lastBannerDate === todayStr) return;
+    let bannerHTML = "";
+    const style = bannerStyles[theme.cat] || {};
+    if (style.icon) bannerHTML += `<span style="font-size:1.6em;margin-right:0.5em;">${style.icon}</span>`;
+    bannerHTML += `<span>${theme.text}</span>`;
+    specialBanner.innerHTML = bannerHTML;
+    specialBanner.style.display = "block";
+    specialBanner.style.background = style.color ? style.color : "";
+    specialBanner.style.color = "#fff";
+    setTimeout(() => {
+      specialBanner.style.display = "none";
+    }, 5500);
+    selectedCat = theme.cat;
+    currentCategory.textContent = capitalize(theme.cat.replace(/_/g, " "));
+    displayQuote();
+    localStorage.setItem("wowBannerDate", todayStr);
+  }
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).replace(/([A-Z])/g, ' $1').replace(/\b\w/g, l => l.toUpperCase());
+  }
+  window.addEventListener('load', showRotatingBanner);
+
   // --- Load categories and quotes dynamically ---
   async function loadCategoriesAndQuotes() {
     try {
       const catRes = await fetch('data/categories.json');
       categories = await catRes.json();
-
       const quotePromises = [];
       function collectCategories(catArray) {
         catArray.forEach(cat => {
@@ -57,15 +147,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
       collectCategories(categories);
-
-      // Load user-generated quotes (if any)
       if (localStorage.getItem('userQuotes')) {
         quotes['user'] = JSON.parse(localStorage.getItem('userQuotes'));
         buildAuthorIndex(quotes['user'], 'user');
       }
-
       await Promise.all(quotePromises);
-
     } catch (err) {
       console.error('Failed to load categories or quotes:', err);
     }
@@ -111,7 +197,19 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           categoryMenu.appendChild(favSec);
 
-          // --- Submit a Quote Section ---
+          // --- My Favorites as a Category ---
+          const myFavCatSec = document.createElement("div");
+          myFavCatSec.className = "section";
+          myFavCatSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-heart section-icon"></i>My Favorites</button>`;
+          myFavCatSec.querySelector(".section-btn").addEventListener("click", () => {
+            selectedCat = "myfavorites";
+            currentCategory.textContent = "My Favorites";
+            closeMenu();
+            displayQuote();
+          });
+          categoryMenu.appendChild(myFavCatSec);
+
+          // --- Submit a Quote Section (only here, not as floating button) ---
           const submitSec = document.createElement("div");
           submitSec.className = "section";
           submitSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-plus section-icon"></i>Submit a Quote</button>`;
@@ -267,14 +365,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function displayQuote() {
     let pool = [];
-    if (selectedCat === 'user' && quotes['user']) {
+    if (selectedCat === 'myfavorites') {
+      pool = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+    } else if (selectedCat === 'user' && quotes['user']) {
       pool = quotes['user'];
     } else {
       pool = quotes[selectedCat] || [];
       if (quotes['user']) pool = pool.concat(quotes['user']);
     }
     if (!pool.length) {
-      qText.textContent = "Sorry, no quotes found for this category.";
+      qText.textContent = "No quotes found for this category.";
       qAuth.textContent = "";
       return;
     }
@@ -282,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Ripple for buttons ---
-  [genBtn, shareBtn, copyBtn, favBtn, submitQuoteBtn].forEach(btn => {
+  [genBtn, shareBtn, copyBtn, favBtn].forEach(btn => {
     if (!btn) return;
     btn.addEventListener('click', e => {
       const ripple = document.createElement('span');
@@ -347,7 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Favorite logic ---
   favBtn.addEventListener('click', () => {
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
-    const quote = { text: qText.textContent, author: qAuth.textContent };
+    const quote = { text: qText.textContent, author: qAuth.textContent.replace(/^-\s*/, "") };
     favs.push(quote);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
     favBtn.classList.add('copied-feedback');
@@ -417,13 +517,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.style.overflow = "";
       }, 2000);
     });
-  });
-
-  submitQuoteBtn.addEventListener('click', () => {
-    submitQuoteModal.classList.add('open');
-    document.body.style.overflow = "hidden";
-    customQuoteForm.reset();
-    quoteFormSuccess.style.display = "none";
   });
   closeSubmitQuoteModal.addEventListener('click', () => {
     submitQuoteModal.classList.remove('open');
@@ -521,19 +614,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   scheduleDailyNotification();
 
-  // --- Time-Sensitive Content Example ---
-  function checkSpecialDay() {
-    const today = new Date();
-    if (today.getDay() === 1) { // Monday
-      specialBanner.textContent = "Monday Motivation! Start your week inspired.";
-      specialBanner.style.display = "block";
-      currentCategory.textContent = "Monday Motivation";
-      selectedCat = "motivation";
-      displayQuote();
-    }
-  }
-  window.addEventListener('load', checkSpecialDay);
-
   // --- Accessibility: Keyboard navigation ---
   document.addEventListener('keydown', function(e) {
     if (e.key === "Escape") {
@@ -556,10 +636,8 @@ document.addEventListener("DOMContentLoaded", () => {
     quoteMark.style.opacity = 0.18;
     currentCategory.textContent = "Inspiration";
     selectedCat = "inspiration";
-
     await loadCategoriesAndQuotes();
     renderMenu();
-
     if (quotes["inspiration"] && quotes["inspiration"].length > 0) {
       showQuote(
         quotes["inspiration"][Math.floor(Math.random() * quotes["inspiration"].length)],
