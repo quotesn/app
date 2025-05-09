@@ -263,3 +263,54 @@ footer .author-link {
   text-decoration: none;
   font-weight: 500;
 }
+/* ... your existing CSS ... */
+
+/* --- Undo Button Styles (Enhancement) --- */
+.undo-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 3.2rem;
+  height: 3.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 0 15px var(--glow);
+  margin-right: 1rem; /* spacing between Undo and Generate */
+  transition: box-shadow 0.3s, transform 0.1s;
+}
+.undo-btn:active {
+  transform: scale(0.95);
+}
+.undo-btn svg {
+  stroke: #fff;
+  width: 20px;
+  height: 20px;
+}
+
+/* --- Spacing between Share & Copy Buttons (Enhancement) --- */
+@media (min-width: 0px) {
+  #shareBtn { margin-right: 0; }
+  #copyBtn { margin-left: 9rem; } /* double the diameter of generate button (4.5rem * 2) */
+}
+
+/* --- Footer size & text (Enhancement) --- */
+footer {
+  font-size: 0.75rem !important;
+  padding: 0.5rem 1rem !important;
+}
+footer .wow-link {
+  font-size: 0.75rem !important;
+  font-weight: bold;
+  color: var(--primary);
+  text-decoration: none;
+}
+footer .wow-link:hover,
+footer .wow-link:focus {
+  text-decoration: underline;
+}
+
+/* ... rest of your CSS ... */
