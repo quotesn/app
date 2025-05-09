@@ -142,20 +142,32 @@ main {
   position: relative;
 }
 
-/* Time-sensitive banner */
+/* Special Banner (above header, with close button) */
 .special-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
   background: linear-gradient(90deg, #ffd700 0%, #7c5df0 100%);
   color: #222;
   font-weight: bold;
   text-align: center;
-  padding: 1rem;
+  padding: 1rem 2.5rem 1rem 1rem;
   font-size: 1.15rem;
   letter-spacing: 0.03em;
+  z-index: 2001;
   display: none;
 }
-.special-banner.show { display: block; }
+.special-banner .close-btn {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  color: #222;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
 
-/* Quote box */
 .neomorphic {
   background: var(--card);
   border-radius: 1rem;
@@ -315,13 +327,13 @@ main {
   position: relative; z-index: 10;
 }
 
+/* Share Menu - above generate button */
 #shareMenu {
   display: none;
-  position: absolute;
-  top: 110%;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
+  position: fixed;
+  left: 50%;
+  bottom: 7.5rem;
+  transform: translateX(-50%);
   background: var(--card);
   border-radius: 1rem;
   box-shadow: 0 2px 12px var(--sh-dark);
@@ -332,9 +344,7 @@ main {
   width: max-content;
   min-width: 240px;
 }
-#shareMenu.open {
-  display: flex;
-}
+#shareMenu.open { display: flex; }
 .share-option {
   background: transparent;
   border: none;
@@ -464,7 +474,9 @@ main {
 }
 .fav-quote .fav-actions {
   display: flex;
-  gap: 1.2rem;
+  gap: 1.6rem;
+  justify-content: flex-end;
+  align-items: center;
   margin-top: 0.2rem;
 }
 .fav-quote button {
@@ -536,7 +548,7 @@ body.dark #customQuoteForm button[type="submit"] {
   font-weight: 500;
 }
 
-/* Footer: minimal, half header height, not bold */
+/* Footer: minimal, not bold, correct color/spacing */
 footer {
   width: 100vw;
   position: fixed;
