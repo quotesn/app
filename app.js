@@ -45,21 +45,28 @@ document.addEventListener("DOMContentLoaded", () => {
         genBtn = document.getElementById("generateBtn"),
         shareBtn = document.getElementById("shareBtn"),
         copyBtn = document.getElementById("copyBtn"),
+        favBtn = document.getElementById("favBtn"),
         themeSw = document.getElementById("themeSwitch"),
         openMenuBtn = document.getElementById("openMenuBtn"),
         categoryModal = document.getElementById("categoryModal"),
         closeMenuBtn = document.getElementById("closeMenuBtn"),
         currentCategory = document.getElementById("currentCategory"),
-        categoryMenu = document.getElementById("categoryMenu");
+        categoryMenu = document.getElementById("categoryMenu"),
+        streakBadge = document.getElementById("streakBadge"),
+        shareMenu = document.getElementById("shareMenu"),
+        submitQuoteBtn = document.getElementById("submitQuoteBtn"),
+        submitQuoteModal = document.getElementById("submitQuoteModal"),
+        closeSubmitQuoteModal = document.getElementById("closeSubmitQuoteModal"),
+        submitQuoteForm = document.getElementById("submitQuoteForm"),
+        userQuoteText = document.getElementById("userQuoteText"),
+        userQuoteAuthor = document.getElementById("userQuoteAuthor"),
+        submitQuoteSuccess = document.getElementById("submitQuoteSuccess");
 
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = "inspiration";
-
-  // --- Undo Feature ---
-  let quoteHistory = [];
-  let currentQuote = null;
+  let lastQuote = null;
 
   // --- Load categories and quotes dynamically ---
   async function loadCategoriesAndQuotes() {
@@ -84,6 +91,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
       collectCategories(categories);
+
+      // Load user-generated quotes
+      if (localStorage.getItem('userQuotes')) {
+        quotes['user'] = JSON.parse(localStorage.getItem('userQuotes'));
+        buildAuthorIndex(quotes['user'], 'user');
+      }
 
       await Promise.all(quotePromises);
 
@@ -193,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentCategory.textContent = link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim();
         closeMenu();
         displayQuote();
+        recordCategoryUse(selectedCat);
       });
     });
     // Author search logic
@@ -214,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
               // Show a random quote by this author
               const found = authors[name];
               if (found && found.length) {
-                showQuoteWithUndo(found[Math.floor(Math.random() * found.length)], found[0].category);
+                showQuote(found[Math.floor(Math.random() * found.length)], found[0].category);
               }
               authorInput.value = "";
               authorList.innerHTML = "";
@@ -242,96 +256,58 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === categoryModal) closeMenu();
   });
 
-  // --- Quote display ---
+  // --- Quote display with animation ---
   function showQuote(item, cat) {
-    let fonts = fontMap[cat];
-    if (!Array.isArray(fonts) || fonts.length !== 2) fonts = defaultFonts;
-    const [qFont, aFont] = fonts;
-    const txt = item.text || item.quote || item.message || "Quote text missing.";
-    const by = item.author || item.by || "";
-    qText.style.fontFamily = `'${qFont}', serif, sans-serif`;
-    qAuth.style.fontFamily = `'${aFont}', serif, sans-serif`;
-    qText.textContent = txt;
-    if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
-      qAuth.textContent = "";
-    } else {
-      // Use horizontal bar (―, U+2015) instead of dash
-      qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
-    }
-    // Curly quote mark: always visible except for affirmations
-    if (cat === "goodvibes_affirmations") {
-      quoteMark.style.opacity = 0;
-    } else {
-      quoteMark.textContent = "“";
-      quoteMark.style.opacity = 0.18;
-    }
-    // --- Undo logic: push previous quote to history unless restoring from Undo ---
-    if (currentQuote) {
-      quoteHistory.push({
-        item: currentQuote.item,
-        cat: currentQuote.cat
-      });
-      if (quoteHistory.length > 3) quoteHistory.shift();
-    }
-    currentQuote = { item, cat };
+    qText.classList.add('fade-out');
+    qAuth.classList.add('fade-out');
+    setTimeout(() => {
+      let fonts = fontMap[cat];
+      if (!Array.isArray(fonts) || fonts.length !== 2) fonts = defaultFonts;
+      const [qFont, aFont] = fonts;
+      const txt = item.text || item.quote || item.message || "Quote text missing.";
+      const by = item.author || item.by || "";
+      qText.style.fontFamily = `'${qFont}', serif, sans-serif`;
+      qAuth.style.fontFamily = `'${aFont}', serif, sans-serif`;
+      qText.textContent = txt;
+      if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
+        qAuth.textContent = "";
+      } else {
+        qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
+      }
+      // Curly quote mark: always visible except for affirmations
+      if (cat === "goodvibes_affirmations") {
+        quoteMark.style.opacity = 0;
+      } else {
+        quoteMark.textContent = "“";
+        quoteMark.style.opacity = 0.18;
+      }
+      qText.classList.remove('fade-out');
+      qAuth.classList.remove('fade-out');
+      lastQuote = { text: txt, author: by, category: cat };
+      updateStreak();
+    }, 300);
   }
-
-  // Helper: showQuote with Undo bypass
-  function showQuoteWithUndo(item, cat, pushToHistory = true) {
-    if (pushToHistory && currentQuote) {
-      quoteHistory.push({
-        item: currentQuote.item,
-        cat: currentQuote.cat
-      });
-      if (quoteHistory.length > 3) quoteHistory.shift();
-    }
-    let fonts = fontMap[cat];
-    if (!Array.isArray(fonts) || fonts.length !== 2) fonts = defaultFonts;
-    const [qFont, aFont] = fonts;
-    const txt = item.text || item.quote || item.message || "Quote text missing.";
-    const by = item.author || item.by || "";
-    qText.style.fontFamily = `'${qFont}', serif, sans-serif`;
-    qAuth.style.fontFamily = `'${aFont}', serif, sans-serif`;
-    qText.textContent = txt;
-    if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
-      qAuth.textContent = "";
+  function displayQuote() {
+    let pool = [];
+    // Merge user quotes if in 'user' category
+    if (selectedCat === 'user' && quotes['user']) {
+      pool = quotes['user'];
     } else {
-      qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
+      pool = quotes[selectedCat] || [];
+      // Optionally, merge user quotes into all categories
+      if (quotes['user']) pool = pool.concat(quotes['user']);
     }
-    if (cat === "goodvibes_affirmations") {
-      quoteMark.style.opacity = 0;
-    } else {
-      quoteMark.textContent = "“";
-      quoteMark.style.opacity = 0.18;
-    }
-    currentQuote = { item, cat };
-  }
-
-  function displayQuote(pushToHistory = true) {
-    const pool = quotes[selectedCat] || [];
     if (!pool.length) {
       qText.textContent = "Sorry, no quotes found for this category.";
       qAuth.textContent = "";
       return;
     }
-    const randomItem = pool[Math.floor(Math.random() * pool.length)];
-    showQuoteWithUndo(randomItem, selectedCat, pushToHistory);
-  }
-
-  // --- Undo Button Logic ---
-  // (Add this just before the ripple and share/copy logic)
-  if (window.undoBtn) {
-    undoBtn.addEventListener("click", function() {
-      if (quoteHistory.length === 0) return;
-      const prev = quoteHistory.pop();
-      if (prev && prev.item && prev.cat) {
-        showQuoteWithUndo(prev.item, prev.cat, false);
-      }
-    });
+    showQuote(pool[Math.floor(Math.random() * pool.length)], selectedCat);
   }
 
   // --- Ripple for buttons ---
-  [genBtn, shareBtn, copyBtn].forEach(btn => {
+  [genBtn, shareBtn, copyBtn, favBtn, submitQuoteBtn].forEach(btn => {
+    if (!btn) return;
     btn.addEventListener('click', e => {
       const ripple = document.createElement('span');
       ripple.className = 'ripple';
@@ -343,21 +319,43 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --- Share/Copy logic ---
-  shareBtn.addEventListener("click", () => {
-    const textToShare = `${qText.textContent} ${qAuth.textContent}`.trim();
-    if (navigator.share) {
-      navigator.share({
-        title: 'WOW Quote',
-        text: textToShare,
-        url: window.location.href
-      }).catch(() => {
-        window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
-      });
-    } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
-    }
+  // --- Unified Share Menu Logic ---
+  shareBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    shareMenu.classList.toggle("open");
+    // Close if clicked outside
+    document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
   });
+  function closeShareMenuOnClickOutside(event) {
+    if (!shareMenu.contains(event.target) && event.target !== shareBtn) {
+      shareMenu.classList.remove("open");
+    }
+  }
+  shareMenu.querySelectorAll('.share-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const textToShare = `${qText.textContent} ${qAuth.textContent}`.trim();
+      const pageUrl = window.location.href;
+      let shareUrl = '';
+      switch (btn.dataset.network) {
+        case 'twitter':
+          shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}&url=${encodeURIComponent(pageUrl)}`;
+          break;
+        case 'facebook':
+          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(textToShare)}`;
+          break;
+        case 'linkedin':
+          shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(pageUrl)}&title=${encodeURIComponent(textToShare)}`;
+          break;
+        case 'instagram':
+          alert("Instagram does not support direct sharing from web. Copy the quote and share it manually.");
+          break;
+      }
+      if (shareUrl) window.open(shareUrl, "_blank");
+      shareMenu.classList.remove("open");
+    });
+  });
+
+  // --- Copy logic ---
   copyBtn.addEventListener("click", () => {
     const textToCopy = `${qText.textContent} ${qAuth.textContent}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
@@ -369,6 +367,16 @@ document.addEventListener("DOMContentLoaded", () => {
         copyBtn.classList.remove('copied-feedback');
       }, 1200);
     });
+  });
+
+  // --- Favorite logic ---
+  favBtn.addEventListener('click', () => {
+    let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+    const quote = { text: qText.textContent, author: qAuth.textContent };
+    favs.push(quote);
+    localStorage.setItem('favQuotes', JSON.stringify(favs));
+    favBtn.classList.add('copied-feedback');
+    setTimeout(() => favBtn.classList.remove('copied-feedback'), 1000);
   });
 
   // --- Theme switcher ---
@@ -384,7 +392,114 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Generate Quote Button ---
-  genBtn.addEventListener("click", () => displayQuote());
+  genBtn.addEventListener("click", displayQuote);
+
+  // --- Gamification: Streaks ---
+  function updateStreak() {
+    const today = new Date().toISOString().slice(0,10);
+    let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
+    if (streak.last !== today) {
+      streak.count = (streak.last === getYesterday()) ? streak.count + 1 : 1;
+      streak.last = today;
+      localStorage.setItem('wowStreak', JSON.stringify(streak));
+    }
+    showStreak(streak.count);
+  }
+  function getYesterday() {
+    const d = new Date(); d.setDate(d.getDate()-1);
+    return d.toISOString().slice(0,10);
+  }
+  function showStreak(count) {
+    streakBadge.textContent = count > 1 ? `🔥 ${count} day streak!` : '';
+  }
+
+  // --- Personalization: Category Usage ---
+  function recordCategoryUse(cat) {
+    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
+    usage[cat] = (usage[cat] || 0) + 1;
+    localStorage.setItem('catUsage', JSON.stringify(usage));
+  }
+  function getTopCategory() {
+    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
+    return Object.entries(usage).sort((a,b) => b[1]-a[1])[0]?.[0];
+  }
+
+  // --- User-Generated Quotes Modal ---
+  submitQuoteBtn.addEventListener('click', () => {
+    submitQuoteModal.classList.add('open');
+    document.body.style.overflow = "hidden";
+    submitQuoteForm.reset();
+    submitQuoteSuccess.style.display = "none";
+  });
+  closeSubmitQuoteModal.addEventListener('click', () => {
+    submitQuoteModal.classList.remove('open');
+    document.body.style.overflow = "";
+  });
+  submitQuoteForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const text = userQuoteText.value.trim();
+    const author = userQuoteAuthor.value.trim();
+    if (!text) return;
+    let userQuotes = JSON.parse(localStorage.getItem('userQuotes') || '[]');
+    userQuotes.push({ text, author });
+    localStorage.setItem('userQuotes', JSON.stringify(userQuotes));
+    submitQuoteSuccess.style.display = "";
+    setTimeout(() => {
+      submitQuoteModal.classList.remove('open');
+      document.body.style.overflow = "";
+      // Optionally, update quotes pool and author index
+      if (!quotes['user']) quotes['user'] = [];
+      quotes['user'].push({ text, author });
+      buildAuthorIndex([{ text, author }], 'user');
+    }, 1200);
+  });
+
+  // --- Daily Quote Notifications ---
+  if ('Notification' in window && Notification.permission !== 'denied') {
+    Notification.requestPermission();
+  }
+  function sendDailyQuoteNotification() {
+    if (Notification.permission === 'granted') {
+      const text = `${qText.textContent} ${qAuth.textContent}`.trim();
+      new Notification('WOW Quote of the Day', { body: text });
+    }
+  }
+  // Schedule daily notification (example: at 9am)
+  function scheduleDailyNotification() {
+    const now = new Date();
+    const target = new Date();
+    target.setHours(9, 0, 0, 0);
+    if (now > target) target.setDate(target.getDate() + 1);
+    setTimeout(() => {
+      sendDailyQuoteNotification();
+      setInterval(sendDailyQuoteNotification, 24 * 60 * 60 * 1000);
+    }, target - now);
+  }
+  scheduleDailyNotification();
+
+  // --- Time-Sensitive Content Example ---
+  function checkSpecialDay() {
+    const today = new Date();
+    if (today.getDay() === 1) { // Monday
+      currentCategory.textContent = "Monday Motivation";
+      selectedCat = "motivation";
+      displayQuote();
+    }
+  }
+  window.addEventListener('load', checkSpecialDay);
+
+  // --- Accessibility: Keyboard navigation ---
+  document.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") {
+      categoryModal.classList.remove("open");
+      submitQuoteModal.classList.remove("open");
+      shareMenu.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+    if (e.key === "Enter" && document.activeElement === genBtn) {
+      displayQuote();
+    }
+  });
 
   // --- Init ---
   (async function(){
@@ -401,7 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // After loading, show a quote from Inspiration
     if (quotes["inspiration"] && quotes["inspiration"].length > 0) {
-      showQuoteWithUndo(
+      showQuote(
         quotes["inspiration"][Math.floor(Math.random() * quotes["inspiration"].length)],
         "inspiration"
       );
@@ -409,5 +524,8 @@ document.addEventListener("DOMContentLoaded", () => {
       qText.textContent = "No inspiration quotes found. Please check your data.";
       qAuth.textContent = "";
     }
+    // Show streak on load
+    let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
+    showStreak(streak.count);
   })();
 });
