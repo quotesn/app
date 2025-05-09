@@ -529,3 +529,20 @@ document.addEventListener("DOMContentLoaded", () => {
     showStreak(streak.count);
   })();
 });
+
+fetch('https://your-backend.onrender.com/api/submit-quote', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ text, author })
+})
+.then(res => res.ok ? res.json() : Promise.reject())
+.then(() => {
+  submitQuoteSuccess.style.display = "";
+  setTimeout(() => {
+    submitQuoteModal.classList.remove('open');
+    document.body.style.overflow = "";
+  }, 1200);
+})
+.catch(() => {
+  alert("There was a problem submitting your quote. Please try again later.");
+});
