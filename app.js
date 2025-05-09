@@ -57,10 +57,14 @@ document.addEventListener("DOMContentLoaded", () => {
         submitQuoteBtn = document.getElementById("submitQuoteBtn"),
         submitQuoteModal = document.getElementById("submitQuoteModal"),
         closeSubmitQuoteModal = document.getElementById("closeSubmitQuoteModal"),
-        submitQuoteForm = document.getElementById("submitQuoteForm"),
-        userQuoteText = document.getElementById("userQuoteText"),
-        userQuoteAuthor = document.getElementById("userQuoteAuthor"),
-        submitQuoteSuccess = document.getElementById("submitQuoteSuccess");
+        customQuoteForm = document.getElementById("customQuoteForm"),
+        quoteFormSuccess = document.getElementById("quoteFormSuccess"),
+        favModal = document.getElementById('favModal'),
+        closeFavModal = document.getElementById('closeFavModal'),
+        favQuotesList = document.getElementById('favQuotesList'),
+        tabAllFavs = document.getElementById('tabAllFavs'),
+        tabMyFavs = document.getElementById('tabMyFavs'),
+        specialBanner = document.getElementById('specialBanner');
 
   let categories = [];
   let quotes = {};
@@ -134,6 +138,30 @@ document.addEventListener("DOMContentLoaded", () => {
               <ul id="authorList" class="suggestions-list"></ul>
             </div>`;
           categoryMenu.appendChild(sec);
+
+          // --- Favorites Section: Inserted right after Search by Author ---
+          const favSec = document.createElement("div");
+          favSec.className = "section";
+          favSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-heart section-icon"></i>View Favorites</button>`;
+          favSec.querySelector(".section-btn").addEventListener("click", () => {
+            openFavoritesModal();
+            closeMenu();
+          });
+          categoryMenu.appendChild(favSec);
+
+          // --- Submit a Quote Section ---
+          const submitSec = document.createElement("div");
+          submitSec.className = "section";
+          submitSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-plus section-icon"></i>Submit a Quote</button>`;
+          submitSec.querySelector(".section-btn").addEventListener("click", () => {
+            submitQuoteModal.classList.add('open');
+            document.body.style.overflow = "hidden";
+            customQuoteForm.reset();
+            quoteFormSuccess.style.display = "none";
+            closeMenu();
+          });
+          categoryMenu.appendChild(submitSec);
+
         } else {
           const sec = document.createElement("div");
           sec.className = "section";
@@ -417,132 +445,4 @@ document.addEventListener("DOMContentLoaded", () => {
   function recordCategoryUse(cat) {
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     usage[cat] = (usage[cat] || 0) + 1;
-    localStorage.setItem('catUsage', JSON.stringify(usage));
-  }
-  function getTopCategory() {
-    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
-    return Object.entries(usage).sort((a,b) => b[1]-a[1])[0]?.[0];
-  }
-
-  // --- User-Generated Quotes Modal ---
-  submitQuoteBtn.addEventListener('click', () => {
-    submitQuoteModal.classList.add('open');
-    document.body.style.overflow = "hidden";
-    submitQuoteForm.reset();
-    submitQuoteSuccess.style.display = "none";
-  });
-  closeSubmitQuoteModal.addEventListener('click', () => {
-    submitQuoteModal.classList.remove('open');
-    document.body.style.overflow = "";
-  });
-  submitQuoteForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const text = userQuoteText.value.trim();
-    const author = userQuoteAuthor.value.trim();
-    if (!text) return;
-    let userQuotes = JSON.parse(localStorage.getItem('userQuotes') || '[]');
-    userQuotes.push({ text, author });
-    localStorage.setItem('userQuotes', JSON.stringify(userQuotes));
-    submitQuoteSuccess.style.display = "";
-    setTimeout(() => {
-      submitQuoteModal.classList.remove('open');
-      document.body.style.overflow = "";
-      // Optionally, update quotes pool and author index
-      if (!quotes['user']) quotes['user'] = [];
-      quotes['user'].push({ text, author });
-      buildAuthorIndex([{ text, author }], 'user');
-    }, 1200);
-  });
-
-  // --- Daily Quote Notifications ---
-  if ('Notification' in window && Notification.permission !== 'denied') {
-    Notification.requestPermission();
-  }
-  function sendDailyQuoteNotification() {
-    if (Notification.permission === 'granted') {
-      const text = `${qText.textContent} ${qAuth.textContent}`.trim();
-      new Notification('WOW Quote of the Day', { body: text });
-    }
-  }
-  // Schedule daily notification (example: at 9am)
-  function scheduleDailyNotification() {
-    const now = new Date();
-    const target = new Date();
-    target.setHours(9, 0, 0, 0);
-    if (now > target) target.setDate(target.getDate() + 1);
-    setTimeout(() => {
-      sendDailyQuoteNotification();
-      setInterval(sendDailyQuoteNotification, 24 * 60 * 60 * 1000);
-    }, target - now);
-  }
-  scheduleDailyNotification();
-
-  // --- Time-Sensitive Content Example ---
-  function checkSpecialDay() {
-    const today = new Date();
-    if (today.getDay() === 1) { // Monday
-      currentCategory.textContent = "Monday Motivation";
-      selectedCat = "motivation";
-      displayQuote();
-    }
-  }
-  window.addEventListener('load', checkSpecialDay);
-
-  // --- Accessibility: Keyboard navigation ---
-  document.addEventListener('keydown', function(e) {
-    if (e.key === "Escape") {
-      categoryModal.classList.remove("open");
-      submitQuoteModal.classList.remove("open");
-      shareMenu.classList.remove("open");
-      document.body.style.overflow = "";
-    }
-    if (e.key === "Enter" && document.activeElement === genBtn) {
-      displayQuote();
-    }
-  });
-
-  // --- Init ---
-  (async function(){
-    // Show loading message until quotes are loaded
-    qText.textContent = "✨ Loading Wisdom...";
-    qAuth.textContent = "";
-    quoteMark.textContent = "“";
-    quoteMark.style.opacity = 0.18;
-    currentCategory.textContent = "Inspiration";
-    selectedCat = "inspiration";
-
-    await loadCategoriesAndQuotes();
-    renderMenu();
-
-    // After loading, show a quote from Inspiration
-    if (quotes["inspiration"] && quotes["inspiration"].length > 0) {
-      showQuote(
-        quotes["inspiration"][Math.floor(Math.random() * quotes["inspiration"].length)],
-        "inspiration"
-      );
-    } else {
-      qText.textContent = "No inspiration quotes found. Please check your data.";
-      qAuth.textContent = "";
-    }
-    // Show streak on load
-    let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
-    showStreak(streak.count);
-  })();
-});
-
-fetch('https://your-backend.onrender.com/api/submit-quote', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ text, author })
-})
-.then(res => res.ok ? res.json() : Promise.reject())
-.then(() => {
-  submitQuoteSuccess.style.display = "";
-  setTimeout(() => {
-    submitQuoteModal.classList.remove('open');
-    document.body.style.overflow = "";
-  }, 1200);
-})
-.catch(() => {
-  alert("There was a problem submitting your quote. Please try again later.");
-});
+    localStorage.setItem('catUsage', JSON.stringify
