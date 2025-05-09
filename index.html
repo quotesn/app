@@ -19,16 +19,14 @@
   <link rel="apple-touch-icon" sizes="180x180" href="https://quotes-app.wordsofwisdom.in/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="https://quotes-app.wordsofwisdom.in/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="https://quotes-app.wordsofwisdom.in/images/favicon-16x16.png">
-  <!-- Google Fonts (all fonts used in your fontMap) -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500&family=Montserrat:wght@600&family=Roboto+Slab:wght@400&family=Lora:wght@400&family=Bree+Serif&family=Dancing+Script&family=Merriweather&family=Nunito&family=Ubuntu&family=Oswald&family=Quicksand&family=Crimson+Text&family=Josefin+Slab&family=Cabin&family=Cormorant+Garamond&family=Libre+Baskerville&family=Abel&family=Roboto&family=Spectral&family=Fira+Sans&family=EB+Garamond&family=Source+Serif+Pro&family=Raleway&family=PT+Serif&family=Open+Sans&family=Work+Sans&family=Cormorant&display=swap" rel="stylesheet">
-  <!-- Font Awesome 6.5.2 (with integrity) -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
   />
-  <link rel="stylesheet" href="style.css" />
   <style>
     #loading-wisdom {
       position: fixed;
@@ -56,6 +54,11 @@
 </head>
 <body>
   <div id="loading-wisdom">✨ Loading Wisdom...</div>
+  <!-- Banner above header -->
+  <div id="specialBanner" class="special-banner" style="display:none;">
+    <span id="bannerText"></span>
+    <button id="closeBannerBtn" class="close-btn" aria-label="Close Banner">&times;</button>
+  </div>
   <header>
     <a href="https://www.wordsofwisdom.in" class="home-btn" aria-label="Home" target="_blank" rel="noopener">
       <i class="fa-solid fa-house"></i>
@@ -69,7 +72,6 @@
       </label>
     </div>
   </header>
-  <div id="specialBanner" class="special-banner" style="display:none;"></div>
   <main>
     <div class="quote-box neomorphic" id="quoteBox">
       <span id="quoteMark" class="quote-mark" aria-hidden="true">“</span>
@@ -100,8 +102,8 @@
         <button class="share-option" data-network="linkedin" title="Share on LinkedIn" aria-label="Share on LinkedIn">
           <i class="fa-brands fa-linkedin"></i>
         </button>
-        <button class="share-option" data-network="instagram" title="Share on Instagram" aria-label="Share on Instagram">
-          <i class="fa-brands fa-instagram"></i>
+        <button class="share-option" data-network="whatsapp" title="Share on WhatsApp" aria-label="Share on WhatsApp">
+          <i class="fa-brands fa-whatsapp"></i>
         </button>
       </div>
       <button id="copyBtn" class="icon-btn" title="Copy to clipboard" aria-label="Copy to clipboard">
