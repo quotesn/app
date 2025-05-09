@@ -25,7 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
         favQuotesList = document.getElementById('favQuotesList'),
         tabAllFavs = document.getElementById('tabAllFavs'),
         tabMyFavs = document.getElementById('tabMyFavs'),
-        specialBanner = document.getElementById('specialBanner');
+        specialBanner = document.getElementById('specialBanner'),
+        bannerText = document.getElementById('bannerText'),
+        closeBannerBtn = document.getElementById('closeBannerBtn');
 
   let categories = [];
   let quotes = {};
@@ -97,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showRotatingBanner() {
     const today = new Date();
-    const startDate = new Date("2025-05-05"); // Rotation anchor (Monday)
+    const startDate = new Date("2025-05-05");
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
     const theme = bannerThemes[idx];
@@ -108,20 +110,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const style = bannerStyles[theme.cat] || {};
     if (style.icon) bannerHTML += `<span style="font-size:1.6em;margin-right:0.5em;">${style.icon}</span>`;
     bannerHTML += `<span>${theme.text}</span>`;
-    specialBanner.innerHTML = bannerHTML;
+    bannerText.innerHTML = bannerHTML;
     specialBanner.style.display = "block";
     specialBanner.style.background = style.color ? style.color : "";
     specialBanner.style.color = "#fff";
+    closeBannerBtn.onclick = () => {
+      specialBanner.style.display = "none";
+      localStorage.setItem("wowBannerDate", todayStr);
+    };
     setTimeout(() => {
       specialBanner.style.display = "none";
-    }, 5500);
+    }, 8000);
     selectedCat = theme.cat;
     currentCategory.textContent = capitalize(theme.cat.replace(/_/g, " "));
     displayQuote();
     localStorage.setItem("wowBannerDate", todayStr);
   }
   function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).replace(/([A-Z])/g, ' $1').replace(/\b\w/g, l => l.toUpperCase());
+    return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
   window.addEventListener('load', showRotatingBanner);
 
@@ -348,13 +354,14 @@ document.addEventListener("DOMContentLoaded", () => {
     qAuth.classList.add('fade-out');
     setTimeout(() => {
       const txt = item.text || item.quote || item.message || "Quote text missing.";
-      const by = item.author || item.by || "";
-      qText.textContent = txt;
+      let by = item.author || item.by || "";
+      by = by.replace(/^[-–-―\s]+/, "");
       if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
         qAuth.textContent = "";
       } else {
         qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
       }
+      qText.textContent = txt;
       quoteMark.textContent = "“";
       quoteMark.style.opacity = 0.18;
       qText.classList.remove('fade-out');
@@ -409,20 +416,19 @@ document.addEventListener("DOMContentLoaded", () => {
   shareMenu.querySelectorAll('.share-option').forEach(btn => {
     btn.addEventListener('click', function() {
       const textToShare = `${qText.textContent} ${qAuth.textContent}`.trim();
-      const pageUrl = window.location.href;
       let shareUrl = '';
       switch (btn.dataset.network) {
         case 'twitter':
-          shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}&url=${encodeURIComponent(pageUrl)}`;
+          shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}`;
           break;
         case 'facebook':
-          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(textToShare)}`;
+          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(textToShare)}`;
           break;
         case 'linkedin':
-          shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(pageUrl)}&title=${encodeURIComponent(textToShare)}`;
+          shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(textToShare)}`;
           break;
-        case 'instagram':
-          alert("Instagram does not support direct sharing from web. Copy the quote and share it manually.");
+        case 'whatsapp':
+          shareUrl = `https://wa.me/?text=${encodeURIComponent(textToShare)}`;
           break;
       }
       if (shareUrl) window.open(shareUrl, "_blank");
@@ -447,7 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Favorite logic ---
   favBtn.addEventListener('click', () => {
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
-    const quote = { text: qText.textContent, author: qAuth.textContent.replace(/^-\s*/, "") };
+    const quote = { text: qText.textContent, author: qAuth.textContent.replace(/^[-–-―\s]+/, "") };
     favs.push(quote);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
     favBtn.classList.add('copied-feedback');
