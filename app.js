@@ -1,41 +1,42 @@
 document.addEventListener("DOMContentLoaded", () => {
   // DOM references
   const qText = document.getElementById("quoteText"),
-        qAuth = document.getElementById("quoteAuthor"),
-        quoteBox = document.getElementById("quoteBox"),
-        quoteMark = document.getElementById("quoteMark"),
-        genBtn = document.getElementById("generateBtn"),
-        shareBtn = document.getElementById("shareBtn"),
-        copyBtn = document.getElementById("copyBtn"),
-        favBtn = document.getElementById("favBtn"),
-        themeSw = document.getElementById("themeSwitch"),
-        openMenuBtn = document.getElementById("openMenuBtn"),
-        categoryModal = document.getElementById("categoryModal"),
-        closeMenuBtn = document.getElementById("closeMenuBtn"),
-        currentCategory = document.getElementById("currentCategory"),
-        categoryMenu = document.getElementById("categoryMenu"),
-        streakBadge = document.getElementById("streakBadge"),
-        shareMenu = document.getElementById("shareMenu"),
-        submitQuoteModal = document.getElementById("submitQuoteModal"),
-        closeSubmitQuoteModal = document.getElementById("closeSubmitQuoteModal"),
-        customQuoteForm = document.getElementById("customQuoteForm"),
-        quoteFormSuccess = document.getElementById("quoteFormSuccess"),
-        favModal = document.getElementById('favModal'),
-        closeFavModal = document.getElementById('closeFavModal'),
-        favQuotesList = document.getElementById('favQuotesList'),
-        tabAllFavs = document.getElementById('tabAllFavs'),
-        tabMyFavs = document.getElementById('tabMyFavs'),
-        specialBanner = document.getElementById('specialBanner'),
-        bannerText = document.getElementById('bannerText'),
-        closeBannerBtn = document.getElementById('closeBannerBtn');
+    qAuth = document.getElementById("quoteAuthor"),
+    quoteBox = document.getElementById("quoteBox"),
+    quoteMark = document.getElementById("quoteMark"),
+    genBtn = document.getElementById("generateBtn"),
+    shareBtn = document.getElementById("shareBtn"),
+    copyBtn = document.getElementById("copyBtn"),
+    favBtn = document.getElementById("favBtn"),
+    themeSw = document.getElementById("themeSwitch"),
+    openMenuBtn = document.getElementById("openMenuBtn"),
+    categoryModal = document.getElementById("categoryModal"),
+    closeMenuBtn = document.getElementById("closeMenuBtn"),
+    currentCategory = document.getElementById("currentCategory"),
+    categoryMenu = document.getElementById("categoryMenu"),
+    streakBadge = document.getElementById("streakBadge"),
+    shareMenu = document.getElementById("shareMenu"),
+    submitQuoteModal = document.getElementById("submitQuoteModal"),
+    closeSubmitQuoteModal = document.getElementById("closeSubmitQuoteModal"),
+    customQuoteForm = document.getElementById("customQuoteForm"),
+    quoteFormSuccess = document.getElementById("quoteFormSuccess"),
+    favModal = document.getElementById('favModal'),
+    closeFavModal = document.getElementById('closeFavModal'),
+    favQuotesList = document.getElementById('favQuotesList'),
+    tabAllFavs = document.getElementById('tabAllFavs'),
+    tabMyFavs = document.getElementById('tabMyFavs'),
+    specialBanner = document.getElementById('specialBanner'),
+    bannerText = document.getElementById('bannerText'),
+    closeBannerBtn = document.getElementById('closeBannerBtn');
 
   let categories = [];
   let quotes = {};
   let authors = {};
-  let selectedCat = "inspiration";
+  let selectedCat = null;
   let lastQuote = null;
+  let allFavorites = [];
 
-  // --- Rotating time-sensitive banners and categories (28-day cycle) ---
+  // Banner themes and styles
   const bannerThemes = [
     {cat: "inspiration",    text: "Ignite fresh ideas to fuel your week."},
     {cat: "motivation",     text: "Power up your ambition and take the lead."},
@@ -97,6 +98,10 @@ document.addEventListener("DOMContentLoaded", () => {
     perseverance:   { color: "#6d4c41", icon: "🚀" }
   };
 
+  function capitalize(str) {
+    return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
   function showRotatingBanner() {
     const today = new Date();
     const startDate = new Date("2025-05-05");
@@ -123,15 +128,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 8000);
     selectedCat = theme.cat;
     currentCategory.textContent = capitalize(theme.cat.replace(/_/g, " "));
-    displayQuote();
+    displayQuote(); // Ensures quote matches banner
     localStorage.setItem("wowBannerDate", todayStr);
   }
-  function capitalize(str) {
-    return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  }
-  window.addEventListener('load', showRotatingBanner);
 
-  // --- Load categories and quotes dynamically ---
+  // Load categories and quotes
   async function loadCategoriesAndQuotes() {
     try {
       const catRes = await fetch('data/categories.json');
@@ -494,17 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
     streakBadge.textContent = count > 1 ? `🔥 ${count} day streak!` : '';
   }
 
-  // --- Category Usage Tracking ---
-  function recordCategoryUse(cat) {
-    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
-    usage[cat] = (usage[cat] || 0) + 1;
-    localStorage.setItem('catUsage', JSON.stringify(usage));
-  }
-  function getTopCategory() {
-    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
-    return Object.entries(usage).sort((a,b) => b[1]-a[1])[0]?.[0];
-  }
-
   // --- Custom Google Forms Submission ---
   customQuoteForm.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -530,7 +520,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Favorites Modal Logic ---
-  let allFavorites = [];
   fetch('data/all_favorites.json')
     .then(res => res.json())
     .then(data => { allFavorites = data; });
@@ -598,6 +587,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // --- Accessibility: Keyboard navigation ---
+  document.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") {
+      categoryModal.classList.remove("open");
+      submitQuoteModal.classList.remove("open");
+      shareMenu.classList.remove("open");
+      favModal.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+    if (e.key === "Enter" && document.activeElement === genBtn) {
+      displayQuote();
+    }
+  });
+
+  // --- Category Usage Tracking ---
+  function recordCategoryUse(cat) {
+    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
+    usage[cat] = (usage[cat] || 0) + 1;
+    localStorage.setItem('catUsage', JSON.stringify(usage));
+  }
+  function getTopCategory() {
+    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
+    return Object.entries(usage).sort((a,b) => b[1]-a[1])[0]?.[0];
+  }
+
   // --- Daily Quote Notifications ---
   if ('Notification' in window && Notification.permission !== 'denied') {
     Notification.requestPermission();
@@ -619,20 +633,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, target - now);
   }
   scheduleDailyNotification();
-
-  // --- Accessibility: Keyboard navigation ---
-  document.addEventListener('keydown', function(e) {
-    if (e.key === "Escape") {
-      categoryModal.classList.remove("open");
-      submitQuoteModal.classList.remove("open");
-      shareMenu.classList.remove("open");
-      favModal.classList.remove("open");
-      document.body.style.overflow = "";
-    }
-    if (e.key === "Enter" && document.activeElement === genBtn) {
-      displayQuote();
-    }
-  });
 
   // --- Init ---
   (async function(){
