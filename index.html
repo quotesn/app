@@ -21,11 +21,8 @@
   <link rel="icon" type="image/png" sizes="16x16" href="https://quotes-app.wordsofwisdom.in/images/favicon-16x16.png">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
   <style>
     #loading-wisdom {
       position: fixed;
@@ -58,7 +55,7 @@
     <button id="closeBannerBtn" class="close-btn" aria-label="Close Banner">&times;</button>
   </div>
   <header>
-    <a href="https://www.wordsofwisdom.in" class="home-btn" aria-label="Home" target="_blank" rel="noopener">
+    <a href="https://www.wordsofwisdom.in" class="home-btn icon-btn" aria-label="Home" target="_blank" rel="noopener">
       <i class="fa-solid fa-house"></i>
     </a>
     <h1>WOW Quotes</h1>
@@ -102,6 +99,9 @@
         <span class="btn-tooltip">Copy</span>
       </button>
       <div id="shareMenu" class="share-menu" aria-label="Share Options">
+        <button class="share-option" id="sharePngBtn" title="Share as PNG" aria-label="Share as PNG">
+          <i class="fa-solid fa-image"></i>
+        </button>
         <button class="share-option" data-network="twitter" title="Share on Twitter" aria-label="Share on Twitter">
           <i class="fa-brands fa-x-twitter"></i>
         </button>
@@ -138,9 +138,12 @@
         <button class="close-btn" id="closeFavModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
         <h2>Favorites</h2>
         <div id="favQuotesList"></div>
-        <button id="closeFavModalLarge" class="large-close-btn" aria-label="Close Favorites"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
+    <!-- Large close button outside modal-content for Favorites modal -->
+    <button id="closeFavModalLarge" class="large-close-btn-outside" aria-label="Close Favorites">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
     <!-- Feedback Button -->
     <button id="feedbackBtn" class="feedback-btn" title="Send Feedback" aria-label="Send Feedback">
       <i class="fa-regular fa-message"></i>
