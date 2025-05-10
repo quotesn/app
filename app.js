@@ -23,18 +23,16 @@ document.addEventListener("DOMContentLoaded", () => {
     favModal = document.getElementById('favModal'),
     closeFavModal = document.getElementById('closeFavModal'),
     favQuotesList = document.getElementById('favQuotesList'),
-    tabAllFavs = document.getElementById('tabAllFavs'),
-    tabMyFavs = document.getElementById('tabMyFavs'),
     specialBanner = document.getElementById('specialBanner'),
     bannerText = document.getElementById('bannerText'),
-    closeBannerBtn = document.getElementById('closeBannerBtn');
+    closeBannerBtn = document.getElementById('closeBannerBtn'),
+    closeFavModalLarge = document.getElementById('closeFavModalLarge');
 
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = null;
   let lastQuote = null;
-  let allFavorites = [];
 
   // Banner themes and styles
   const bannerThemes = [
@@ -520,56 +518,43 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Favorites Modal Logic ---
-  fetch('data/all_favorites.json')
-    .then(res => res.json())
-    .then(data => { allFavorites = data; });
-
-  function openFavoritesModal(tab = 'all') {
+  function openFavoritesModal() {
     favModal.classList.add('open');
     document.body.style.overflow = "hidden";
-    showFavoritesTab(tab);
+    showFavorites();
   }
   closeFavModal.addEventListener('click', () => {
     favModal.classList.remove('open');
     document.body.style.overflow = "";
   });
-  tabAllFavs.addEventListener('click', () => showFavoritesTab('all'));
-  tabMyFavs.addEventListener('click', () => showFavoritesTab('my'));
+  if (closeFavModalLarge) {
+    closeFavModalLarge.addEventListener('click', () => {
+      favModal.classList.remove('open');
+      document.body.style.overflow = "";
+    });
+  }
 
-  function showFavoritesTab(tab) {
-    tabAllFavs.classList.toggle('selected', tab === 'all');
-    tabMyFavs.classList.toggle('selected', tab === 'my');
-    if (tab === 'all') {
-      favQuotesList.innerHTML = allFavorites.length
-        ? allFavorites.map(q => `
-          <div class="fav-quote">
-            <p>${q.text}</p>
-            <p class="author">${q.author || ''}</p>
+  function showFavorites() {
+    const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+    favQuotesList.innerHTML = favs.length
+      ? favs.map((q, idx) => `
+        <div class="fav-quote">
+          <p>${q.text}</p>
+          <p class="author">${q.author || ''}</p>
+          <div class="fav-actions">
+            <button onclick="removeFavorite(${idx})" title="Remove"><i class="fa-solid fa-trash"></i></button>
+            <button onclick="copyFavorite('${encodeURIComponent(q.text)}','${encodeURIComponent(q.author || '')}')" title="Copy"><i class="fa-solid fa-copy"></i></button>
+            <button onclick="shareFavorite('${encodeURIComponent(q.text)}','${encodeURIComponent(q.author || '')}')" title="Share"><i class="fa-solid fa-share-nodes"></i></button>
           </div>
-        `).join('')
-        : "<p>No favorites yet.</p>";
-    } else {
-      const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
-      favQuotesList.innerHTML = favs.length
-        ? favs.map((q, idx) => `
-          <div class="fav-quote">
-            <p>${q.text}</p>
-            <p class="author">${q.author || ''}</p>
-            <div class="fav-actions">
-              <button onclick="removeFavorite(${idx})" title="Remove"><i class="fa-solid fa-trash"></i></button>
-              <button onclick="copyFavorite('${encodeURIComponent(q.text)}','${encodeURIComponent(q.author || '')}')" title="Copy"><i class="fa-solid fa-copy"></i></button>
-              <button onclick="shareFavorite('${encodeURIComponent(q.text)}','${encodeURIComponent(q.author || '')}')" title="Share"><i class="fa-solid fa-share-nodes"></i></button>
-            </div>
-          </div>
-        `).join('')
-        : "<p>No favorites yet.</p>";
-    }
+        </div>
+      `).join('')
+      : "<p>No favorites yet.</p>";
   }
   window.removeFavorite = function(idx) {
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    showFavoritesTab('my');
+    showFavorites();
   };
   window.copyFavorite = function(text, author) {
     const t = decodeURIComponent(text);
@@ -640,19 +625,9 @@ document.addEventListener("DOMContentLoaded", () => {
     qAuth.textContent = "";
     quoteMark.textContent = "“";
     quoteMark.style.opacity = 0.18;
-    currentCategory.textContent = "Inspiration";
-    selectedCat = "inspiration";
     await loadCategoriesAndQuotes();
     renderMenu();
-    if (quotes["inspiration"] && quotes["inspiration"].length > 0) {
-      showQuote(
-        quotes["inspiration"][Math.floor(Math.random() * quotes["inspiration"].length)],
-        "inspiration"
-      );
-    } else {
-      qText.textContent = "No inspiration quotes found. Please check your data.";
-      qAuth.textContent = "";
-    }
+    showRotatingBanner();
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     showStreak(streak.count);
   })();
