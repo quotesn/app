@@ -128,7 +128,12 @@
           <input type="text" id="quoteText" name="entry.739419974" required maxlength="240" placeholder="Your quote...">
           <label for="quoteAuthor">Author (optional)</label>
           <input type="text" id="quoteAuthor" name="entry.1816264212" maxlength="80" placeholder="Author">
-          <button type="submit">Submit</button>
+          <button type="submit" class="embossed-btn">
+            <span class="btn-text">Submit</span>
+            <span class="btn-spinner" aria-hidden="true" style="display:none;">
+              <i class="fa-solid fa-circle-notch fa-spin"></i> Submitting...
+            </span>
+          </button>
           <div id="quoteFormSuccess">Thank you! Your quote was submitted.</div>
         </form>
       </div>
@@ -154,7 +159,12 @@
         <button class="close-btn" id="closeFeedbackModal" aria-label="Close Feedback"><i class="fa-solid fa-xmark"></i></button>
         <h2>Feedback</h2>
         <textarea id="feedbackTextarea" maxlength="400" placeholder="Your feedback..."></textarea>
-        <button id="submitFeedbackBtn" class="feedback-submit-btn">Send</button>
+        <button id="submitFeedbackBtn" class="feedback-submit-btn embossed-btn">
+          <span class="btn-text">Send</span>
+          <span class="btn-spinner" aria-hidden="true" style="display:none;">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Sending...
+          </span>
+        </button>
         <div class="feedback-links">
           <a href="https://www.wordsofwisdom.in/p/privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>
           <a href="https://www.wordsofwisdom.in/p/terms-and-conditions.html" target="_blank" rel="noopener">T&amp;C</a>
@@ -167,9 +177,11 @@
       <div class="modal-content" style="max-width:95vw;max-height:95vh;display:flex;flex-direction:column;align-items:center;">
         <button class="close-btn" id="closePngPreviewModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
         <img id="pngPreviewImg" src="" alt="Quote Preview" style="width:100%;max-width:420px;max-height:80vh;border-radius:1rem;box-shadow:0 2px 16px #0002;margin-bottom:1rem;">
-        <button id="downloadPngBtn" class="feedback-submit-btn" style="width:70%;margin:auto;">Download / Share</button>
+        <button id="downloadPngBtn" class="feedback-submit-btn embossed-btn" style="width:70%;margin:auto;">Download / Share</button>
       </div>
     </div>
+    <!-- Hidden PNG Render Box for fast image export -->
+    <div id="pngRenderBox" style="display:none;"></div>
   </main>
   <footer>
     <div>
