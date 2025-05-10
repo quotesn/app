@@ -35,7 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
     submitFeedbackBtn = document.getElementById('submitFeedbackBtn'),
     feedbackSuccess = document.getElementById('feedbackSuccess'),
     magicSound = document.getElementById('magicSound'),
-    sharePngBtn = document.getElementById('sharePngBtn');
+    sharePngBtn = document.getElementById('sharePngBtn'),
+    pngPreviewModal = document.getElementById('pngPreviewModal'),
+    pngPreviewImg = document.getElementById('pngPreviewImg'),
+    downloadPngBtn = document.getElementById('downloadPngBtn'),
+    closePngPreviewModal = document.getElementById('closePngPreviewModal');
 
   let categories = [];
   let quotes = {};
@@ -383,6 +387,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === categoryModal) closeMenu();
   });
 
+  // --- Submit Quote Modal Close ---
+  closeSubmitQuoteModal.addEventListener('click', () => {
+    submitQuoteModal.classList.remove('open');
+    document.body.style.overflow = "";
+  });
+
+  // --- Submit Quote Form Handling ---
+  customQuoteForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    // You can add your Google Form submission here if needed
+    quoteFormSuccess.style.display = 'block';
+    setTimeout(() => {
+      quoteFormSuccess.style.display = 'none';
+      submitQuoteModal.classList.remove('open');
+      document.body.style.overflow = "";
+    }, 1800);
+    customQuoteForm.reset();
+  });
+
   // --- Undo/Go Back for Previous Quotes ---
   function showQuote(item, cat, fromUndo = false) {
     if (!fromUndo && lastQuote) {
@@ -532,49 +555,82 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --- Share as PNG with Watermark ---
+  // --- Share as PNG with Preview ---
   async function shareQuoteAsPNG() {
     const node = document.getElementById('quoteBox');
-    const originalStyles = {
-      width: node.style.width,
-      height: node.style.height,
-      maxWidth: node.style.maxWidth,
-      maxHeight: node.style.maxHeight
-    };
+    // Prepare a virtual node for image rendering
+    const virtualNode = node.cloneNode(true);
+    virtualNode.style.width = "1080px";
+    virtualNode.style.height = "1080px";
+    virtualNode.style.maxWidth = "none";
+    virtualNode.style.maxHeight = "none";
+    virtualNode.style.position = "absolute";
+    virtualNode.style.left = "-9999px";
+    virtualNode.style.top = "0";
+    virtualNode.style.background = "#fff";
+    virtualNode.style.color = "#232336";
+    virtualNode.style.padding = "120px 80px 160px 80px";
+    virtualNode.style.display = "flex";
+    virtualNode.style.flexDirection = "column";
+    virtualNode.style.justifyContent = "center";
+    virtualNode.style.alignItems = "center";
+    virtualNode.querySelector("#quoteMark")?.remove();
 
-    node.style.width = "1080px";
-    node.style.height = "1080px";
-    node.style.maxWidth = node.style.maxHeight = "none";
+    // Adjust text size dynamically
+    const quoteText = virtualNode.querySelector("#quoteText");
+    const authorText = virtualNode.querySelector("#quoteAuthor");
+    if (quoteText) {
+      quoteText.style.fontSize = "2.1rem";
+      quoteText.style.textAlign = "center";
+      quoteText.style.width = "100%";
+      quoteText.style.wordBreak = "break-word";
+      quoteText.style.lineHeight = "1.3";
+      quoteText.style.marginBottom = "2.2rem";
+      // Shrink font if too long
+      if (quoteText.textContent.length > 180) quoteText.style.fontSize = "1.5rem";
+      else if (quoteText.textContent.length > 120) quoteText.style.fontSize = "1.7rem";
+    }
+    if (authorText) {
+      authorText.style.fontSize = "1.3rem";
+      authorText.style.textAlign = "center";
+      authorText.style.width = "100%";
+      authorText.style.marginTop = "1.2rem";
+      authorText.style.color = "#7c5df0";
+    }
+    document.body.appendChild(virtualNode);
 
-    try {
-      const dataUrl = await htmlToImage.toPng(node, { 
-        width: 1080, 
-        height: 1080, 
-        pixelRatio: 2 
-      });
+    // Render to PNG
+    const dataUrl = await htmlToImage.toPng(virtualNode, { width: 1080, height: 1080, pixelRatio: 2 });
+    document.body.removeChild(virtualNode);
 
-      // Watermark logic
-      const img = new Image();
-      img.src = dataUrl;
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = 1080;
-        canvas.height = 1080;
-        ctx.drawImage(img, 0, 0);
-        
-        ctx.font = "bold 40px 'Poppins', Arial, sans-serif";
-        ctx.fillStyle = "rgba(124,93,240,0.8)";
-        ctx.textAlign = "right";
-        ctx.textBaseline = "bottom";
-        ctx.shadowColor = "white";
-        ctx.shadowBlur = 4;
-        ctx.fillText("wordsofwisdom.in", 1040, 1060);
+    // Add watermark and ensure text fits
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 1080, 1080);
 
-        // Share/download
+      // Watermark
+      ctx.font = "bold 40px Poppins, Arial, sans-serif";
+      ctx.fillStyle = "#7c5df0";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "bottom";
+      ctx.shadowColor = "#fff";
+      ctx.shadowBlur = 2;
+      ctx.fillText("wordsofwisdom.in", 1040, 1050);
+
+      // Show preview modal
+      pngPreviewImg.src = canvas.toDataURL("image/png");
+      pngPreviewModal.classList.add('open');
+      document.body.style.overflow = "hidden";
+
+      // Download/share logic
+      downloadPngBtn.onclick = async function() {
         canvas.toBlob(async blob => {
           const file = new File([blob], "wow-quote.png", { type: "image/png" });
-          
           if (navigator.canShare?.({ files: [file] })) {
             await navigator.share({ files: [file], title: "WOW Quote" });
           } else {
@@ -585,13 +641,17 @@ document.addEventListener("DOMContentLoaded", () => {
             a.click();
             document.body.removeChild(a);
           }
+          pngPreviewModal.classList.remove('open');
+          document.body.style.overflow = "";
         }, "image/png");
       };
-    } finally {
-      Object.assign(node.style, originalStyles);
-    }
+    };
   }
   sharePngBtn.addEventListener('click', shareQuoteAsPNG);
+  closePngPreviewModal.onclick = function() {
+    pngPreviewModal.classList.remove('open');
+    document.body.style.overflow = "";
+  };
 
   // --- Copy logic ---
   copyBtn.addEventListener("click", () => {
@@ -744,6 +804,7 @@ document.addEventListener("DOMContentLoaded", () => {
       shareMenu.classList.remove("open");
       favModal.classList.remove("open");
       feedbackModal.classList.remove("open");
+      pngPreviewModal.classList.remove("open");
       document.body.style.overflow = "";
     }
     if (e.key === "Enter" && document.activeElement === genBtn) {
@@ -806,4 +867,3 @@ document.addEventListener("DOMContentLoaded", () => {
     showStreak(streak.count);
   })();
 });
-
