@@ -39,7 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
     pngPreviewModal = document.getElementById('pngPreviewModal'),
     pngPreviewImg = document.getElementById('pngPreviewImg'),
     downloadPngBtn = document.getElementById('downloadPngBtn'),
-    closePngPreviewModal = document.getElementById('closePngPreviewModal');
+    closePngPreviewModal = document.getElementById('closePngPreviewModal'),
+    pngRenderBox = document.getElementById('pngRenderBox');
 
   let categories = [];
   let quotes = {};
@@ -393,17 +394,32 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.style.overflow = "";
   });
 
-  // --- Submit Quote Form Handling ---
+  // --- Submit Quote Form Handling with Progress Spinner ---
   customQuoteForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    // You can add your Google Form submission here if needed
-    quoteFormSuccess.style.display = 'block';
+    const submitBtn = customQuoteForm.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnSpinner = submitBtn.querySelector('.btn-spinner');
+    // Show spinner and disable button
+    btnText.style.display = 'none';
+    btnSpinner.style.display = 'inline-block';
+    submitBtn.disabled = true;
+
+    // Simulate async submission (replace with real submission if needed)
     setTimeout(() => {
-      quoteFormSuccess.style.display = 'none';
-      submitQuoteModal.classList.remove('open');
-      document.body.style.overflow = "";
-    }, 1800);
-    customQuoteForm.reset();
+      // Hide spinner, enable button, restore text
+      btnSpinner.style.display = 'none';
+      btnText.style.display = '';
+      submitBtn.disabled = false;
+
+      quoteFormSuccess.style.display = 'block';
+      setTimeout(() => {
+        quoteFormSuccess.style.display = 'none';
+        submitQuoteModal.classList.remove('open');
+        document.body.style.overflow = "";
+      }, 1800);
+      customQuoteForm.reset();
+    }, 1200);
   });
 
   // --- Undo/Go Back for Previous Quotes ---
@@ -555,30 +571,52 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --- Share as PNG with Preview ---
+  // --- Share as PNG with Preview (includes UI for user-friendliness) ---
   async function shareQuoteAsPNG() {
-    const node = document.getElementById('quoteBox');
-    // Prepare a virtual node for image rendering
-    const virtualNode = node.cloneNode(true);
-    virtualNode.style.width = "1080px";
-    virtualNode.style.height = "1080px";
-    virtualNode.style.maxWidth = "none";
-    virtualNode.style.maxHeight = "none";
-    virtualNode.style.position = "absolute";
-    virtualNode.style.left = "-9999px";
-    virtualNode.style.top = "0";
-    virtualNode.style.background = "#fff";
-    virtualNode.style.color = "#232336";
-    virtualNode.style.padding = "120px 80px 160px 80px";
-    virtualNode.style.display = "flex";
-    virtualNode.style.flexDirection = "column";
-    virtualNode.style.justifyContent = "center";
-    virtualNode.style.alignItems = "center";
-    virtualNode.querySelector("#quoteMark")?.remove();
+    // Clone the quote box including UI for a friendly share image
+    const node = quoteBox.cloneNode(true);
+    node.style.width = "1080px";
+    node.style.height = "1080px";
+    node.style.maxWidth = "none";
+    node.style.maxHeight = "none";
+    node.style.position = "absolute";
+    node.style.left = "-9999px";
+    node.style.top = "0";
+    node.style.background = document.body.classList.contains("dark") ? "#232336" : "#fff";
+    node.style.color = document.body.classList.contains("dark") ? "#fff" : "#232336";
+    node.style.padding = "120px 80px 160px 80px";
+    node.style.display = "flex";
+    node.style.flexDirection = "column";
+    node.style.justifyContent = "center";
+    node.style.alignItems = "center";
+    node.style.borderRadius = "40px";
+    // Remove fade-out if present
+    node.querySelector("#quoteText")?.classList.remove("fade-out");
+    node.querySelector("#quoteAuthor")?.classList.remove("fade-out");
+
+    // Remove any tooltips, ripples, etc.
+    node.querySelectorAll('.btn-tooltip, .ripple').forEach(el => el.remove());
+
+    // Add watermark
+    let watermark = node.querySelector('.png-watermark');
+    if (!watermark) {
+      watermark = document.createElement('div');
+      watermark.className = 'png-watermark';
+      watermark.textContent = "wordsofwisdom.in";
+      watermark.style.position = "absolute";
+      watermark.style.right = "60px";
+      watermark.style.bottom = "60px";
+      watermark.style.fontSize = "1.6rem";
+      watermark.style.color = document.body.classList.contains("dark") ? "#ffd700" : "#7c5df0";
+      watermark.style.opacity = "0.82";
+      watermark.style.fontFamily = "Poppins, sans-serif";
+      watermark.style.fontWeight = "bold";
+      node.appendChild(watermark);
+    }
 
     // Adjust text size dynamically
-    const quoteText = virtualNode.querySelector("#quoteText");
-    const authorText = virtualNode.querySelector("#quoteAuthor");
+    const quoteText = node.querySelector("#quoteText");
+    const authorText = node.querySelector("#quoteAuthor");
     if (quoteText) {
       quoteText.style.fontSize = "2.1rem";
       quoteText.style.textAlign = "center";
@@ -595,56 +633,32 @@ document.addEventListener("DOMContentLoaded", () => {
       authorText.style.textAlign = "center";
       authorText.style.width = "100%";
       authorText.style.marginTop = "1.2rem";
-      authorText.style.color = "#7c5df0";
+      authorText.style.color = document.body.classList.contains("dark") ? "#ffd700" : "#7c5df0";
     }
-    document.body.appendChild(virtualNode);
+    document.body.appendChild(node);
 
     // Render to PNG
-    const dataUrl = await htmlToImage.toPng(virtualNode, { width: 1080, height: 1080, pixelRatio: 2 });
-    document.body.removeChild(virtualNode);
+    const dataUrl = await htmlToImage.toPng(node, { width: 1080, height: 1080, pixelRatio: 2 });
+    document.body.removeChild(node);
 
-    // Add watermark and ensure text fits
-    const img = new Image();
-    img.src = dataUrl;
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1080;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, 1080, 1080);
-
-      // Watermark
-      ctx.font = "bold 40px Poppins, Arial, sans-serif";
-      ctx.fillStyle = "#7c5df0";
-      ctx.textAlign = "right";
-      ctx.textBaseline = "bottom";
-      ctx.shadowColor = "#fff";
-      ctx.shadowBlur = 2;
-      ctx.fillText("wordsofwisdom.in", 1040, 1050);
-
-      // Show preview modal
-      pngPreviewImg.src = canvas.toDataURL("image/png");
-      pngPreviewModal.classList.add('open');
-      document.body.style.overflow = "hidden";
-
-      // Download/share logic
-      downloadPngBtn.onclick = async function() {
-        canvas.toBlob(async blob => {
-          const file = new File([blob], "wow-quote.png", { type: "image/png" });
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: "WOW Quote" });
-          } else {
-            const a = document.createElement('a');
-            a.href = canvas.toDataURL("image/png");
-            a.download = "wow-quote.png";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-          }
-          pngPreviewModal.classList.remove('open');
-          document.body.style.overflow = "";
-        }, "image/png");
-      };
+    pngPreviewImg.src = dataUrl;
+    pngPreviewModal.classList.add('open');
+    document.body.style.overflow = "hidden";
+    downloadPngBtn.onclick = async function() {
+      const file = await (await fetch(dataUrl)).blob();
+      const pngFile = new File([file], "wow-quote.png", { type: "image/png" });
+      if (navigator.canShare?.({ files: [pngFile] })) {
+        await navigator.share({ files: [pngFile], title: "WOW Quote" });
+      } else {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = "wow-quote.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      pngPreviewModal.classList.remove('open');
+      document.body.style.overflow = "";
     };
   }
   sharePngBtn.addEventListener('click', shareQuoteAsPNG);
@@ -708,18 +722,43 @@ document.addEventListener("DOMContentLoaded", () => {
     streakBadge.textContent = count > 1 ? `🔥 ${count} day streak!` : '';
   }
 
-  // --- Custom Google Forms Feedback Submission ---
+  // --- Custom Google Forms Feedback Submission with Progress Spinner ---
   submitFeedbackBtn.addEventListener('click', () => {
     const feedback = feedbackTextarea.value.trim();
     if (!feedback) return;
+    const submitBtn = submitFeedbackBtn;
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnSpinner = submitBtn.querySelector('.btn-spinner');
+    // Show spinner and disable button
+    btnText.style.display = 'none';
+    btnSpinner.style.display = 'inline-block';
+    submitBtn.disabled = true;
+
+    // Simulate async submission (replace with real submission if needed)
+    setTimeout(() => {
+      btnSpinner.style.display = 'none';
+      btnText.style.display = '';
+      submitBtn.disabled = false;
+      feedbackSuccess.style.display = '';
+      setTimeout(() => {
+        feedbackSuccess.style.display = 'none';
+        feedbackModal.classList.remove('open');
+        document.body.style.overflow = "";
+      }, 1800);
+    }, 1200);
+
+    // Uncomment and use this for real Google Forms submission:
+    /*
     const formData = new FormData();
     formData.append("entry.1612485699", feedback);
-
     fetch("https://docs.google.com/forms/d/e/1FAIpQLSfv0KdY_skqOC2KF97FgMUqhDzAEe8Z4Jk3ZtuG6freUO-Y1A/formResponse", {
       method: "POST",
       mode: "no-cors",
       body: formData
     }).then(() => {
+      btnSpinner.style.display = 'none';
+      btnText.style.display = '';
+      submitBtn.disabled = false;
       feedbackSuccess.style.display = '';
       setTimeout(() => {
         feedbackSuccess.style.display = 'none';
@@ -728,7 +767,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 1800);
     }).catch(() => {
       alert("Failed to send feedback. Please try again.");
+      btnSpinner.style.display = 'none';
+      btnText.style.display = '';
+      submitBtn.disabled = false;
     });
+    */
   });
 
   // --- Feedback Modal Open/Close ---
@@ -737,6 +780,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.style.overflow = "hidden";
     feedbackTextarea.value = '';
     feedbackSuccess.style.display = 'none';
+    const submitBtn = feedbackModal.querySelector('.feedback-submit-btn');
+    submitBtn.disabled = false;
+    submitBtn.querySelector('.btn-spinner').style.display = 'none';
+    submitBtn.querySelector('.btn-text').style.display = '';
   });
   closeFeedbackModal.addEventListener('click', () => {
     feedbackModal.classList.remove('open');
@@ -867,3 +914,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showStreak(streak.count);
   })();
 });
+
+
+
