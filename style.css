@@ -331,12 +331,12 @@ main {
 }
 .action-buttons .icon-btn:nth-child(2) { margin-left: 0; margin-right: 0; }
 
-/* Share Menu - overlays above everything, minimal height, above share icon */
+/* Share Menu - overlays above share icon, minimal height, circular green hover */
 #shareMenu {
   display: none;
   position: absolute;
   left: 50%;
-  bottom: 120%;
+  top: 110%;
   transform: translateX(-50%);
   background: var(--card);
   border-radius: 1.2rem;
@@ -485,6 +485,7 @@ body.dark .share-option:hover, body.dark .share-option:focus {
   justify-content: flex-end;
   align-items: center;
   margin-top: 0.2rem;
+  position: static;
 }
 .fav-quote button {
   background: none;
@@ -502,7 +503,7 @@ body.dark .share-option:hover, body.dark .share-option:focus {
   color: var(--gold);
 }
 
-/* Submit a Quote Modal */
+/* Modal submit button */
 #customQuoteForm button[type="submit"] {
   display: block;
   margin: 1.5rem auto 0 auto;
