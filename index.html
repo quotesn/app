@@ -23,7 +23,6 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
   />
@@ -87,6 +86,9 @@
       </div>
     </div>
     <div class="action-buttons">
+      <span id="undoBtn" class="icon-btn undo-btn" title="Previous Quote" aria-label="Previous Quote" style="display:none;">
+        <i class="fa-solid fa-rotate-left"></i>
+      </span>
       <button id="shareBtn" class="icon-btn" title="Share" aria-label="Share">
         <i class="fa-solid fa-share-nodes"></i>
         <span class="btn-tooltip">Share</span>
@@ -113,10 +115,10 @@
           <i class="fa-brands fa-whatsapp"></i>
         </button>
       </div>
+      <button id="generateBtn" class="generate-btn" title="Inspire Me" aria-label="Generate new quote">
+        <i class="fa-solid fa-wand-magic-sparkles magic-wand-icon"></i>
+      </button>
     </div>
-    <button id="generateBtn" class="generate-btn" title="Inspire Me" aria-label="Generate new quote">
-      <i class="fa-solid fa-wand-magic-sparkles"></i>
-    </button>
     <div id="submitQuoteModal" class="modal" aria-modal="true" role="dialog">
       <div class="modal-content">
         <button class="close-btn" id="closeSubmitQuoteModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
@@ -139,12 +141,31 @@
         <button id="closeFavModalLarge" class="large-close-btn" aria-label="Close Favorites"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
+    <!-- Feedback Button -->
+    <button id="feedbackBtn" class="feedback-btn" title="Send Feedback" aria-label="Send Feedback">
+      <i class="fa-regular fa-message"></i>
+    </button>
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal" aria-modal="true" role="dialog">
+      <div class="modal-content feedback-modal-content">
+        <button class="close-btn" id="closeFeedbackModal" aria-label="Close Feedback"><i class="fa-solid fa-xmark"></i></button>
+        <h2>Feedback</h2>
+        <textarea id="feedbackTextarea" maxlength="400" placeholder="Your feedback..."></textarea>
+        <button id="submitFeedbackBtn" class="feedback-submit-btn">Send</button>
+        <div class="feedback-links">
+          <a href="https://www.wordsofwisdom.in/p/privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>
+          <a href="https://www.wordsofwisdom.in/p/terms-and-conditions.html" target="_blank" rel="noopener">T&amp;C</a>
+        </div>
+        <div id="feedbackSuccess" class="feedback-success">Thank you for your feedback!</div>
+      </div>
+    </div>
   </main>
   <footer>
     <div>
       © 2025 <a href="https://www.wordsofwisdom.in/p/about.html" class="author-link" target="_blank" rel="noopener">Words of Wisdom</a>
     </div>
   </footer>
+  <audio id="magicSound" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa0e4c.mp3" preload="auto"></audio>
   <script>
     window.addEventListener('load', function() {
       setTimeout(function() {
