@@ -52,6 +52,234 @@ body {
   transition: background .4s, color .4s;
 }
 
+
+/* Embossed/neomorphic button style */
+
+.embossed-btn, .feedback-submit-btn, #customQuoteForm button[type="submit"] {
+
+  background: var(--primary);
+
+  color: #fff;
+
+  font-size: 1.08rem;
+
+  font-weight: 500;
+
+  border: none;
+
+  border-radius: 2rem;
+
+  padding: 0.7rem 0;
+
+  width: 60%;
+
+  margin: 1.5rem auto 0 auto;
+
+  box-shadow: 4px 4px 16px var(--sh-dark), -4px -4px 16px var(--sh-light), 0 1px 0 #fff inset;
+
+  cursor: pointer;
+
+  outline: none;
+
+  position: relative;
+
+  display: block;
+
+  transition: background .2s, color .2s, box-shadow .2s;
+
+  user-select: none;
+
+  text-align: center;
+
+}
+
+.embossed-btn:active, .feedback-submit-btn:active, #customQuoteForm button[type="submit"]:active {
+
+  background: #43b581;
+
+  color: #fff;
+
+  box-shadow: 0 2px 8px #43b581, 0 1px 0 #fff inset;
+
+}
+
+body.dark .embossed-btn, body.dark .feedback-submit-btn, body.dark #customQuoteForm button[type="submit"] {
+
+  background: #a084f7;
+
+  color: #fff;
+
+  box-shadow: 0 4px 16px #2a2450, 0 1px 0 #232336 inset;
+
+}
+
+body.dark .embossed-btn:active, body.dark .feedback-submit-btn:active, body.dark #customQuoteForm button[type="submit"]:active {
+
+  background: #ffd700;
+
+  color: #232336;
+
+  box-shadow: 0 2px 8px #ffd700, 0 1px 0 #232336 inset;
+
+}
+
+.embossed-btn[disabled], .feedback-submit-btn[disabled], #customQuoteForm button[disabled] {
+
+  opacity: 0.7;
+
+  pointer-events: none;
+
+}
+
+
+
+/* Spinner inside button */
+
+.btn-spinner {
+
+  display: inline-block;
+
+  margin-left: 0.6em;
+
+  font-size: 1.1em;
+
+  vertical-align: middle;
+
+}
+
+.btn-spinner i {
+
+  margin-right: 0.4em;
+
+}
+
+
+
+/* Hide spinner by default, show when needed */
+
+.btn-spinner[aria-hidden="true"] {
+
+  display: none;
+
+}
+
+
+
+/* --- PNG Render Box for Image Export --- */
+
+#pngRenderBox {
+
+  display: none;
+
+  position: absolute;
+
+  left: -9999px;
+
+  top: 0;
+
+  width: 1080px;
+
+  height: 1080px;
+
+  background: #fff;
+
+  color: #232336;
+
+  border-radius: 40px;
+
+  box-shadow: 0 2px 32px #0002;
+
+  padding: 120px 80px 160px 80px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+
+  font-family: 'Playfair Display', serif, Poppins, sans-serif;
+
+}
+
+body.dark #pngRenderBox {
+
+  background: #232336;
+
+  color: #fff;
+
+}
+
+#pngRenderBox .png-quote {
+
+  font-size: 2.7rem;
+
+  text-align: center;
+
+  width: 100%;
+
+  word-break: break-word;
+
+  line-height: 1.3;
+
+  margin-bottom: 2.2rem;
+
+  font-family: 'Playfair Display', serif, Poppins, sans-serif;
+
+  font-weight: 700;
+
+}
+
+#pngRenderBox .png-author {
+
+  font-size: 1.7rem;
+
+  text-align: center;
+
+  width: 100%;
+
+  margin-top: 1.2rem;
+
+  color: #7c5df0;
+
+  font-family: Poppins, sans-serif;
+
+  font-weight: 500;
+
+}
+
+body.dark #pngRenderBox .png-author {
+
+  color: #ffd700;
+
+}
+
+#pngRenderBox .png-watermark {
+
+  position: absolute;
+
+  right: 60px;
+
+  bottom: 60px;
+
+  font-size: 1.6rem;
+
+  color: #7c5df0;
+
+  opacity: 0.82;
+
+  font-family: Poppins, sans-serif;
+
+  font-weight: bold;
+
+}
+
+body.dark #pngRenderBox .png-watermark {
+
+  color: #ffd700;
+
+}
 /* Header */
 header {
   width: 100vw;
