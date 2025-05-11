@@ -205,10 +205,10 @@
 
   <div id="quoteImagePreviewContainer" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 3000; padding: 1rem;">
     <div id="quoteImageWrapper">
-      <p id="imageQuoteText" style="font-size: 28px; font-family: 'Playfair Display', serif; margin-bottom: 20px; word-wrap: break-word;"></p>
-      <p id="imageQuoteAuthor" style="font-size: 20px; font-family: 'Poppins', sans-serif; margin-bottom: 30px;"></p>
-      <p id="imageWatermark" style="position: absolute; bottom: 15px; right: 20px; font-size: 14px; font-family: 'Poppins', sans-serif;">wordsofwisdom.in</p>
-      <div style="margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+      <div id="quoteImageContent">
+        <p id="imageQuoteText"></p> <p id="imageQuoteAuthor"></p> <p id="imageWatermark">wordsofwisdom.in</p>
+      </div>
+      <div class="image-buttons-container" style="margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
         <button id="downloadImageBtn" class="embossed-button" disabled>Download</button>
         <button id="shareGeneratedImageBtn" class="embossed-button" disabled>Share</button>
         <button id="closeImagePreviewBtn" class="embossed-button" style="background-color: #777;">Close</button>
