@@ -4,7 +4,7 @@
   margin: 0;
   padding: 0;
   transition: .3s;
-  font-family: Poppins, sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 :root {
@@ -14,6 +14,7 @@
   --light: #555;
   --primary: #7c5df0;
   --gold: #FFD700;
+  --green-accent: #43b581; /* Added for success messages and fav animation */
   --glow: rgba(124,93,240,0.6);
   --sh-light: rgba(255,255,255,0.7);
   --sh-dark: rgba(136,165,191,0.2);
@@ -24,6 +25,7 @@
   --toggle-checked-bg: #7c5df0;
   --toggle-knob: #fff;
   --toggle-shadow: 0 2px 8px rgba(124,93,240,0.08);
+  --success-green: #28a745; /* Green for success messages */
 }
 
 body.dark {
@@ -41,13 +43,14 @@ body.dark {
   --toggle-checked-bg: #ffd700;
   --toggle-knob: #232336;
   --toggle-shadow: 0 2px 8px rgba(255,215,0,0.13);
+  --success-green: #34c759; /* Lighter green for dark mode */
 }
 
 body {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  font-family: Poppins, sans-serif;
+  font-family: 'Poppins', sans-serif;
   padding-bottom: 7rem;
   transition: background .4s, color .4s;
 }
@@ -63,32 +66,54 @@ header {
   z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0;
+  justify-content: space-between; /* Changed for better spacing */
+  padding: 0 1rem; /* Added horizontal padding */
 }
+
+.header-center-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Space between title and streak badge */
+  position: absolute; /* Center the title and streak */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 header h1 {
   font-family: 'Playfair Display', serif;
   color: var(--primary);
   font-size: 1.5rem;
-  margin: 0 auto;
+  margin: 0; /* Removed margin auto */
   pointer-events: none;
   user-select: none;
+  white-space: nowrap;
 }
+
 .streak-badge {
   color: var(--gold);
-  margin-left: 1rem;
   font-weight: bold;
-  font-size: 1.08rem;
+  font-size: 0.9rem; /* Adjusted size */
   letter-spacing: 0.01em;
+  background-color: var(--card);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.8rem;
+  box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light);
+  white-space: nowrap;
+  display: none; /* Initially hidden, shown by JS */
 }
+body.dark .streak-badge {
+    box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light);
+}
+
+
 .home-btn {
-  position: absolute;
-  left: 1.5rem;
+  /* position: absolute; */ /* No longer absolute */
+  /* left: 1.5rem; */
   color: var(--primary);
   font-size: 1.3rem;
   text-decoration: none;
-  top: 50%;
-  transform: translateY(-50%);
+  /* top: 50%; */
+  /* transform: translateY(-50%); */
   z-index: 2;
   border-radius: 50% !important;
   width: 2.6rem;
@@ -104,10 +129,10 @@ header h1 {
 
 /* Theme toggle */
 .toggle-wrap {
-  position: absolute;
-  right: 1.2rem;
-  top: 50%;
-  transform: translateY(-50%);
+  /* position: absolute; */ /* No longer absolute */
+  /* right: 1.2rem; */
+  /* top: 50%; */
+  /* transform: translateY(-50%); */
   z-index: 2;
 }
 .theme-toggle {
@@ -417,9 +442,9 @@ main {
   transition: background 0.2s, color 0.2s;
 }
 .share-option:hover, .share-option:focus {
-  background: #43b581;
+  background: var(--green-accent);
   color: #fff;
-  box-shadow: 0 0 0 2px #43b581aa;
+  box-shadow: 0 0 0 2px var(--green-accent)aa;
 }
 body.dark .share-option:hover, body.dark .share-option:focus {
   background: var(--gold);
@@ -434,7 +459,7 @@ body.dark .share-option:hover, body.dark .share-option:focus {
   display: flex; align-items: center; justify-content: center;
   font-size: 1.6rem; color: var(--primary);
   position: relative; cursor: pointer;
-  transition: background .2s, color .2s, box-shadow .2s;
+  transition: background .2s, color .2s, box-shadow .2s, transform 0.2s ease-out;
   box-shadow: none;
 }
 .icon-btn:focus { box-shadow: 0 0 0 2px var(--primary);}
@@ -450,7 +475,47 @@ body.dark .share-option:hover, body.dark .share-option:focus {
 .icon-btn:hover .btn-tooltip, .icon-btn:focus .btn-tooltip {
   opacity: 1; transform: translateX(-50%) scale(1);
 }
-.icon-btn.copied-feedback { color: #43b581; }
+.icon-btn.copied-feedback { color: var(--green-accent); }
+
+/* Favorite button specific styles */
+#favBtn i.fa-solid.fa-heart { /* Solid heart when favorited */
+  color: var(--gold); /* Gold color when favorited */
+  animation: heartBeat 0.5s ease-in-out;
+}
+#favBtn i.fa-regular.fa-heart { /* Regular heart when not favorited */
+    color: var(--primary);
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.saved-popup {
+  position: absolute;
+  bottom: 120%; /* Position above the button */
+  left: 50%;
+  transform: translateX(-50%) translateY(10px); /* Start slightly lower */
+  background-color: var(--green-accent);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0.3s;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+#favBtn.show-saved-popup .saved-popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0); /* Move to final position */
+}
+
 
 /* Generate button */
 .generate-btn {
@@ -476,25 +541,25 @@ body.dark .share-option:hover, body.dark .share-option:focus {
   user-select: none;
 }
 .generate-btn:active, .generate-btn.touched {
-  background: #43b581;
+  background: var(--green-accent);
   color: #fff;
-  box-shadow: 0 0 30px #43b581, 0 0 20px #ffd700;
+  box-shadow: 0 0 30px var(--green-accent), 0 0 20px var(--gold);
 }
 body.dark .generate-btn:active,
 body.dark .generate-btn.touched {
-  background: #ffd700;
+  background: var(--gold);
   color: #222;
-  box-shadow: 0 0 30px #ffd700, 0 0 20px #43b581;
+  box-shadow: 0 0 30px var(--gold), 0 0 20px var(--green-accent);
 }
 .magic-wand-icon {
   transition: color 0.18s, transform 0.18s;
 }
 .magic-wand-icon.animated {
   animation: wandspin 0.7s cubic-bezier(.22,.68,.54,1.01);
-  color: #43b581;
+  color: var(--green-accent);
 }
 body.dark .magic-wand-icon.animated {
-  color: #ffd700;
+  color: var(--gold);
 }
 @keyframes wandspin {
   0% { transform: rotate(0deg) scale(1);}
@@ -511,6 +576,19 @@ body.dark .magic-wand-icon.animated {
 
 /* Responsive */
 @media (max-width: 600px) {
+  header {
+    padding: 0 0.8rem; /* Adjust header padding for smaller screens */
+  }
+  .header-center-content {
+    gap: 0.3rem;
+  }
+  header h1 {
+    font-size: 1.3rem;
+  }
+  .streak-badge {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+  }
   .generate-btn {
     bottom: 6.5rem;
     width: 4rem;
@@ -523,6 +601,31 @@ body.dark .magic-wand-icon.animated {
     font-size: 1.1rem;
   }
 }
+@media (max-width: 380px) { /* Even smaller screens */
+    header h1 {
+        font-size: 1.1rem;
+    }
+    .streak-badge {
+        display: none; /* Hide streak badge on very small screens if it causes overflow */
+    }
+    .home-btn {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 1.1rem;
+    }
+    .toggle-wrap .theme-toggle {
+        width: 40px;
+        height: 22px;
+    }
+    .toggle-wrap .slider:before {
+        height: 18px;
+        width: 18px;
+    }
+    .toggle-wrap .theme-toggle input:checked + .slider:before {
+        transform: translateX(18px);
+    }
+}
+
 
 /* Favorites Modal */
 .fav-modal-content {
@@ -589,35 +692,80 @@ body.dark .magic-wand-icon.animated {
   color: var(--gold);
 }
 
-/* Submit Quote Form */
-#customQuoteForm button[type="submit"] {
+/* Embossed Button Style */
+.embossed-button {
   display: block;
   margin: 1.5rem auto 0 auto;
   width: 60%;
   background: var(--primary);
   color: #fff;
   font-size: 1.08rem;
-  font-weight: 500;
+  font-weight: 600; /* Slightly bolder */
   border: none;
   border-radius: 2rem;
-  padding: 0.7rem 0;
-  box-shadow: 0 4px 16px var(--sh-dark), 0 1px 0 #fff inset;
+  padding: 0.8rem 0; /* Increased padding */
+  box-shadow:
+    inset 2px 2px 5px rgba(255, 255, 255, 0.3), /* Inner light shadow */
+    inset -2px -2px 5px rgba(0, 0, 0, 0.2),    /* Inner dark shadow */
+    4px 4px 8px var(--sh-dark),               /* Outer shadow */
+    -4px -4px 8px var(--sh-light);            /* Outer light shadow for neomorphism */
   cursor: pointer;
-  transition: background .2s, color .2s, box-shadow .2s;
+  transition: background .2s, color .2s, box-shadow .2s, transform 0.1s;
   outline: none;
   position: relative;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.2); /* Subtle text shadow for depth */
 }
-body.dark #customQuoteForm button[type="submit"] {
-  background: #a084f7;
+
+.embossed-button:hover,
+.embossed-button:focus {
+  background: var(--primary-hover, #6a46e0); /* Define --primary-hover or use a slightly darker/lighter shade */
   color: #fff;
-  box-shadow: 0 4px 16px #2a2450, 0 1px 0 #232336 inset;
+  box-shadow:
+    inset 1px 1px 3px rgba(255, 255, 255, 0.4),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.3),
+    2px 2px 5px var(--sh-dark),
+    -2px -2px 5px var(--sh-light);
+  transform: translateY(1px); /* Slight press effect */
 }
-#customQuoteForm button[type="submit"]:hover,
-#customQuoteForm button[type="submit"]:focus {
-  background: #b39ddb;
-  color: #fff;
-  box-shadow: 0 6px 20px var(--primary), 0 1px 0 #fff inset;
+
+.embossed-button:active {
+  background: var(--primary-active, #5e3cc0); /* Define --primary-active or use a darker shade */
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.3),    /* Stronger inner dark shadow */
+    inset -2px -2px 5px rgba(255, 255, 255, 0.2); /* Stronger inner light shadow */
+  transform: translateY(2px); /* More pronounced press effect */
 }
+
+
+body.dark .embossed-button {
+  background: var(--primary); /* Use the dark theme primary color */
+  color: var(--text); /* Dark theme text color */
+  box-shadow:
+    inset 2px 2px 5px rgba(255, 255, 255, 0.1),  /* Softer inner light for dark */
+    inset -2px -2px 5px rgba(0, 0, 0, 0.4),     /* Stronger inner dark for dark */
+    4px 4px 10px rgba(0,0,0,0.5),                /* Darker outer shadow */
+    -4px -4px 10px rgba(255,255,255,0.05);       /* Very subtle outer light */
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
+}
+
+body.dark .embossed-button:hover,
+body.dark .embossed-button:focus {
+  background: var(--primary-hover-dark, #c7aefb); /* Lighter shade for hover in dark */
+  box-shadow:
+    inset 1px 1px 3px rgba(255, 255, 255, 0.15),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.5),
+    2px 2px 6px rgba(0,0,0,0.6),
+    -2px -2px 6px rgba(255,255,255,0.07);
+}
+body.dark .embossed-button:active {
+  background: var(--primary-active-dark, #d0bcfc);
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+}
+
+
+/* Submit Quote Form */
 #customQuoteForm input[type="text"] {
   background: var(--card);
   border: 1.5px solid var(--primary);
@@ -628,32 +776,36 @@ body.dark #customQuoteForm button[type="submit"] {
   font-size: 1.03rem;
   box-shadow: 2px 2px 8px var(--sh-dark), -2px -2px 8px var(--sh-light);
   transition: border .2s;
+  color: var(--text); /* Ensure text color is inherited */
 }
 #customQuoteForm input[type="text"]:focus {
   border: 2px solid var(--primary);
   outline: none;
 }
-#quoteFormSuccess {
-  display: none;
-  color: var(--primary);
+
+.form-success-message { /* General style for success messages */
+  display: none; /* Hidden by default */
+  color: var(--success-green) !important; /* Important to override other styles if needed */
   margin-top: 1.2rem;
   text-align: center;
-  font-size: 1.01rem;
+  font-size: 1.05rem; /* Slightly larger */
   font-weight: 500;
 }
 
+
 body.dark #submitQuoteModal input,
 body.dark #submitQuoteModal label,
-body.dark #submitQuoteModal h2,
-body.dark #submitQuoteModal button,
-body.dark #submitQuoteModal #quoteFormSuccess {
-  color: #fff !important;
-  background: #232336 !important;
-  border-color: #b39ddb !important;
+body.dark #submitQuoteModal h2
+/* body.dark #submitQuoteModal button - Handled by .embossed-button specific dark styles */
+{
+  color: var(--text) !important; /* Use dark theme text color */
+  background-color: var(--card) !important; /* Use dark theme card background */
+  border-color: var(--primary) !important; /* Use dark theme primary for borders */
 }
 body.dark #submitQuoteModal input::placeholder {
-  color: #b39ddb;
+  color: var(--light); /* Dark theme light color for placeholder */
 }
+
 
 /* Feedback Button & Modal */
 .feedback-btn {
@@ -699,20 +851,11 @@ body.dark #submitQuoteModal input::placeholder {
   background: var(--card);
   color: var(--text);
 }
-.feedback-submit-btn {
+.feedback-submit-btn { /* This is now .embossed-button */
   width: 80%;
-  background: var(--primary);
-  color: #fff;
-  font-size: 1.08rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 2rem;
-  padding: 0.7rem 0;
-  box-shadow: 0 4px 16px var(--sh-dark), 0 1px 0 #fff inset;
-  cursor: pointer;
-  margin-bottom: 1rem;
-  transition: background .2s, color .2s, box-shadow .2s;
+  margin-bottom: 1rem; /* Keep margin from original */
 }
+
 .feedback-links {
   width: 100%;
   display: flex;
@@ -726,21 +869,20 @@ body.dark #submitQuoteModal input::placeholder {
   transition: color 0.2s;
 }
 .feedback-links a:hover { color: var(--gold);}
-.feedback-success {
-  display: none;
-  color: #43b581;
-  font-size: 1.02rem;
-  font-weight: 500;
-  margin-top: 0.5rem;
-  text-align: center;
-}
+
+
 body.dark #feedbackTextarea,
-body.dark .feedback-modal-content,
-body.dark .feedback-submit-btn {
-  background: #232336 !important;
-  color: #fff !important;
-  border-color: #b39ddb !important;
+body.dark .feedback-modal-content
+/* body.dark .feedback-submit-btn - Handled by .embossed-button specific dark styles */
+{
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--primary) !important;
 }
+body.dark #feedbackTextarea::placeholder {
+    color: var(--light);
+}
+
 
 /* Footer */
 footer {
