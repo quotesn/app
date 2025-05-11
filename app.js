@@ -53,6 +53,37 @@ document.addEventListener("DOMContentLoaded", () => {
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
+// --- Voice Command Support ---
+function setupVoiceCommands() {
+  if (!('webkitSpeechRecognition' in window)) return;
+  const recognition = new webkitSpeechRecognition();
+  recognition.continuous = false;
+  recognition.lang = 'en-US';
+  voiceBtn.addEventListener('click', () => {
+    recognition.start();
+    showToast("Listening...", "info");
+    voiceBtn.classList.add('listening');
+  });
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.toLowerCase();
+    if (transcript.includes('new quote') || transcript.includes('inspire')) {
+      genBtn.click();
+    } else if (transcript.includes('favorite') || transcript.includes('save')) {
+      favBtn.click();
+    } else if (transcript.includes('share')) {
+      shareBtn.click();
+    } else if (transcript.includes('copy')) {
+      copyBtn.click();
+    } else if (transcript.includes('dark mode')) {
+      if (!document.body.classList.contains('dark')) themeSw.click();
+    } else if (transcript.includes('light mode')) {
+      if (document.body.classList.contains('dark')) themeSw.click();
+    }
+    voiceBtn.classList.remove('listening');
+  };
+  recognition.onend = () => voiceBtn.classList.remove('listening');
+}
+setupVoiceCommands();
 
   // --- Banner themes and styles ---
   const bannerThemes = [
@@ -395,15 +426,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Submit Quote Form Handling with Progress Spinner ---
-  customQuoteForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const submitBtn = customQuoteForm.querySelector('button[type="submit"]');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const btnSpinner = submitBtn.querySelector('.btn-spinner');
-    // Show spinner and disable button
-    btnText.style.display = 'none';
-    btnSpinner.style.display = 'inline-block';
-    submitBtn.disabled = true;
+customQuoteForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const submitBtn = customQuoteForm.querySelector('button[type="submit"]');
+  const btnText = submitBtn.querySelector('.btn-text');
+  const btnSpinner = submitBtn.querySelector('.btn-spinner');
+  btnText.style.display = 'none';
+  btnSpinner.style.display = 'inline-block';
+  submitBtn.disabled = true;
+
+  setTimeout(() => {
+    btnSpinner.style.display = 'none';
+    btnText.style.display = '';
+    submitBtn.disabled = false;
+    quoteFormSuccess.style.display = 'block';
+    setTimeout(() => {
+      quoteFormSuccess.style.display = 'none';
+      submitQuoteModal.classList.remove('open');
+      document.body.style.overflow = "";
+    }, 1800);
+    customQuoteForm.reset();
+  }, 1200);
+});
 
     // Simulate async submission (replace with real submission if needed)
     setTimeout(() => {
@@ -660,12 +704,61 @@ document.addEventListener("DOMContentLoaded", () => {
       pngPreviewModal.classList.remove('open');
       document.body.style.overflow = "";
     };
+async function shareAsPng() {
+  try {
+    pngRenderBox.innerHTML = "";
+    pngRenderBox.style.display = "flex";
+    pngRenderBox.style.position = "absolute";
+    pngRenderBox.style.left = "-9999px";
+    pngRenderBox.style.top = "0";
+    pngRenderBox.style.width = "1080px";
+    pngRenderBox.style.height = "1080px";
+    pngRenderBox.style.background = document.body.classList.contains('dark') ? "#232336" : "#fff";
+    pngRenderBox.style.color = document.body.classList.contains('dark') ? "#fff" : "#232336";
+    pngRenderBox.style.borderRadius = "40px";
+    pngRenderBox.style.boxShadow = "0 2px 32px #0002";
+    pngRenderBox.style.padding = "120px 80px 160px 80px";
+    pngRenderBox.style.fontFamily = "'Playfair Display', serif, Poppins, sans-serif";
+    pngRenderBox.style.justifyContent = "center";
+    pngRenderBox.style.alignItems = "center";
+    pngRenderBox.style.fontWeight = "700";
+    pngRenderBox.innerHTML = `
+      <div class="png-quote" style="font-size:2.7rem;line-height:1.3;text-align:center;width:100%;word-break:break-word;margin-bottom:2.2rem;">
+        ${qText.textContent}
+      </div>
+      <div class="png-author" style="font-size:1.7rem;text-align:center;width:100%;margin-top:1.2rem;color:${document.body.classList.contains('dark') ? "#ffd700" : "#7c5df0"};">
+        ${qAuth.textContent}
+      </div>
+      <div class="png-watermark" style="position:absolute;right:60px;bottom:60px;font-size:1.6rem;color:${document.body.classList.contains('dark') ? "#ffd700" : "#7c5df0"};opacity:0.82;font-weight:bold;">
+        ${document.body.classList.contains('dark') ? '✨' : '💫'} WOW
+      </div>
+    `;
+    document.body.appendChild(pngRenderBox);
+
+    const canvas = await html2canvas(pngRenderBox, {
+      scale: 3,
+      backgroundColor: null,
+      useCORS: true
+    });
+    pngPreviewImg.src = canvas.toDataURL("image/png");
+    pngPreviewModal.classList.add('open');
+    document.body.style.overflow = "hidden";
+    pngRenderBox.style.display = "none";
+  } catch (err) {
+    showToast("Failed to generate image.", "error");
+    pngRenderBox.style.display = "none";
   }
-  sharePngBtn.addEventListener('click', shareQuoteAsPNG);
-  closePngPreviewModal.onclick = function() {
-    pngPreviewModal.classList.remove('open');
-    document.body.style.overflow = "";
-  };
+}
+downloadPngBtn.addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = `wow-quote-${Date.now()}.png`;
+  link.href = pngPreviewImg.src;
+  link.click();
+});
+closePngPreviewModal.addEventListener('click', () => {
+  pngPreviewModal.classList.remove('open');
+  document.body.style.overflow = "";
+});
 
   // --- Copy logic ---
   copyBtn.addEventListener("click", () => {
@@ -723,16 +816,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Custom Google Forms Feedback Submission with Progress Spinner ---
-  submitFeedbackBtn.addEventListener('click', () => {
-    const feedback = feedbackTextarea.value.trim();
-    if (!feedback) return;
-    const submitBtn = submitFeedbackBtn;
-    const btnText = submitBtn.querySelector('.btn-text');
-    const btnSpinner = submitBtn.querySelector('.btn-spinner');
-    // Show spinner and disable button
-    btnText.style.display = 'none';
-    btnSpinner.style.display = 'inline-block';
-    submitBtn.disabled = true;
+submitFeedbackBtn.addEventListener("click", () => {
+  const btnText = submitFeedbackBtn.querySelector('.btn-text');
+  const btnSpinner = submitFeedbackBtn.querySelector('.btn-spinner');
+  btnText.style.display = 'none';
+  btnSpinner.style.display = 'inline-block';
+  submitFeedbackBtn.disabled = true;
+
+  setTimeout(() => {
+    btnSpinner.style.display = 'none';
+    btnText.style.display = '';
+    submitFeedbackBtn.disabled = false;
+    feedbackSuccess.style.display = "block";
+    setTimeout(() => {
+      feedbackModal.classList.remove('open');
+      feedbackSuccess.style.display = "none";
+      document.body.style.overflow = "";
+    }, 1500);
+  }, 1000);
+});
 
     // Simulate async submission (replace with real submission if needed)
     setTimeout(() => {
@@ -870,6 +972,29 @@ document.addEventListener("DOMContentLoaded", () => {
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     return Object.entries(usage).sort((a,b) => b[1]-a[1])[0]?.[0];
   }
+
+  // --- Daily Quote Notifications ---
+if ('Notification' in window && Notification.permission !== 'denied') {
+  Notification.requestPermission();
+}
+function sendDailyQuoteNotification() {
+  if (Notification.permission === 'granted') {
+    const text = `${qText.textContent} ${qAuth.textContent}`.trim();
+    new Notification('WOW Quote of the Day', { body: text });
+  }
+}
+function scheduleDailyNotification() {
+  const now = new Date();
+  const target = new Date();
+  target.setHours(9, 0, 0, 0);
+  if (now > target) target.setDate(target.getDate() + 1);
+  setTimeout(() => {
+    sendDailyQuoteNotification();
+    setInterval(sendDailyQuoteNotification, 24 * 60 * 60 * 1000);
+  }, target - now);
+}
+scheduleDailyNotification();
+
 
   // --- Daily Quote Notifications ---
   if ('Notification' in window && Notification.permission !== 'denied') {
