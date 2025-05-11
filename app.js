@@ -33,36 +33,48 @@ document.addEventListener("DOMContentLoaded", () => {
     feedbackModal = document.getElementById('feedbackModal'),
     closeFeedbackModal = document.getElementById('closeFeedbackModal'),
     feedbackTextarea = document.getElementById('feedbackTextarea'),
-    submitFeedbackBtn = document.getElementById('submitFeedbackBtn'),
-    feedbackSuccess = document.getElementById('feedbackSuccess'),
-    magicSound = document.getElementById('magicSound'),
-    favSound = document.getElementById('favSound');
+    submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+    // feedbackSuccess = document.getElementById('feedbackSuccess'); // Already defined above
 
   // DOM references for Image Generation Modal
   const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer');
   const quoteImageContent = document.getElementById('quoteImageContent'); // The div to capture
   const imageQuoteText = document.getElementById('imageQuoteText');
   const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');
+  const imageWatermark = document.getElementById('imageWatermark'); // Already in HTML, styled by CSS
   const downloadImageBtn = document.getElementById('downloadImageBtn');
   const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
-  const generateImageShareOption = document.getElementById('generateImageShareOption');
+  const generateImageShareOption = document.getElementById('generateImageShareOption'); // Button in shareMenu
+
+  // Audio Element References
+  const appLoadSound = document.getElementById('appLoadSound');
+  const generateSound = document.getElementById('generateSound');
+  const menuClickSound = document.getElementById('menuClickSound');
+  const shareCopySound = document.getElementById('shareCopySound');
+  const saveFavSound = document.getElementById('saveFavSound');
+  const downloadSound = document.getElementById('downloadSound');
+  const undoSound = document.getElementById('undoSound');
+  const themeToggleSound = document.getElementById('themeToggleSound');
+  const notificationSound = document.getElementById('notificationSound');
+  // Keeping original magicSound and favSound as they might be used elsewhere
+  const magicSound = document.getElementById('magicSound'); // Original magic sound
+  const favSound = document.getElementById('favSound'); // Original fav sound
 
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = "inspiration"; // Default category
-  let lastQuote = null;
+  let lastQuote = null; // Stores { text: "...", author: "...", category: "..." }
   let quoteHistory = [];
   let authorMode = false;
   let authorQuotes = [];
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
-  let currentCanvas = null;
-  let originalImageQuoteTextFontSize = ''; // To store original font size
+  let currentCanvas = null; // To store the generated canvas for image share/download
 
-  // --- Banner themes and styles (omitted for brevity, same as before) ---
+  // --- Banner themes and styles ---
   const bannerThemes = [
     {cat: "inspiration",    text: "Ignite fresh ideas to fuel your week."},
     {cat: "motivation",     text: "Power up your ambition and take the lead."},
@@ -124,7 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
     perseverance:   { color: "#6d4c41", icon: "🚀" }
   };
 
-
   function capitalize(str) {
     if (!str) return "";
     return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -152,12 +163,16 @@ document.addEventListener("DOMContentLoaded", () => {
     specialBanner.style.color = style.color && (style.color === "#ffd700" || style.color === "#aeea00") ? "#222" : "#fff";
 
     closeBannerBtn.onclick = () => {
+      // Play menu click sound on banner close
+      if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
       specialBanner.style.display = "none";
       localStorage.setItem("wowBannerDate", todayStr);
       localStorage.removeItem("bannerForceShow");
     };
     setTimeout(() => {
       if(specialBanner.style.display !== "none"){
+          // Play menu click sound on auto banner close
+          if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
           specialBanner.style.display = "none";
           localStorage.setItem("wowBannerDate", todayStr);
           localStorage.removeItem("bannerForceShow");
@@ -187,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return data;
     } catch (e) {
       console.error(`Failed to fetch or parse ${url}:`, e.message);
-      throw e;
+      throw e; // Re-throw to be caught by caller
     }
   }
 
@@ -217,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let pathAttempt1 = originalPath;
             let pathAttempt2 = null;
             if (originalPath && originalPath.startsWith('data/')) {
-                pathAttempt2 = originalPath.substring(5);
+                pathAttempt2 = originalPath.substring(5); // e.g., "quotes_inspiration.json"
             }
 
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
@@ -226,13 +241,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (Array.isArray(data)) {
                         quotes[cat.id] = data;
                         buildAuthorIndex(data, cat.id);
-                        return true;
+                        return true; // Success
                     }
                     console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
-                    return false;
+                    return false; // Failure due to structure
                 } catch (err) {
                     console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed.`);
-                    return false;
+                    return false; // Failure due to fetch/parse
                 }
             };
             quotePromises.push(
@@ -283,7 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderMenu() {
-    // ... (renderMenu function remains the same, omitted for brevity)
     if (!categoryMenu) return;
     categoryMenu.innerHTML = "";
     function renderCategoryList(catArray, parentUl) {
@@ -298,6 +312,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
           categoryMenu.appendChild(sec);
           sec.querySelector('.section-btn').addEventListener('click', function() {
+            // Play menu click sound
+            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             const wrapper = sec.querySelector('.author-search-wrapper');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
@@ -309,6 +325,8 @@ document.addEventListener("DOMContentLoaded", () => {
           favSec.className = "section";
           favSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-heart section-icon" aria-hidden="true"></i>View Favorites</button>`;
           favSec.querySelector(".section-btn").addEventListener("click", () => {
+            // Play menu click sound
+            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             openFavoritesModal();
             closeMenu();
           });
@@ -318,6 +336,8 @@ document.addEventListener("DOMContentLoaded", () => {
           myFavCatSec.className = "section";
           myFavCatSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-star section-icon" aria-hidden="true"></i>Quotes from My Favorites</button>`;
           myFavCatSec.querySelector(".section-btn").addEventListener("click", () => {
+            // Play menu click sound
+            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             selectedCat = "myfavorites";
             authorMode = false;
             if(currentCategory) currentCategory.textContent = "My Favorites";
@@ -331,6 +351,8 @@ document.addEventListener("DOMContentLoaded", () => {
           submitSec.className = "section";
           submitSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-plus section-icon" aria-hidden="true"></i>Submit a Quote</button>`;
           submitSec.querySelector(".section-btn").addEventListener("click", () => {
+             // Play menu click sound
+            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             if(submitQuoteModal) submitQuoteModal.classList.add('open');
             document.body.style.overflow = "hidden";
             if(customQuoteForm) customQuoteForm.reset();
@@ -389,6 +411,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           categoryMenu.appendChild(sec);
           sec.querySelector('.section-btn').addEventListener('click', function() {
+            // Play menu click sound
+            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             const list = sec.querySelector('.section-list');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
@@ -407,6 +431,8 @@ document.addEventListener("DOMContentLoaded", () => {
     categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
       span.addEventListener('click', function(e) {
         e.stopPropagation();
+        // Play menu click sound
+        if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
         const nestedList = this.nextElementSibling;
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', !isExpanded);
@@ -428,6 +454,8 @@ document.addEventListener("DOMContentLoaded", () => {
     categoryMenu.querySelectorAll('.section-list a, .nested-list a').forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
+        // Play menu click sound
+        if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
         selectedCat = link.dataset.cat;
         authorMode = false;
         if(currentCategory) currentCategory.textContent = capitalize(link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim());
@@ -456,6 +484,8 @@ document.addEventListener("DOMContentLoaded", () => {
               li.textContent = authors[nameKey][0].author;
               li.tabIndex = -1;
               li.addEventListener("click", () => {
+                // Play menu click sound
+                if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
                 authorMode = true;
                 authorName = nameKey;
                 authorQuotes = [...authors[nameKey]];
@@ -473,12 +503,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   function openMenu() {
+    // Play menu click sound
+    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     renderMenu();
     if(categoryModal) categoryModal.classList.add("open");
     document.body.style.overflow = "hidden";
     if(closeMenuBtn) closeMenuBtn.focus();
   }
   function closeMenu() {
+    // Play menu click sound
+    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(categoryModal) categoryModal.classList.remove("open");
     document.body.style.overflow = "";
     if(openMenuBtn) openMenuBtn.focus();
@@ -490,13 +524,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if(closeSubmitQuoteModal) closeSubmitQuoteModal.addEventListener('click', () => {
+    // Play menu click sound
+    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(submitQuoteModal) submitQuoteModal.classList.remove('open');
     document.body.style.overflow = "";
   });
 
   if(customQuoteForm) customQuoteForm.addEventListener('submit', function(e) {
-    // ... (form submission logic remains the same, omitted for brevity)
     e.preventDefault();
+    // No specific sound for submit, default click sound might play if not prevented
+
     const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
     const spinner = submitCustomQuoteBtn.querySelector('.loader-spinner');
 
@@ -519,12 +556,13 @@ document.addEventListener("DOMContentLoaded", () => {
           if(quoteFormSuccess) quoteFormSuccess.style.display = 'none';
           if(submitQuoteModal) submitQuoteModal.classList.remove('open');
           document.body.style.overflow = "";
+           // Play notification sound on successful submission
+          if (notificationSound) { notificationSound.currentTime = 0; notificationSound.play().catch(e => console.warn("Audio play failed:", e)); }
         }, 2500);
     }, 1500);
   });
 
   function showQuote(item, cat, fromUndo = false) {
-    // ... (showQuote logic remains the same, omitted for brevity)
     if (!item || (typeof item.text === 'undefined' && typeof item.quote === 'undefined' && typeof item.message === 'undefined')) {
         if(qText) qText.textContent = "No quote available. Try another category or inspire me again!";
         if(qAuth) qAuth.textContent = "";
@@ -570,7 +608,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showAuthorQuote() {
-    // ... (showAuthorQuote logic remains the same, omitted for brevity)
     if (!authorQuotes.length) {
       if(qText) qText.textContent = "No quotes found for this author.";
       if(qAuth) qAuth.textContent = "";
@@ -582,8 +619,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayQuote() {
-    // ... (displayQuote logic remains the same, omitted for brevity)
-     if (authorMode && authorQuotes.length > 0) {
+    if (authorMode && authorQuotes.length > 0) {
       showAuthorQuote();
       return;
     }
@@ -631,7 +667,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(undoBtn) undoBtn.addEventListener("click", () => {
-    // ... (undoBtn logic remains the same, omitted for brevity)
+    // Play undo sound
+    if (undoSound) { undoSound.currentTime = 0; undoSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if (quoteHistory.length > 0) {
       const prev = quoteHistory.shift();
       showQuote(prev, prev.category, true);
@@ -640,11 +677,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function triggerGenerateEffects() {
-    // ... (triggerGenerateEffects logic remains the same, omitted for brevity)
-     if (magicSound) {
-      magicSound.currentTime = 0;
-      magicSound.play().catch(e => console.warn("Audio play failed:", e));
-    }
+    // Play generate sound
+    if (generateSound) { generateSound.currentTime = 0; generateSound.play().catch(e => console.warn("Audio play failed:", e)); }
+    // Original magic sound effect (optional, can remove if generateSound replaces it)
+    // if (magicSound) { magicSound.currentTime = 0; magicSound.play().catch(e => console.warn("Audio play failed:", e)); }
+
     if(quoteBox) quoteBox.classList.add('glow');
     setTimeout(() => { if(quoteBox) quoteBox.classList.remove('glow'); }, 400);
 
@@ -656,10 +693,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if(genBtn) genBtn.classList.add('touched');
     setTimeout(() => {if(genBtn) genBtn.classList.remove('touched');}, 400);
 
+    // Ripple effect for generate button
     const ripple = document.createElement('span');
     ripple.className = 'ripple';
+    // Position ripple at the center of the button
     ripple.style.left = "50%";
     ripple.style.top = "50%";
+    // Add gradient background for the ripple
+    ripple.style.background = 'radial-gradient(circle, #fff 0%, var(--primary) 80%, transparent 100%)';
+     // Add dark mode specific gradient if body has dark class
+    if (document.body.classList.contains('dark')) {
+       ripple.style.background = 'radial-gradient(circle, #fff 0%, var(--gold) 80%, transparent 100%)';
+    }
+
     if(genBtn) genBtn.appendChild(ripple);
     setTimeout(() => ripple.remove(), 700);
   }
@@ -671,34 +717,136 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  document.querySelectorAll('.icon-btn, .feedback-btn, .home-btn').forEach(btn => {
-    // ... (ripple effect logic remains the same, omitted for brevity)
+  // Add default click sound to buttons that don't have specific sounds
+  document.querySelectorAll('.icon-btn:not(#shareBtn):not(#favBtn):not(#copyBtn):not(#undoBtn), .feedback-btn, .home-btn, .category-btn').forEach(btn => {
     btn.style.webkitTapHighlightColor = "transparent";
     btn.addEventListener('click', function(e) {
+      // Play default menu click sound for these buttons
+      if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
+
+      // Existing ripple effect logic
       const rect = btn.getBoundingClientRect();
       const ripple = document.createElement('span');
       ripple.className = 'ripple';
+      // Position ripple based on click coordinates within the button
       ripple.style.left = (e.clientX - rect.left) + 'px';
       ripple.style.top = (e.clientY - rect.top) + 'px';
+
+      // Add specific ripple background if needed, otherwise default from CSS applies
+      // For generateBtn, the gradient is handled in triggerGenerateEffects
+
       btn.appendChild(ripple);
       setTimeout(() => ripple.remove(), 600);
     });
   });
 
-
+  // Add specific click sound for Share, Favorite, and Copy buttons
   if(shareBtn) shareBtn.addEventListener("click", (e) => {
-    // ... (shareBtn logic remains the same, omitted for brevity)
     e.stopPropagation();
+    // Play share/copy sound
+    if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(shareMenu) shareMenu.classList.toggle("open");
     if (shareMenu && shareMenu.classList.contains("open")) {
       setTimeout(() => {
         document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
       }, 0);
     }
+     // Ripple effect for share button
+     const rect = shareBtn.getBoundingClientRect();
+     const ripple = document.createElement('span');
+     ripple.className = 'ripple';
+     ripple.style.left = (e.clientX - rect.left) + 'px';
+     ripple.style.top = (e.clientY - rect.top) + 'px';
+     shareBtn.appendChild(ripple);
+     setTimeout(() => ripple.remove(), 600);
   });
 
+   if(favBtn) favBtn.addEventListener('click', (e) => {
+     // No sound here, sound is played inside the favBtn logic based on save/unsave
+     // Ripple effect for favorite button
+     const rect = favBtn.getBoundingClientRect();
+     const ripple = document.createElement('span');
+     ripple.className = 'ripple';
+     ripple.style.left = (e.clientX - rect.left) + 'px';
+     ripple.style.top = (e.clientY - rect.top) + 'px';
+     favBtn.appendChild(ripple);
+     setTimeout(() => ripple.remove(), 600);
+
+     // Existing favorite logic
+     if (!lastQuote || !lastQuote.text) return;
+
+     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+     const currentQuoteText = lastQuote.text;
+     const currentAuthorText = lastQuote.author;
+
+     const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
+     const isFavorited = favIndex !== -1;
+
+     const savedPopup = favBtn.querySelector('.saved-popup');
+
+     if (isFavorited) {
+       favs.splice(favIndex, 1);
+       if(savedPopup) savedPopup.textContent = "Unsaved";
+     } else {
+       favs.push({ text: currentQuoteText, author: currentAuthorText });
+       // Play save favorite sound ONLY when saving
+       if(saveFavSound) { saveFavSound.currentTime = 0; saveFavSound.play().catch(e => console.warn("Audio play failed", e)); }
+       if(savedPopup) savedPopup.textContent = "Saved!";
+     }
+
+     localStorage.setItem('favQuotes', JSON.stringify(favs));
+     updateFavoriteButtonState();
+
+     if(favBtn) favBtn.classList.add('show-saved-popup');
+     setTimeout(() => {
+         if(favBtn) favBtn.classList.remove('show-saved-popup');
+     }, 1200);
+   });
+
+   if(copyBtn) copyBtn.addEventListener("click", (e) => {
+     // Play share/copy sound
+     if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
+      // Ripple effect for copy button
+     const rect = copyBtn.getBoundingClientRect();
+     const ripple = document.createElement('span');
+     ripple.className = 'ripple';
+     ripple.style.left = (e.clientX - rect.left) + 'px';
+     ripple.style.top = (e.clientY - rect.top) + 'px';
+     copyBtn.appendChild(ripple);
+     setTimeout(() => ripple.remove(), 600);
+
+     // Existing copy logic
+     const quoteContent = qText ? qText.textContent || "" : "";
+     const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
+     const textToCopy = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
+
+     navigator.clipboard.writeText(textToCopy).then(() => {
+       const iconElement = copyBtn.querySelector("i");
+       const originalIcon = iconElement ? iconElement.className : "";
+       if(iconElement) iconElement.className = "fa-solid fa-check";
+       copyBtn.classList.add('copied-feedback');
+       const tooltip = copyBtn.querySelector('.btn-tooltip');
+       const originalTooltipText = tooltip ? tooltip.textContent : '';
+       if(tooltip) tooltip.textContent = "Copied!";
+
+       setTimeout(() => {
+         if(iconElement) iconElement.className = originalIcon;
+         copyBtn.classList.remove('copied-feedback');
+         if(tooltip) tooltip.textContent = originalTooltipText;
+       }, 1500);
+     }).catch(err => {
+       console.error('Failed to copy text: ', err);
+       const tooltip = copyBtn.querySelector('.btn-tooltip');
+       if(tooltip) {
+           const originalTooltipText = tooltip.textContent;
+           tooltip.textContent = "Copy failed!";
+           setTimeout(() => { tooltip.textContent = originalTooltipText; }, 2000);
+       }
+     });
+   });
+
+
   function closeShareMenuOnClickOutside(event) {
-    // ... (closeShareMenuOnClickOutside logic remains the same, omitted for brevity)
     if (shareMenu && shareMenu.classList.contains("open") && !shareMenu.contains(event.target) && event.target !== shareBtn && (shareBtn && !shareBtn.contains(event.target))) {
       shareMenu.classList.remove("open");
     } else if (shareMenu && shareMenu.classList.contains("open")) {
@@ -708,7 +856,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
-    // ... (share options logic remains the same, omitted for brevity)
+    // Add share/copy sound to other share options
+    if (btn.id !== 'generateImageShareOption') {
+         btn.addEventListener('click', function() {
+              if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
+         });
+    }
+
     if (btn.id === 'generateImageShareOption') return;
 
     btn.addEventListener('click', function() {
@@ -738,70 +892,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  if(copyBtn) copyBtn.addEventListener("click", () => {
-    // ... (copyBtn logic remains the same, omitted for brevity)
-    const quoteContent = qText ? qText.textContent || "" : "";
-    const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
-    const textToCopy = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
-
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      const iconElement = copyBtn.querySelector("i");
-      const originalIcon = iconElement ? iconElement.className : "";
-      if(iconElement) iconElement.className = "fa-solid fa-check";
-      copyBtn.classList.add('copied-feedback');
-      const tooltip = copyBtn.querySelector('.btn-tooltip');
-      const originalTooltipText = tooltip ? tooltip.textContent : '';
-      if(tooltip) tooltip.textContent = "Copied!";
-
-      setTimeout(() => {
-        if(iconElement) iconElement.className = originalIcon;
-        copyBtn.classList.remove('copied-feedback');
-        if(tooltip) tooltip.textContent = originalTooltipText;
-      }, 1500);
-    }).catch(err => {
-      console.error('Failed to copy text: ', err);
-      const tooltip = copyBtn.querySelector('.btn-tooltip');
-      if(tooltip) {
-          const originalTooltipText = tooltip.textContent;
-          tooltip.textContent = "Copy failed!";
-          setTimeout(() => { tooltip.textContent = originalTooltipText; }, 2000);
-      }
-    });
-  });
-
-  if(favBtn) favBtn.addEventListener('click', () => {
-    // ... (favBtn logic remains the same, omitted for brevity)
-    if (!lastQuote || !lastQuote.text) return;
-
-    let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
-    const currentQuoteText = lastQuote.text;
-    const currentAuthorText = lastQuote.author;
-
-    const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
-    const isFavorited = favIndex !== -1;
-
-    const savedPopup = favBtn.querySelector('.saved-popup');
-
-    if (isFavorited) {
-      favs.splice(favIndex, 1);
-      if(savedPopup) savedPopup.textContent = "Unsaved";
-    } else {
-      favs.push({ text: currentQuoteText, author: currentAuthorText });
-      if(favSound) favSound.play().catch(e => console.warn("Fav sound play failed", e));
-      if(savedPopup) savedPopup.textContent = "Saved!";
-    }
-
-    localStorage.setItem('favQuotes', JSON.stringify(favs));
-    updateFavoriteButtonState();
-
-    if(favBtn) favBtn.classList.add('show-saved-popup');
-    setTimeout(() => {
-        if(favBtn) favBtn.classList.remove('show-saved-popup');
-    }, 1200);
-  });
-
   function updateFavoriteButtonState() {
-    // ... (updateFavoriteButtonState logic remains the same, omitted for brevity)
     if (!favBtn || !lastQuote || !lastQuote.text) {
         const favIcon = favBtn ? favBtn.querySelector("i") : null;
         if (favIcon) {
@@ -825,7 +916,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(themeSw) {
-    // ... (themeSw logic remains the same, omitted for brevity)
     const savedTheme = localStorage.getItem("wowDark");
     if (savedTheme === "true") {
         themeSw.checked = true;
@@ -834,6 +924,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.classList.remove("dark");
     }
     themeSw.addEventListener("change", () => {
+        // Play theme toggle sound
+        if (themeToggleSound) { themeToggleSound.currentTime = 0; themeToggleSound.play().catch(e => console.warn("Audio play failed:", e)); }
         const isDark = themeSw.checked;
         document.body.classList.toggle("dark", isDark);
         localStorage.setItem("wowDark", isDark);
@@ -842,7 +934,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   function updateStreak() {
-    // ... (updateStreak logic remains the same, omitted for brevity)
     const today = new Date().toISOString().slice(0,10);
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     if (streak.last !== today) {
@@ -862,7 +953,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return d.toISOString().slice(0,10);
   }
   function showStreak(count) {
-    // ... (showStreak logic remains the same, omitted for brevity)
     if (!streakBadge) return;
     if (count > 1) {
         streakBadge.innerHTML = `🔥 <span class="streak-count">${count}</span> day streak!`;
@@ -874,7 +964,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if(submitFeedbackBtn) submitFeedbackBtn.addEventListener('click', async () => {
-    // ... (submitFeedbackBtn logic remains the same, omitted for brevity)
     const feedback = feedbackTextarea ? feedbackTextarea.value.trim() : "";
     if (!feedback) {
         feedbackTextarea.placeholder = "Please enter your feedback first!";
@@ -904,12 +993,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(feedbackSuccess) feedbackSuccess.style.display = 'none';
                 if(feedbackModal) feedbackModal.classList.remove('open');
                 document.body.style.overflow = "";
+                 // Play notification sound on successful submission
+                if (notificationSound) { notificationSound.currentTime = 0; notificationSound.play().catch(e => console.warn("Audio play failed:", e)); }
             }, 2500);
     }, 1500);
   });
 
   if(feedbackBtn) feedbackBtn.addEventListener('click', () => {
-    // ... (feedbackBtn logic remains the same, omitted for brevity)
+    // Play menu click sound
+    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(feedbackModal) feedbackModal.classList.add('open');
     document.body.style.overflow = "hidden";
     if(feedbackTextarea) feedbackTextarea.value = '';
@@ -925,13 +1017,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if(feedbackTextarea) feedbackTextarea.focus();
   });
   if(closeFeedbackModal) closeFeedbackModal.addEventListener('click', () => {
-    // ... (closeFeedbackModal logic remains the same, omitted for brevity)
+    // Play menu click sound
+    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(feedbackModal) feedbackModal.classList.remove('open');
     document.body.style.overflow = "";
   });
 
   function openFavoritesModal() {
-    // ... (openFavoritesModal logic remains the same, omitted for brevity)
+    // Play menu click sound
+    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(favModal) favModal.classList.add('open');
     document.body.style.overflow = "hidden";
     showFavorites();
@@ -939,20 +1033,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (firstFocusable) firstFocusable.focus();
   }
   if(closeFavModal) closeFavModal.addEventListener('click', () => {
-    // ... (closeFavModal logic remains the same, omitted for brevity)
+    // Play menu click sound
+    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(favModal) favModal.classList.remove('open');
     document.body.style.overflow = "";
   });
   if (closeFavModalLarge) {
-    // ... (closeFavModalLarge logic remains the same, omitted for brevity)
     closeFavModalLarge.addEventListener('click', () => {
+        // Play menu click sound
+        if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
         if(favModal) favModal.classList.remove('open');
         document.body.style.overflow = "";
     });
   }
 
   function showFavorites() {
-    // ... (showFavorites logic remains the same, omitted for brevity)
     if (!favQuotesList) return;
     const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favQuotesList.innerHTML = favs.length
@@ -971,6 +1066,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       favQuotesList.querySelectorAll('.remove-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
+            // Play menu click sound (default for these actions)
+            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             const index = parseInt(this.closest('.fav-quote').dataset.index);
             removeFavorite(index);
         });
@@ -978,6 +1075,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       favQuotesList.querySelectorAll('.copy-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
+             // Play share/copy sound
+            if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
             const quoteDiv = this.closest('.fav-quote');
             const index = parseInt(quoteDiv.dataset.index);
             const currentFavs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
@@ -995,6 +1094,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       favQuotesList.querySelectorAll('.share-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
+            // Play share/copy sound
+            if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
             const quoteDiv = this.closest('.fav-quote');
             const index = parseInt(quoteDiv.dataset.index);
             const currentFavs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
@@ -1012,7 +1113,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.removeFavorite = function(idx) {
-    // ... (removeFavorite logic remains the same, omitted for brevity)
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
@@ -1021,7 +1121,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.copyFavorite = function(text, cleanAuthor, buttonElement) {
-    // ... (copyFavorite logic remains the same, omitted for brevity)
     const textToCopy = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
         if(buttonElement){
@@ -1033,8 +1132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.shareFavorite = function(text, cleanAuthor) {
-    // ... (shareFavorite logic remains the same, omitted for brevity)
-     const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
+    const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     if (navigator.share) {
       navigator.share({ title: `Quote by ${cleanAuthor || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
         .catch(err => {
@@ -1043,13 +1141,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     } else {
+      // Fallback to copy if Web Share API is not available
       navigator.clipboard.writeText(shareText).then(() => alert("Quote copied! You can now paste it to share."))
                          .catch(() => alert("Could not copy quote. Please share manually."));
     }
   };
 
   document.addEventListener('keydown', function(e) {
-    // ... (keydown logic remains the same, omitted for brevity)
     if (e.key === "Escape") {
       const openModals = document.querySelectorAll('.modal.open');
       openModals.forEach(modal => {
@@ -1067,14 +1165,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function recordCategoryUse(cat) {
-    // ... (recordCategoryUse logic remains the same, omitted for brevity)
     if (!cat) return;
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     usage[cat] = (usage[cat] || 0) + 1;
     localStorage.setItem('catUsage', JSON.stringify(usage));
   }
   function getMostUsedCategory() {
-    // ... (getMostUsedCategory logic remains the same, omitted for brevity)
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     if (Object.keys(usage).length === 0) return null;
     const sortedUsage = Object.entries(usage).sort(([,a],[,b]) => b-a);
@@ -1083,61 +1179,91 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function requestNotificationPermission() { /* console.log("Placeholder: Request Notification Permission"); */ }
   function sendDailyQuoteNotification() { /* console.log("Placeholder: Send Daily Quote Notification"); */ }
-  function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); */ }
-
-  /**
-   * Adjusts the font size of a text element to fit within its container.
-   * @param {HTMLElement} textEl The text element.
-   * @param {HTMLElement} containerEl The container element.
-   * @param {number} maxFs Max font size in pixels.
-   * @param {number} minFs Min font size in pixels.
-   * @param {number} step Font size adjustment step in pixels.
-   * @param {number} padding Vertical and Horizontal padding within the container to respect.
-   */
-  function adjustFontSizeToFit(textEl, containerEl, maxFs = 72, minFs = 14, step = 1, padding = 25) {
-    if (!textEl || !containerEl) return;
-
-    let currentFs = maxFs;
-    textEl.style.fontSize = currentFs + 'px';
-
-    // Calculate available height and width within the container, considering padding
-    // The padding here is the CSS padding of the containerEl (quoteImageContent)
-    const availableHeight = containerEl.clientHeight - (padding * 2);
-    const availableWidth = containerEl.clientWidth - (padding * 2);
-
-    // Iteratively reduce font size until text fits or minFs is reached
-    while (
-        (textEl.scrollHeight > availableHeight || textEl.scrollWidth > availableWidth) &&
-        currentFs > minFs
-    ) {
-        currentFs -= step;
-        textEl.style.fontSize = currentFs + 'px';
-    }
-    // Final check if even minFs is too large, clamp to minFs
-    // This case should ideally be rare if minFs is chosen well.
-    if ((textEl.scrollHeight > availableHeight || textEl.scrollWidth > availableWidth) && currentFs === minFs) {
-        console.warn("Text still overflows at min font size. Consider reducing text length or minFs.");
-        // Optionally, you could add ellipsis or other overflow handling here if needed,
-        // but for html2canvas, it's best if the text actually fits.
-    }
-  }
+  function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); }
 
 
   // --- Image Generation Feature Logic ---
+
+  // Function to adjust font size to fit the container
+  function adjustFontSizeForImage() {
+      const container = quoteImageContent; // The square div
+      const textElement = imageQuoteText;
+      const authorElement = imageQuoteAuthor;
+      const watermarkElement = imageWatermark;
+
+      // Reset font sizes to a large value to start
+      textElement.style.fontSize = '40px'; // Start large
+      authorElement.style.fontSize = '24px'; // Start large
+
+      // Temporarily make elements visible for measurement if they are hidden
+      const originalContainerDisplay = container.style.display;
+      const originalTextDisplay = textElement.style.display;
+      const originalAuthorDisplay = authorElement.style.display;
+      const originalWatermarkDisplay = watermarkElement.style.display;
+
+      container.style.display = 'flex'; // Ensure container is flex for centering
+      textElement.style.display = 'block';
+      if (lastQuote && lastQuote.author) {
+          authorElement.style.display = 'block';
+      } else {
+          authorElement.style.display = 'none';
+      }
+      watermarkElement.style.display = 'block'; // Ensure watermark is visible for capture
+
+      // Use a loop to reduce font size until content fits
+      let textFontSize = parseInt(getComputedStyle(textElement).fontSize);
+      let authorFontSize = parseInt(getComputedStyle(authorElement).fontSize);
+      const minTextFontSize = 14; // Minimum readable size
+      const minAuthorFontSize = 10; // Minimum readable size
+      const containerHeight = container.clientHeight;
+      const padding = parseInt(getComputedStyle(container).paddingTop) + parseInt(getComputedStyle(container).paddingBottom);
+      const availableHeight = containerHeight - padding;
+
+      let isOverflowing = true;
+      let iterations = 0;
+      const maxIterations = 50; // Prevent infinite loops
+
+      while (isOverflowing && iterations < maxIterations) {
+          const contentHeight = textElement.scrollHeight + authorElement.scrollHeight; // Sum of scroll heights
+
+          if (contentHeight > availableHeight && (textFontSize > minTextFontSize || authorFontSize > minAuthorFontSize)) {
+              // Reduce font size
+              if (textFontSize > minTextFontSize) textFontSize -= 1;
+              if (authorFontSize > minAuthorFontSize) authorFontSize -= 1;
+
+              textElement.style.fontSize = textFontSize + 'px';
+              authorElement.style.fontSize = authorFontSize + 'px';
+
+              // Re-check height in the next iteration
+              isOverflowing = true;
+          } else {
+              isOverflowing = false; // Content fits or minimum size reached
+          }
+          iterations++;
+      }
+
+      // Restore original display properties if they were changed
+      // No need to restore display: 'none' if we always want them visible for html2canvas
+      // container.style.display = originalContainerDisplay;
+      // textElement.style.display = originalTextDisplay;
+      // authorElement.style.display = originalAuthorDisplay;
+      // watermarkElement.style.display = originalWatermarkDisplay;
+
+      console.log(`Font size adjusted: Text ${textFontSize}px, Author ${authorFontSize}px. Iterations: ${iterations}`);
+  }
+
+
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
+      // Play share/copy sound
+      if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
+
       if (!lastQuote || !lastQuote.text) {
         alert("Please generate a quote first!");
         return;
       }
 
-      // Store original font size if not already stored or if it's from CSS
-      if (!originalImageQuoteTextFontSize || imageQuoteText.style.fontSize === '') {
-        const computedStyle = window.getComputedStyle(imageQuoteText);
-        originalImageQuoteTextFontSize = computedStyle.fontSize;
-      }
-
-
+      // Set text content for the image preview
       imageQuoteText.textContent = lastQuote.text;
       if (lastQuote.author) {
         imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
@@ -1147,46 +1273,47 @@ document.addEventListener("DOMContentLoaded", () => {
         imageQuoteAuthor.style.display = 'none';
       }
 
-      // Dynamically adjust font size
-      // Increased maxFs to 72 for potentially larger text on short quotes.
-      // Padding is 25px (from CSS #quoteImageContent padding)
-      adjustFontSizeToFit(imageQuoteText, quoteImageContent, 72, 14, 1, 25);
-
-
+      // Show the image preview container
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
 
+      // Disable buttons while generating
       downloadImageBtn.disabled = true;
       shareGeneratedImageBtn.disabled = true;
 
+      // Wait a moment for DOM to update and styles to apply, then adjust font size and capture
       setTimeout(() => {
+          adjustFontSizeForImage(); // Adjust font size before capturing
+
+          // Capture the quoteImageContent div
           html2canvas(quoteImageContent, {
               allowTaint: true,
               useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor,
-              scale: 2, // For "Retina" quality, higher scale = larger image
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Get background from the content div
+              scale: 2, // Increase scale for better resolution
               logging: false
           }).then(canvas => {
-              currentCanvas = canvas;
+              currentCanvas = canvas; // Store the generated canvas
+
+              // Enable buttons after generation
               downloadImageBtn.disabled = false;
               shareGeneratedImageBtn.disabled = false;
+
           }).catch(err => {
               console.error("Error generating image with html2canvas:", err);
               alert("Sorry, couldn't generate the image. Please try again.");
-              closeImagePreview();
+              closeImagePreview(); // Close on error
           });
-      }, 100); // Small delay for styles to apply, especially dynamic font size
+      }, 100); // Small delay to ensure DOM is ready
     });
   }
 
   function closeImagePreview() {
+    // Play menu click sound
+    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
-    document.body.style.overflow = '';
-    currentCanvas = null;
-    // Restore original font size if it was changed
-    if (originalImageQuoteTextFontSize && imageQuoteText) {
-        imageQuoteText.style.fontSize = originalImageQuoteTextFontSize;
-    }
+    document.body.style.overflow = ''; // Restore scrolling
+    currentCanvas = null; // Clear the stored canvas
   }
 
   if (closeImagePreviewBtn) {
@@ -1194,8 +1321,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (downloadImageBtn) {
-    // ... (downloadImageBtn logic remains the same, omitted for brevity)
     downloadImageBtn.addEventListener('click', () => {
+      // Play download sound
+      if (downloadSound) { downloadSound.currentTime = 0; downloadSound.play().catch(e => console.warn("Audio play failed:", e)); }
       if (!currentCanvas) {
           alert("Image not generated yet.");
           return;
@@ -1213,14 +1341,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (shareGeneratedImageBtn) {
-    // ... (shareGeneratedImageBtn logic remains the same, omitted for brevity)
     shareGeneratedImageBtn.addEventListener('click', async () => {
+      // Play share/copy sound
+      if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
       if (!currentCanvas) {
           alert("Image not generated yet.");
           return;
       }
 
-      if (navigator.share && navigator.canShare) {
+      // Check if Web Share API supports files
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [] })) {
         currentCanvas.toBlob(async (blob) => {
           if (!blob) {
               alert("Error creating image blob for sharing.");
@@ -1239,32 +1369,36 @@ document.addEventListener("DOMContentLoaded", () => {
             text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
           };
           try {
-            if (navigator.canShare({ files: filesArray })) {
+            // Check if sharing files is actually possible before calling share
+            if (navigator.canShare(shareData)) {
                 await navigator.share(shareData);
                 console.log('Image shared successfully');
             } else {
-                await navigator.share({
-                    title: `Quote by ${authorName} - Words of Wisdom`,
-                    text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
-                    url: window.location.href
-                });
-                console.log('Shared text content and URL as fallback.');
+                 console.warn('Cannot share files, falling back to text/URL share.');
+                 // Fallback to sharing text and URL if file sharing is not supported
+                 await navigator.share({
+                     title: `Quote by ${authorName} - Words of Wisdom`,
+                     text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
+                     url: window.location.href
+                 });
+                 console.log('Shared text content and URL as fallback.');
             }
           } catch (err) {
-            if (err.name !== 'AbortError') {
+            if (err.name !== 'AbortError') { // Ignore user cancelling share
                 console.error('Error sharing image:', err);
                 alert('Sharing failed. You can try downloading the image instead.');
             }
           }
         }, 'image/png');
       } else {
+        // Fallback for browsers that don't support Web Share API with files
         alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
       }
     });
   }
 
+
   (async function initApp(){
-    // ... (initApp logic remains the same, omitted for brevity)
     if(qText) qText.textContent = "✨ Loading Wisdom...";
     if(qAuth) qAuth.textContent = "";
     if(quoteMark) {
@@ -1298,9 +1432,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     showRotatingBanner();
 
+    // Display the initial quote after categories and quotes are loaded
+    // Check if banner already set a quote, otherwise display from selected category
     if (!lastQuote || !lastQuote.text) {
         console.log(`Banner didn't set a quote, or using stored category. Displaying quote for: ${selectedCat}`);
         displayQuote();
+    } else {
+        console.log("Banner already set the initial quote.");
     }
 
 
@@ -1316,5 +1454,11 @@ document.addEventListener("DOMContentLoaded", () => {
     requestNotificationPermission();
     scheduleDailyNotification();
     console.log("App initialization complete.");
+
+    // Play app load sound after everything is initialized and the first quote is displayed
+    // Add a small delay to ensure the user sees the initial quote first
+    setTimeout(() => {
+        if (appLoadSound) { appLoadSound.currentTime = 0; appLoadSound.play().catch(e => console.warn("Audio play failed:", e)); }
+    }, 500); // Adjust delay as needed
   })();
 });
