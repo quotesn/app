@@ -1094,13 +1094,14 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {number} step Font size adjustment step in pixels.
    * @param {number} padding Vertical and Horizontal padding within the container to respect.
    */
-  function adjustFontSizeToFit(textEl, containerEl, maxFs = 32, minFs = 12, step = 1, padding = 20) {
+  function adjustFontSizeToFit(textEl, containerEl, maxFs = 72, minFs = 14, step = 1, padding = 25) {
     if (!textEl || !containerEl) return;
 
     let currentFs = maxFs;
     textEl.style.fontSize = currentFs + 'px';
 
     // Calculate available height and width within the container, considering padding
+    // The padding here is the CSS padding of the containerEl (quoteImageContent)
     const availableHeight = containerEl.clientHeight - (padding * 2);
     const availableWidth = containerEl.clientWidth - (padding * 2);
 
@@ -1113,8 +1114,11 @@ document.addEventListener("DOMContentLoaded", () => {
         textEl.style.fontSize = currentFs + 'px';
     }
     // Final check if even minFs is too large, clamp to minFs
-    if (textEl.scrollHeight > availableHeight || textEl.scrollWidth > availableWidth) {
-        textEl.style.fontSize = minFs + 'px';
+    // This case should ideally be rare if minFs is chosen well.
+    if ((textEl.scrollHeight > availableHeight || textEl.scrollWidth > availableWidth) && currentFs === minFs) {
+        console.warn("Text still overflows at min font size. Consider reducing text length or minFs.");
+        // Optionally, you could add ellipsis or other overflow handling here if needed,
+        // but for html2canvas, it's best if the text actually fits.
     }
   }
 
@@ -1127,12 +1131,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Store original font size if not already stored
-      if (!originalImageQuoteTextFontSize && imageQuoteText.style.fontSize) {
-        originalImageQuoteTextFontSize = imageQuoteText.style.fontSize;
-      } else if (!originalImageQuoteTextFontSize) {
-        // Fallback if style.fontSize is not set (e.g., using CSS default)
-        // This might need refinement based on how initial CSS is structured
+      // Store original font size if not already stored or if it's from CSS
+      if (!originalImageQuoteTextFontSize || imageQuoteText.style.fontSize === '') {
         const computedStyle = window.getComputedStyle(imageQuoteText);
         originalImageQuoteTextFontSize = computedStyle.fontSize;
       }
@@ -1148,9 +1148,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Dynamically adjust font size
-      // Parameters: textElement, containerElement, maxFontSize, minFontSize, step, padding
-      // Padding should match the padding set in #quoteImageContent in CSS for an accurate fit.
-      adjustFontSizeToFit(imageQuoteText, quoteImageContent, 30, 14, 1, 25);
+      // Increased maxFs to 72 for potentially larger text on short quotes.
+      // Padding is 25px (from CSS #quoteImageContent padding)
+      adjustFontSizeToFit(imageQuoteText, quoteImageContent, 72, 14, 1, 25);
 
 
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
@@ -1164,7 +1164,7 @@ document.addEventListener("DOMContentLoaded", () => {
               allowTaint: true,
               useCORS: true,
               backgroundColor: getComputedStyle(quoteImageContent).backgroundColor,
-              scale: 2,
+              scale: 2, // For "Retina" quality, higher scale = larger image
               logging: false
           }).then(canvas => {
               currentCanvas = canvas;
@@ -1175,7 +1175,7 @@ document.addEventListener("DOMContentLoaded", () => {
               alert("Sorry, couldn't generate the image. Please try again.");
               closeImagePreview();
           });
-      }, 100);
+      }, 100); // Small delay for styles to apply, especially dynamic font size
     });
   }
 
