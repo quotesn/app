@@ -14,7 +14,7 @@
   --light: #555;
   --primary: #7c5df0;
   --gold: #FFD700;
-  --green-accent: #43b581;
+  --green-accent: #43b581; /* Added for success messages and fav animation */
   --glow: rgba(124,93,240,0.6);
   --sh-light: rgba(255,255,255,0.7);
   --sh-dark: rgba(136,165,191,0.2);
@@ -25,8 +25,11 @@
   --toggle-checked-bg: #7c5df0;
   --toggle-knob: #fff;
   --toggle-shadow: 0 2px 8px rgba(124,93,240,0.08);
-  --success-green: #28a745;
-  --image-square-size: 480px; /* Define a variable for the square size */
+  --success-green: #28a745; /* Green for success messages */
+  --primary-hover: #6a46e0; /* Darker primary for hover */
+  --primary-active: #5e3cc0; /* Even darker primary for active */
+  --primary-hover-dark: #c7aefb; /* Lighter primary for dark mode hover */
+  --primary-active-dark: #d0bcfc; /* Even lighter primary for dark mode active */
 }
 
 body.dark {
@@ -44,7 +47,9 @@ body.dark {
   --toggle-checked-bg: #ffd700;
   --toggle-knob: #232336;
   --toggle-shadow: 0 2px 8px rgba(255,215,0,0.13);
-  --success-green: #34c759;
+  --success-green: #34c759; /* Lighter green for dark mode */
+  --primary-hover-dark: #c7aefb; /* Lighter primary for dark mode hover */
+  --primary-active-dark: #d0bcfc; /* Even lighter primary for dark mode active */
 }
 
 body {
@@ -56,7 +61,7 @@ body {
   transition: background .4s, color .4s;
 }
 
-/* Header (omitted for brevity, same as before) */
+/* Header */
 header {
   width: 100vw;
   position: fixed;
@@ -67,15 +72,15 @@ header {
   z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 1rem;
+  justify-content: space-between; /* Changed for better spacing */
+  padding: 0 1rem; /* Added horizontal padding */
 }
 
 .header-center-content {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  position: absolute;
+  gap: 0.5rem; /* Space between title and streak badge */
+  position: absolute; /* Center the title and streak */
   left: 50%;
   transform: translateX(-50%);
 }
@@ -84,23 +89,23 @@ header h1 {
   font-family: 'Playfair Display', serif;
   color: var(--primary);
   font-size: 1.5rem;
-  margin: 0;
+  margin: 0; /* Removed margin auto */
   pointer-events: none;
   user-select: none;
   white-space: nowrap;
 }
 
 .streak-badge {
-  color: var(--orange); /* Make sure --orange is defined or use another color like var(--gold) */
+  color: var(--orange); /* Note: orange is not defined in :root, using primary or gold might be better */
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 0.9rem; /* Adjusted size */
   letter-spacing: 0.01em;
   background-color: var(--card);
   padding: 0.2rem 0.5rem;
   border-radius: 0.8rem;
   box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light);
   white-space: nowrap;
-  display: none;
+  display: none; /* Initially hidden, shown by JS */
 }
 body.dark .streak-badge {
     box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light);
@@ -124,7 +129,7 @@ body.dark .streak-badge {
 }
 .home-btn:active { background: rgba(124,93,240,0.13); }
 
-/* Theme toggle (omitted for brevity, same as before) */
+/* Theme toggle */
 .toggle-wrap {
   z-index: 2;
 }
@@ -172,14 +177,14 @@ body.dark .streak-badge {
   box-shadow: 0 0 2px 2px var(--toggle-checked-bg);
 }
 
-/* Main content (omitted for brevity, same as before) */
+/* Main content */
 main {
   padding: 5rem 1rem 1rem;
   text-align: center;
   position: relative;
 }
 
-/* Special banner (omitted for brevity, same as before) */
+/* Special banner */
 .special-banner {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -205,7 +210,7 @@ main {
   cursor: pointer;
 }
 
-/* Quote box (omitted for brevity, same as before) */
+/* Quote box */
 .neomorphic {
   background: var(--card);
   border-radius: 1rem;
@@ -272,7 +277,7 @@ main {
   font-style: normal;
 }
 
-/* Category button (omitted for brevity, same as before) */
+/* Category button */
 .category-btn {
   margin: 0 auto 2.5rem;
   display: flex;
@@ -290,7 +295,7 @@ main {
 }
 .category-btn i { color: var(--primary);}
 
-/* Modal and Menu (omitted for brevity, same as before) */
+/* Modal */
 .modal {
   display: none;
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -312,6 +317,8 @@ main {
   background: none; border: none; color: var(--primary);
   font-size: 1.5rem; cursor: pointer;
 }
+
+/* Sections in menu */
 .section { border-top: 1px solid var(--sh-dark);}
 .section-btn {
   width: 100%; padding: 0.8rem 1.2rem; background: var(--menu-bg); border: none;
@@ -337,6 +344,7 @@ main {
 .nested-list a i { font-size: 1.1em; color: var(--primary);}
 .section-list .fa-face-smile { color: var(--gold)!important; }
 
+/* Author search */
 .author-search-wrapper {
   display: none; padding: 0.5rem 0.5rem 0.5rem 1.2rem; width: 90%;
 }
@@ -355,8 +363,7 @@ main {
 .suggestions-list li { padding: 0.5rem 1rem; cursor: pointer; color: var(--primary); transition: background 0.2s;}
 .suggestions-list li:hover { background: rgba(124,93,240,0.15); color: #fff;}
 
-
-/* Action buttons (omitted for brevity, same as before) */
+/* Action buttons and round touch effect */
 .action-buttons {
   display: flex;
   justify-content: center;
@@ -390,15 +397,15 @@ main {
 }
 .action-buttons .icon-btn.undo-btn:hover,
 .action-buttons .icon-btn.undo-btn:focus {
-  color: #43b581;
+  color: var(--green-accent); /* Changed to green-accent */
   transform: scale(1.2) rotate(-20deg);
 }
 .action-buttons .icon-btn.undo-btn:active {
-  color: #ffd700;
+  color: var(--gold); /* Changed to gold */
   transform: scale(1.1) rotate(-30deg);
 }
 
-/* Share Menu (omitted for brevity, same as before) */
+/* Share Menu */
 #shareMenu {
   display: none;
   position: absolute;
@@ -443,7 +450,7 @@ body.dark .share-option:hover, body.dark .share-option:focus {
   box-shadow: 0 0 0 2px #ffd700aa;
 }
 
-/* Icon buttons (omitted for brevity, same as before) */
+/* Icon buttons */
 .icon-btn {
   background: transparent; border: none; outline: none;
   border-radius: 50%; width: 3.2rem; height: 3.2rem;
@@ -468,13 +475,12 @@ body.dark .share-option:hover, body.dark .share-option:focus {
 }
 .icon-btn.copied-feedback { color: var(--green-accent); }
 
-
-/* Favorite button specific styles (omitted for brevity, same as before) */
-#favBtn i.fa-solid.fa-heart {
-  color: var(--gold);
+/* Favorite button specific styles */
+#favBtn i.fa-solid.fa-heart { /* Solid heart when favorited */
+  color: var(--gold); /* Gold color when favorited */
   animation: heartBeat 0.5s ease-in-out;
 }
-#favBtn i.fa-regular.fa-heart {
+#favBtn i.fa-regular.fa-heart { /* Regular heart when not favorited */
     color: var(--primary);
 }
 
@@ -486,9 +492,9 @@ body.dark .share-option:hover, body.dark .share-option:focus {
 
 .saved-popup {
   position: absolute;
-  bottom: 120%;
+  bottom: 120%; /* Position above the button */
   left: 50%;
-  transform: translateX(-50%) translateY(10px);
+  transform: translateX(-50%) translateY(10px); /* Start slightly lower */
   background-color: var(--green-accent);
   color: white;
   padding: 0.3rem 0.8rem;
@@ -505,10 +511,11 @@ body.dark .share-option:hover, body.dark .share-option:focus {
 #favBtn.show-saved-popup .saved-popup {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0); /* Move to final position */
 }
 
-/* Generate button (omitted for brevity, same as before) */
+
+/* Generate button */
 .generate-btn {
   position: fixed;
   left: 50%;
@@ -560,15 +567,19 @@ body.dark .magic-wand-icon.animated {
 .generate-btn .ripple {
   position: absolute; border-radius: 50%; transform: scale(0);
   animation: waterRipple .8s cubic-bezier(.22,.68,.54,1.01);
-  background: radial-gradient(circle, #fff 0%, #7c5df0 80%, transparent 100%);
+  background: radial-gradient(circle, #fff 0%, var(--primary) 80%, transparent 100%); /* Use var(--primary) */
   pointer-events: none; z-index: 10;
 }
+body.dark .generate-btn .ripple {
+   background: radial-gradient(circle, #fff 0%, var(--gold) 80%, transparent 100%); /* Use var(--gold) for dark mode */
+}
+
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
 
-/* Responsive (omitted for brevity, same as before, but ensure --image-square-size is responsive) */
+/* Responsive */
 @media (max-width: 600px) {
   header {
-    padding: 0 0.8rem;
+    padding: 0 0.8rem; /* Adjust header padding for smaller screens */
   }
   .header-center-content {
     gap: 0.3rem;
@@ -588,41 +599,20 @@ body.dark .magic-wand-icon.animated {
   }
   .action-buttons .icon-btn { margin: 0 1.2rem; }
   #shareMenu {
-    min-width: 160px;
+    min-width: 160px; /* Adjusted for potential new icon */
   }
  #shareMenu .share-option {
-    width: 2.4rem;
+    width: 2.4rem; /* Slightly reduce size if needed */
     height: 2.4rem;
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* Adjust icon size */
   }
-  :root {
-    --image-square-size: 90vw; /* Make square size responsive for smaller screens */
-  }
-  #quoteImageContent {
-    max-width: var(--image-square-size);
-    max-height: var(--image-square-size);
-    padding: 20px; /* Slightly reduce padding for smaller images */
-  }
-  #imageQuoteText {
-    font-size: 20px; /* Adjust default font size for smaller square */
-    /* max-height will be handled by JS to some extent */
-  }
-  #imageQuoteAuthor {
-    font-size: 16px; 
-  }
-  #imageWatermark {
-    font-size: 12px; 
-    bottom: 10px;
-    right: 15px;
-  }
-
 }
-@media (max-width: 380px) {
+@media (max-width: 380px) { /* Even smaller screens */
     header h1 {
         font-size: 1.1rem;
     }
     .streak-badge {
-        display: none;
+        display: none; /* Hide streak badge on very small screens if it causes overflow */
     }
     .home-btn {
         width: 2.2rem;
@@ -640,23 +630,10 @@ body.dark .magic-wand-icon.animated {
     .toggle-wrap .theme-toggle input:checked + .slider:before {
         transform: translateX(18px);
     }
-     #quoteImageContent {
-        padding: 15px;
-    }
-    #imageQuoteText {
-      font-size: 16px; /* Further adjust for very small screens */
-    }
-    #imageQuoteAuthor {
-      font-size: 12px;
-    }
-    #imageWatermark {
-      font-size: 9px;
-      bottom: 8px;
-      right: 10px;
-    }
 }
 
-/* Favorites Modal (omitted for brevity, same as before) */
+
+/* Favorites Modal */
 .fav-modal-content {
   position: relative;
 }
@@ -721,17 +698,18 @@ body.dark .magic-wand-icon.animated {
   color: var(--gold);
 }
 
-/* Embossed Button Style (omitted for brevity, same as before) */
+/* Embossed Button Style */
 .embossed-button {
-  display: inline-block;
-  margin: 0.5rem;
+  display: inline-block; /* Changed from block to allow side-by-side for image buttons */
+  margin: 0.5rem; /* Adjusted margin for image buttons */
+  /* width: 60%; /* Removed fixed width to allow natural sizing */
   background: var(--primary);
   color: #fff;
   font-size: 1.08rem;
   font-weight: 600;
   border: none;
   border-radius: 2rem;
-  padding: 0.8rem 1.2rem;
+  padding: 0.8rem 1.2rem; /* Adjusted padding for better button shape */
   box-shadow:
     inset 2px 2px 5px rgba(255, 255, 255, 0.3),
     inset -2px -2px 5px rgba(0, 0, 0, 0.2),
@@ -742,12 +720,12 @@ body.dark .magic-wand-icon.animated {
   outline: none;
   position: relative;
   text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
-  min-width: 100px;
+  min-width: 100px; /* Ensure buttons have a decent tap/click target size */
 }
 
 .embossed-button:hover,
 .embossed-button:focus {
-  background: var(--primary-hover, #6a46e0);
+  background: var(--primary-hover);
   color: #fff;
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.4),
@@ -758,7 +736,7 @@ body.dark .magic-wand-icon.animated {
 }
 
 .embossed-button:active {
-  background: var(--primary-active, #5e3cc0);
+  background: var(--primary-active);
   box-shadow:
     inset 2px 2px 5px rgba(0, 0, 0, 0.3),
     inset -2px -2px 5px rgba(255, 255, 255, 0.2);
@@ -779,7 +757,7 @@ body.dark .embossed-button {
 
 body.dark .embossed-button:hover,
 body.dark .embossed-button:focus {
-  background: var(--primary-hover-dark, #c7aefb);
+  background: var(--primary-hover-dark);
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.15),
     inset -1px -1px 3px rgba(0, 0, 0, 0.5),
@@ -787,19 +765,21 @@ body.dark .embossed-button:focus {
     -2px -2px 6px rgba(255,255,255,0.07);
 }
 body.dark .embossed-button:active {
-  background: var(--primary-active-dark, #d0bcfc);
+  background: var(--primary-active-dark);
   box-shadow:
     inset 2px 2px 5px rgba(0, 0, 0, 0.5),
     inset -2px -2px 5px rgba(255, 255, 255, 0.1);
 }
+/* Ensure the submit button in forms still takes more width */
 #customQuoteForm .embossed-button,
 #feedbackModal .embossed-button {
-    width: 60%;
-    display: block;
-    margin: 1.5rem auto 0 auto;
+    width: 60%; /* Restore width for form submit buttons */
+    display: block; /* Restore block for form submit buttons to take full width */
+    margin: 1.5rem auto 0 auto; /* Restore original margins for form buttons */
 }
 
-/* Submit Quote Form (omitted for brevity, same as before) */
+
+/* Submit Quote Form */
 #customQuoteForm input[type="text"] {
   background: var(--card);
   border: 1.5px solid var(--primary);
@@ -810,19 +790,19 @@ body.dark .embossed-button:active {
   font-size: 1.03rem;
   box-shadow: 2px 2px 8px var(--sh-dark), -2px -2px 8px var(--sh-light);
   transition: border .2s;
-  color: var(--text);
+  color: var(--text); /* Ensure text color is inherited */
 }
 #customQuoteForm input[type="text"]:focus {
   border: 2px solid var(--primary);
   outline: none;
 }
 
-.form-success-message {
-  display: none;
-  color: var(--success-green) !important;
+.form-success-message { /* General style for success messages */
+  display: none; /* Hidden by default */
+  color: var(--success-green) !important; /* Important to override other styles if needed */
   margin-top: 1.2rem;
   text-align: center;
-  font-size: 1.05rem;
+  font-size: 1.05rem; /* Slightly larger */
   font-weight: 500;
 }
 
@@ -839,7 +819,8 @@ body.dark #submitQuoteModal input::placeholder {
   color: var(--light);
 }
 
-/* Feedback Button & Modal (omitted for brevity, same as before) */
+
+/* Feedback Button & Modal */
 .feedback-btn {
   position: fixed;
   right: 1.5rem;
@@ -883,6 +864,10 @@ body.dark #submitQuoteModal input::placeholder {
   background: var(--card);
   color: var(--text);
 }
+#feedbackTextarea:focus {
+  border: 2px solid var(--primary);
+  outline: none;
+}
 .feedback-submit-btn {
   width: 80%;
   margin-bottom: 1rem;
@@ -914,7 +899,8 @@ body.dark #feedbackTextarea::placeholder {
     color: var(--light);
 }
 
-/* Footer (omitted for brevity, same as before) */
+
+/* Footer */
 footer {
   width: 100vw;
   position: fixed;
@@ -958,36 +944,38 @@ footer .author-link:focus {
   overflow-y: auto;
 }
 
+/* This is the outer container for the image modal's content, including the capturable area and buttons */
 #quoteImageWrapper {
   background: var(--card);
   color: var(--text);
-  padding: 20px;
+  padding: 20px; /* Reduced padding slightly to give more space to quoteImageContent */
   border-radius: 12px;
   text-align: center;
-  width: auto; 
-  min-width: calc(var(--image-square-size) + 40px); 
+  max-width: 500px;
+  width: 90%;
   position: relative;
   box-shadow: 0 8px 25px rgba(0,0,0,0.15);
   font-family: 'Poppins', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: flex; /* Added flex to manage children */
+  flex-direction: column; /* Stack content and buttons vertically */
+  align-items: center; /* Center children */
 }
 
+/* This is the new inner div that ONLY contains what should be in the image */
 #quoteImageContent {
-  background: var(--card);
+  background: var(--card); /* Match background for canvas consistency */
   color: var(--text);
-  width: var(--image-square-size); 
-  height: var(--image-square-size); 
-  padding: 25px; /* This padding is used by JS adjustFontSizeToFit */
-  border-radius: 10px;
-  text-align: center;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; 
-  align-items: center; 
-  overflow: hidden; 
+  padding: 40px; /* Increased padding for better spacing inside the square */
+  border-radius: 10px; /* Optional: if you want rounded corners on the image itself */
+  text-align: center; /* Explicitly center text */
+  width: 100%; /* Take full width of its parent for calculation */
+  position: relative; /* For watermark positioning within this content */
+  display: flex; /* Use flexbox for centering text content */
+  flex-direction: column; /* Stack quote and author vertically */
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  aspect-ratio: 1 / 1; /* Enforce 1:1 aspect ratio */
+  overflow: hidden; /* Hide overflow during font size adjustment */
 }
 
 
@@ -995,36 +983,34 @@ body.dark #quoteImageWrapper {
   box-shadow: 0 8px 25px rgba(0,0,0,0.4);
 }
 body.dark #quoteImageContent {
-  background: var(--card);
+  background: var(--card); /* Ensure dark mode background for canvas */
   color: var(--text);
 }
 
 
 #imageQuoteText {
   font-family: 'Playfair Display', serif;
-  /* font-size is now set by JS - initial value can be small or removed */
-  font-size: 14px; /* Start with a base, JS will adjust */
+  /* Initial font size, will be adjusted by JS */
+  font-size: 32px;
   color: var(--text);
-  margin-bottom: 15px; /* Reduced margin for tighter packing */
+  margin-bottom: 10px; /* Reduced margin */
   word-wrap: break-word;
-  line-height: 1.3; /* Slightly tighter line height */
-  text-align: center;
-  width: 100%; /* Ensure it uses the container width for calculations */
-  /* max-height: 70%; /* Increased slightly, but JS is primary controller */
-  /* overflow: hidden; /* Let JS handle overflow by reducing font size */
+  line-height: 1.4; /* Adjusted line height */
+  text-align: center; /* Ensure text is centered */
+  flex-shrink: 0; /* Prevent shrinking */
+  width: 100%; /* Allow text to take full width */
 }
 
 #imageQuoteAuthor {
   font-family: 'Poppins', sans-serif;
-  font-size: 18px; /* Slightly smaller default, can be adjusted */
+  /* Initial font size, will be adjusted by JS */
+  font-size: 20px;
   color: var(--light);
-  margin-top: auto; 
-  padding-top: 10px; 
-  margin-bottom: 25px; /* Space for watermark */
+  margin-bottom: 0; /* Removed margin */
   font-style: italic;
-  text-align: center;
-  width: 100%;
-  flex-shrink: 0; /* Prevent author from shrinking too much */
+  text-align: center; /* Ensure text is centered */
+  flex-shrink: 0; /* Prevent shrinking */
+  width: 100%; /* Allow text to take full width */
 }
 
 #imageWatermark {
@@ -1035,8 +1021,8 @@ body.dark #quoteImageContent {
   position: absolute;
   bottom: 15px;
   right: 20px;
-  text-align: right;
-  flex-shrink: 0; /* Prevent watermark from shrinking */
+  text-align: right; /* Align watermark to the right */
+  z-index: 10; /* Ensure watermark is above text if needed */
 }
 
 body.dark #imageWatermark {
@@ -1044,18 +1030,22 @@ body.dark #imageWatermark {
   opacity: 0.5;
 }
 
+/* Container for the buttons below the image content */
 .image-buttons-container {
-  margin-top: 20px;
+  margin-top: 20px; /* Space above the buttons */
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  width: 100%;
+  width: 100%; /* Ensure buttons container takes width for centering */
 }
 
+/* Styling for buttons within the preview modal (using the .embossed-button class) */
 #quoteImageWrapper .embossed-button {
     padding: 0.6rem 1rem;
     font-size: 0.9rem;
+    /* min-width: 100px; /* Already handled by embossed-button */
+    /* margin: 5px;  /* Handled by gap in flex container */
 }
 
 
@@ -1063,6 +1053,39 @@ body.dark #imageWatermark {
 @media (prefers-contrast: more) {
   body { background: #000; color: #fff; }
   .quote-box { background: #222; }
+  /* Add more high-contrast styles as needed */
   #quoteImageContent, #quoteImageWrapper { background: #111; color: #fff; }
   #imageQuoteText, #imageQuoteAuthor, #imageWatermark { color: #fff; }
+}
+
+/* Ripple effect base style */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: waterRipple .6s ease-out; /* Adjusted duration and easing */
+  background: rgba(255, 255, 255, 0.4); /* Default ripple color */
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Specific ripple colors for different buttons if needed */
+.icon-btn .ripple { background: rgba(124, 93, 240, 0.3); } /* Primary color ripple */
+body.dark .icon-btn .ripple { background: rgba(179, 157, 219, 0.3); } /* Primary dark color ripple */
+
+.generate-btn .ripple {
+    /* Overridden in JS for gradient */
+}
+
+.category-btn .ripple { background: rgba(124, 93, 240, 0.2); } /* Primary color ripple */
+body.dark .category-btn .ripple { background: rgba(179, 157, 219, 0.2); } /* Primary dark color ripple */
+
+.embossed-button .ripple { background: rgba(255, 255, 255, 0.3); } /* White ripple for embossed buttons */
+body.dark .embossed-button .ripple { background: rgba(255, 255, 255, 0.15); } /* Less visible white ripple in dark mode */
+
+@keyframes waterRipple {
+  to {
+    transform: scale(3.5); /* Increased scale */
+    opacity: 0;
+  }
 }
