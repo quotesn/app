@@ -46,22 +46,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const downloadImageBtn = document.getElementById('downloadImageBtn');
   const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
-  const generateImageShareOption = document.getElementById('generateImageShareOption'); 
+  const generateImageShareOption = document.getElementById('generateImageShareOption');
 
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = "inspiration"; // Default category
-  let lastQuote = null; 
+  let lastQuote = null;
   let quoteHistory = [];
   let authorMode = false;
   let authorQuotes = [];
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
-  let currentCanvas = null; 
+  let currentCanvas = null;
+  let originalImageQuoteTextFontSize = ''; // To store original font size
 
-  // --- Banner themes and styles ---
+  // --- Banner themes and styles (omitted for brevity, same as before) ---
   const bannerThemes = [
     {cat: "inspiration",    text: "Ignite fresh ideas to fuel your week."},
     {cat: "motivation",     text: "Power up your ambition and take the lead."},
@@ -123,6 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     perseverance:   { color: "#6d4c41", icon: "🚀" }
   };
 
+
   function capitalize(str) {
     if (!str) return "";
     return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -130,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showRotatingBanner() {
     const today = new Date();
-    const startDate = new Date("2025-05-05"); 
+    const startDate = new Date("2025-05-05");
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
     const theme = bannerThemes[idx];
@@ -185,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return data;
     } catch (e) {
       console.error(`Failed to fetch or parse ${url}:`, e.message);
-      throw e; 
+      throw e;
     }
   }
 
@@ -215,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let pathAttempt1 = originalPath;
             let pathAttempt2 = null;
             if (originalPath && originalPath.startsWith('data/')) {
-                pathAttempt2 = originalPath.substring(5); 
+                pathAttempt2 = originalPath.substring(5);
             }
 
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
@@ -224,13 +226,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (Array.isArray(data)) {
                         quotes[cat.id] = data;
                         buildAuthorIndex(data, cat.id);
-                        return true; 
+                        return true;
                     }
                     console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
-                    return false; 
+                    return false;
                 } catch (err) {
                     console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed.`);
-                    return false; 
+                    return false;
                 }
             };
             quotePromises.push(
@@ -238,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!success && pathAttempt2) {
                         return fetchAndProcessQuoteFile(pathAttempt2, 'wowQuotesRoot_');
                     }
-                    return success; 
+                    return success;
                 })
             );
           }
@@ -248,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (localStorage.getItem('userQuotes')) {
         const userQuotesData = JSON.parse(localStorage.getItem('userQuotes'));
-        quotes['user'] = userQuotesData; 
+        quotes['user'] = userQuotesData;
         buildAuthorIndex(userQuotesData, 'user');
       }
       await Promise.all(quotePromises);
@@ -273,7 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!authors[authorKey]) authors[authorKey] = [];
         authors[authorKey].push({
           text: quote.text || quote.quote || quote.message,
-          author: by, 
+          author: by,
           category: categoryId
         });
       }
@@ -281,11 +283,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderMenu() {
+    // ... (renderMenu function remains the same, omitted for brevity)
     if (!categoryMenu) return;
-    categoryMenu.innerHTML = ""; 
+    categoryMenu.innerHTML = "";
     function renderCategoryList(catArray, parentUl) {
       catArray.forEach(cat => {
-        if (cat.isSearch) { 
+        if (cat.isSearch) {
           const sec = document.createElement("div");
           sec.className = "section search-section";
           sec.innerHTML = `<button class="section-btn" aria-expanded="false" aria-controls="authorSearchWrapper-${cat.id || 'search'}"><i class="fa-solid fa-user section-icon"></i>Search by Author <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
@@ -293,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <input id="authorSearch" type="text" placeholder="Type author name…" autocomplete="off" aria-label="Search by author name" />
               <ul id="authorList" class="suggestions-list" role="listbox"></ul>
             </div>`;
-          categoryMenu.appendChild(sec); 
+          categoryMenu.appendChild(sec);
           sec.querySelector('.section-btn').addEventListener('click', function() {
             const wrapper = sec.querySelector('.author-search-wrapper');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
@@ -344,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           categoryMenu.appendChild(submitSec);
 
-        } else { 
+        } else {
           const sec = document.createElement("div");
           sec.className = "section";
           const sectionId = `section-list-${cat.id || Math.random().toString(36).substring(2,9)}`;
@@ -358,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (cat.children) {
             cat.children.forEach(child => {
               const li = document.createElement("li");
-              if (child.children) { 
+              if (child.children) {
                 li.className = "has-children";
                 const subSectionId = `subsection-list-${child.id || Math.random().toString(36).substring(2,9)}`;
                 li.innerHTML = `<span role="button" tabindex="0" aria-expanded="false" aria-controls="${subSectionId}">
@@ -375,7 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   </a>`;
                   subul.appendChild(subli);
                 });
-              } else { 
+              } else {
                 li.innerHTML = `<a href="#" data-cat="${child.id}">
                   ${child.icon ? `<i class="fa-solid ${child.icon}" aria-hidden="true"></i>` : ""}
                   ${child.name}
@@ -384,13 +387,13 @@ document.addEventListener("DOMContentLoaded", () => {
               ul.appendChild(li);
             });
           }
-          categoryMenu.appendChild(sec); 
+          categoryMenu.appendChild(sec);
           sec.querySelector('.section-btn').addEventListener('click', function() {
             const list = sec.querySelector('.section-list');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
             list.style.display = isExpanded ? 'none' : 'block';
-            const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up'); 
+            const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up');
             if(icon){
                 icon.classList.toggle('fa-chevron-down');
                 icon.classList.toggle('fa-chevron-up');
@@ -399,22 +402,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
-    renderCategoryList(categories, categoryMenu); 
+    renderCategoryList(categories, categoryMenu);
 
     categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
       span.addEventListener('click', function(e) {
-        e.stopPropagation(); 
+        e.stopPropagation();
         const nestedList = this.nextElementSibling;
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', !isExpanded);
         nestedList.style.display = isExpanded ? 'none' : 'block';
-        const icon = this.querySelector('.fa-caret-right, .fa-caret-down'); 
+        const icon = this.querySelector('.fa-caret-right, .fa-caret-down');
         if (icon) {
             icon.classList.toggle('fa-caret-right');
             icon.classList.toggle('fa-caret-down');
         }
       });
-      span.addEventListener('keydown', function(e) { 
+      span.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           this.click();
@@ -426,7 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
         selectedCat = link.dataset.cat;
-        authorMode = false; 
+        authorMode = false;
         if(currentCategory) currentCategory.textContent = capitalize(link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim());
         closeMenu();
         displayQuote();
@@ -441,49 +444,49 @@ document.addEventListener("DOMContentLoaded", () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           const query = authorInput.value.toLowerCase().trim();
-          authorListUL.innerHTML = ""; 
-          if (!query) return; 
+          authorListUL.innerHTML = "";
+          if (!query) return;
           Object.keys(authors)
-            .filter(name => name.includes(query)) 
-            .sort() 
-            .slice(0, 10) 
+            .filter(name => name.includes(query))
+            .sort()
+            .slice(0, 10)
             .forEach(nameKey => {
               const li = document.createElement("li");
               li.setAttribute('role', 'option');
-              li.textContent = authors[nameKey][0].author; 
-              li.tabIndex = -1; 
+              li.textContent = authors[nameKey][0].author;
+              li.tabIndex = -1;
               li.addEventListener("click", () => {
                 authorMode = true;
-                authorName = nameKey; 
-                authorQuotes = [...authors[nameKey]]; 
-                authorQuoteIndex = 0; 
+                authorName = nameKey;
+                authorQuotes = [...authors[nameKey]];
+                authorQuoteIndex = 0;
                 if(currentCategory) currentCategory.textContent = "Author: " + authors[nameKey][0].author;
                 closeMenu();
-                showAuthorQuote(); 
+                showAuthorQuote();
               });
               authorListUL.appendChild(li);
             });
-        }, 300); 
+        }, 300);
       });
     }
   }
 
 
   function openMenu() {
-    renderMenu(); 
+    renderMenu();
     if(categoryModal) categoryModal.classList.add("open");
-    document.body.style.overflow = "hidden"; 
-    if(closeMenuBtn) closeMenuBtn.focus(); 
+    document.body.style.overflow = "hidden";
+    if(closeMenuBtn) closeMenuBtn.focus();
   }
   function closeMenu() {
     if(categoryModal) categoryModal.classList.remove("open");
-    document.body.style.overflow = ""; 
-    if(openMenuBtn) openMenuBtn.focus(); 
+    document.body.style.overflow = "";
+    if(openMenuBtn) openMenuBtn.focus();
   }
   if(openMenuBtn) openMenuBtn.addEventListener("click", openMenu);
   if(closeMenuBtn) closeMenuBtn.addEventListener("click", closeMenu);
   if(categoryModal) categoryModal.addEventListener("click", function(e) {
-    if (e.target === categoryModal) closeMenu(); 
+    if (e.target === categoryModal) closeMenu();
   });
 
   if(closeSubmitQuoteModal) closeSubmitQuoteModal.addEventListener('click', () => {
@@ -492,6 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if(customQuoteForm) customQuoteForm.addEventListener('submit', function(e) {
+    // ... (form submission logic remains the same, omitted for brevity)
     e.preventDefault();
     const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
     const spinner = submitCustomQuoteBtn.querySelector('.loader-spinner');
@@ -502,7 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
         if(quoteFormSuccess) {
-            quoteFormSuccess.textContent = "Thank you! Your quote was submitted."; 
+            quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
             quoteFormSuccess.style.display = 'block';
         }
 
@@ -520,6 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function showQuote(item, cat, fromUndo = false) {
+    // ... (showQuote logic remains the same, omitted for brevity)
     if (!item || (typeof item.text === 'undefined' && typeof item.quote === 'undefined' && typeof item.message === 'undefined')) {
         if(qText) qText.textContent = "No quote available. Try another category or inspire me again!";
         if(qAuth) qAuth.textContent = "";
@@ -529,28 +534,28 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    if (!fromUndo && lastQuote) { 
+    if (!fromUndo && lastQuote) {
       quoteHistory.unshift(lastQuote);
-      if (quoteHistory.length > 5) quoteHistory.length = 5; 
+      if (quoteHistory.length > 5) quoteHistory.length = 5;
     }
     if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
 
     if(qText) qText.classList.add('fade-out');
     if(qAuth) qAuth.classList.add('fade-out');
 
-    setTimeout(() => { 
+    setTimeout(() => {
       const txt = item.text || item.quote || item.message || "Quote text missing.";
       let by = (item.author || item.by || "").trim();
 
       if(qText) qText.textContent = txt;
       if(qAuth) {
         if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
-          qAuth.textContent = ""; 
+          qAuth.textContent = "";
         } else {
           qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
         }
       }
-      if(quoteMark) { 
+      if(quoteMark) {
         quoteMark.textContent = "“";
         quoteMark.style.opacity = 0.18;
       }
@@ -558,13 +563,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if(qText) qText.classList.remove('fade-out');
       if(qAuth) qAuth.classList.remove('fade-out');
 
-      lastQuote = { text: txt, author: by, category: cat }; 
-      updateStreak(); 
-      updateFavoriteButtonState(); 
-    }, 300); 
+      lastQuote = { text: txt, author: by, category: cat };
+      updateStreak();
+      updateFavoriteButtonState();
+    }, 300);
   }
 
   function showAuthorQuote() {
+    // ... (showAuthorQuote logic remains the same, omitted for brevity)
     if (!authorQuotes.length) {
       if(qText) qText.textContent = "No quotes found for this author.";
       if(qAuth) qAuth.textContent = "";
@@ -576,7 +582,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayQuote() {
-    if (authorMode && authorQuotes.length > 0) {
+    // ... (displayQuote logic remains the same, omitted for brevity)
+     if (authorMode && authorQuotes.length > 0) {
       showAuthorQuote();
       return;
     }
@@ -602,7 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (!pool || pool.length === 0) {
-        const allQuotesRaw = Object.values(quotes).flat(); 
+        const allQuotesRaw = Object.values(quotes).flat();
         pool = allQuotesRaw.filter(isValidQuote);
         if (pool.length > 0 && currentCategory && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
             if(currentCategory) currentCategory.textContent = "All Quotes";
@@ -619,51 +626,54 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const randomIndex = Math.floor(Math.random() * pool.length);
-    showQuote(pool[randomIndex], selectedCat || "all_fallback"); 
+    showQuote(pool[randomIndex], selectedCat || "all_fallback");
   }
 
 
   if(undoBtn) undoBtn.addEventListener("click", () => {
+    // ... (undoBtn logic remains the same, omitted for brevity)
     if (quoteHistory.length > 0) {
-      const prev = quoteHistory.shift(); 
-      showQuote(prev, prev.category, true); 
+      const prev = quoteHistory.shift();
+      showQuote(prev, prev.category, true);
     }
-    undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none"; 
+    undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
   });
 
   function triggerGenerateEffects() {
-    if (magicSound) {
-      magicSound.currentTime = 0; 
+    // ... (triggerGenerateEffects logic remains the same, omitted for brevity)
+     if (magicSound) {
+      magicSound.currentTime = 0;
       magicSound.play().catch(e => console.warn("Audio play failed:", e));
     }
-    if(quoteBox) quoteBox.classList.add('glow'); 
+    if(quoteBox) quoteBox.classList.add('glow');
     setTimeout(() => { if(quoteBox) quoteBox.classList.remove('glow'); }, 400);
 
     const wand = genBtn ? genBtn.querySelector('.magic-wand-icon') : null;
-    if (wand) { 
+    if (wand) {
       wand.classList.add('animated');
       setTimeout(() => wand.classList.remove('animated'), 700);
     }
-    if(genBtn) genBtn.classList.add('touched'); 
+    if(genBtn) genBtn.classList.add('touched');
     setTimeout(() => {if(genBtn) genBtn.classList.remove('touched');}, 400);
 
     const ripple = document.createElement('span');
     ripple.className = 'ripple';
-    ripple.style.left = "50%"; 
+    ripple.style.left = "50%";
     ripple.style.top = "50%";
     if(genBtn) genBtn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 700); 
+    setTimeout(() => ripple.remove(), 700);
   }
 
   if(genBtn) {
     genBtn.addEventListener("click", e => {
         triggerGenerateEffects();
-        displayQuote(); 
+        displayQuote();
     });
   }
 
   document.querySelectorAll('.icon-btn, .feedback-btn, .home-btn').forEach(btn => {
-    btn.style.webkitTapHighlightColor = "transparent"; 
+    // ... (ripple effect logic remains the same, omitted for brevity)
+    btn.style.webkitTapHighlightColor = "transparent";
     btn.addEventListener('click', function(e) {
       const rect = btn.getBoundingClientRect();
       const ripple = document.createElement('span');
@@ -677,16 +687,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(shareBtn) shareBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); 
+    // ... (shareBtn logic remains the same, omitted for brevity)
+    e.stopPropagation();
     if(shareMenu) shareMenu.classList.toggle("open");
     if (shareMenu && shareMenu.classList.contains("open")) {
-      setTimeout(() => { 
+      setTimeout(() => {
         document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
       }, 0);
     }
   });
 
   function closeShareMenuOnClickOutside(event) {
+    // ... (closeShareMenuOnClickOutside logic remains the same, omitted for brevity)
     if (shareMenu && shareMenu.classList.contains("open") && !shareMenu.contains(event.target) && event.target !== shareBtn && (shareBtn && !shareBtn.contains(event.target))) {
       shareMenu.classList.remove("open");
     } else if (shareMenu && shareMenu.classList.contains("open")) {
@@ -696,6 +708,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
+    // ... (share options logic remains the same, omitted for brevity)
     if (btn.id === 'generateImageShareOption') return;
 
     btn.addEventListener('click', function() {
@@ -720,12 +733,13 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
       if (shareUrl) window.open(shareUrl, "_blank", "noopener,noreferrer");
-      if(shareMenu) shareMenu.classList.remove("open"); 
+      if(shareMenu) shareMenu.classList.remove("open");
     });
   });
 
 
   if(copyBtn) copyBtn.addEventListener("click", () => {
+    // ... (copyBtn logic remains the same, omitted for brevity)
     const quoteContent = qText ? qText.textContent || "" : "";
     const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
     const textToCopy = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
@@ -733,20 +747,20 @@ document.addEventListener("DOMContentLoaded", () => {
     navigator.clipboard.writeText(textToCopy).then(() => {
       const iconElement = copyBtn.querySelector("i");
       const originalIcon = iconElement ? iconElement.className : "";
-      if(iconElement) iconElement.className = "fa-solid fa-check"; 
+      if(iconElement) iconElement.className = "fa-solid fa-check";
       copyBtn.classList.add('copied-feedback');
       const tooltip = copyBtn.querySelector('.btn-tooltip');
       const originalTooltipText = tooltip ? tooltip.textContent : '';
       if(tooltip) tooltip.textContent = "Copied!";
 
-      setTimeout(() => { 
+      setTimeout(() => {
         if(iconElement) iconElement.className = originalIcon;
         copyBtn.classList.remove('copied-feedback');
         if(tooltip) tooltip.textContent = originalTooltipText;
       }, 1500);
     }).catch(err => {
       console.error('Failed to copy text: ', err);
-      const tooltip = copyBtn.querySelector('.btn-tooltip'); 
+      const tooltip = copyBtn.querySelector('.btn-tooltip');
       if(tooltip) {
           const originalTooltipText = tooltip.textContent;
           tooltip.textContent = "Copy failed!";
@@ -756,28 +770,29 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if(favBtn) favBtn.addEventListener('click', () => {
-    if (!lastQuote || !lastQuote.text) return; 
+    // ... (favBtn logic remains the same, omitted for brevity)
+    if (!lastQuote || !lastQuote.text) return;
 
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     const currentQuoteText = lastQuote.text;
-    const currentAuthorText = lastQuote.author; 
+    const currentAuthorText = lastQuote.author;
 
     const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
     const isFavorited = favIndex !== -1;
 
     const savedPopup = favBtn.querySelector('.saved-popup');
 
-    if (isFavorited) { 
+    if (isFavorited) {
       favs.splice(favIndex, 1);
       if(savedPopup) savedPopup.textContent = "Unsaved";
-    } else { 
+    } else {
       favs.push({ text: currentQuoteText, author: currentAuthorText });
       if(favSound) favSound.play().catch(e => console.warn("Fav sound play failed", e));
       if(savedPopup) savedPopup.textContent = "Saved!";
     }
 
-    localStorage.setItem('favQuotes', JSON.stringify(favs)); 
-    updateFavoriteButtonState(); 
+    localStorage.setItem('favQuotes', JSON.stringify(favs));
+    updateFavoriteButtonState();
 
     if(favBtn) favBtn.classList.add('show-saved-popup');
     setTimeout(() => {
@@ -786,10 +801,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function updateFavoriteButtonState() {
+    // ... (updateFavoriteButtonState logic remains the same, omitted for brevity)
     if (!favBtn || !lastQuote || !lastQuote.text) {
         const favIcon = favBtn ? favBtn.querySelector("i") : null;
         if (favIcon) {
-            favIcon.className = "fa-regular fa-heart"; 
+            favIcon.className = "fa-regular fa-heart";
         }
         return;
     }
@@ -801,42 +817,44 @@ document.addEventListener("DOMContentLoaded", () => {
     const isFavorited = favs.some(q => q.text === lastQuote.text && q.author === lastQuote.author);
 
     if (isFavorited) {
-        favIcon.className = "fa-solid fa-heart"; 
+        favIcon.className = "fa-solid fa-heart";
     } else {
-        favIcon.className = "fa-regular fa-heart"; 
+        favIcon.className = "fa-regular fa-heart";
     }
   }
 
 
   if(themeSw) {
+    // ... (themeSw logic remains the same, omitted for brevity)
     const savedTheme = localStorage.getItem("wowDark");
-    if (savedTheme === "true") { 
+    if (savedTheme === "true") {
         themeSw.checked = true;
         document.body.classList.add("dark");
     } else {
         document.body.classList.remove("dark");
     }
-    themeSw.addEventListener("change", () => { 
+    themeSw.addEventListener("change", () => {
         const isDark = themeSw.checked;
         document.body.classList.toggle("dark", isDark);
-        localStorage.setItem("wowDark", isDark); 
+        localStorage.setItem("wowDark", isDark);
     });
   }
 
 
   function updateStreak() {
+    // ... (updateStreak logic remains the same, omitted for brevity)
     const today = new Date().toISOString().slice(0,10);
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
-    if (streak.last !== today) { 
-      if (streak.last === getYesterday()) { 
+    if (streak.last !== today) {
+      if (streak.last === getYesterday()) {
         streak.count++;
-      } else { 
+      } else {
         streak.count = 1;
       }
-      streak.last = today; 
+      streak.last = today;
       localStorage.setItem('wowStreak', JSON.stringify(streak));
     }
-    showStreak(streak.count); 
+    showStreak(streak.count);
   }
   function getYesterday() {
     const d = new Date();
@@ -844,6 +862,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return d.toISOString().slice(0,10);
   }
   function showStreak(count) {
+    // ... (showStreak logic remains the same, omitted for brevity)
     if (!streakBadge) return;
     if (count > 1) {
         streakBadge.innerHTML = `🔥 <span class="streak-count">${count}</span> day streak!`;
@@ -855,6 +874,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if(submitFeedbackBtn) submitFeedbackBtn.addEventListener('click', async () => {
+    // ... (submitFeedbackBtn logic remains the same, omitted for brevity)
     const feedback = feedbackTextarea ? feedbackTextarea.value.trim() : "";
     if (!feedback) {
         feedbackTextarea.placeholder = "Please enter your feedback first!";
@@ -874,7 +894,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 feedbackSuccess.textContent = "Thank you for your feedback!";
                 feedbackSuccess.style.display = 'block';
             }
-            if(feedbackTextarea) feedbackTextarea.value = ''; 
+            if(feedbackTextarea) feedbackTextarea.value = '';
 
             if(submitBtnText) submitBtnText.style.display = 'inline';
             if(spinner) spinner.style.display = 'none';
@@ -889,10 +909,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if(feedbackBtn) feedbackBtn.addEventListener('click', () => {
+    // ... (feedbackBtn logic remains the same, omitted for brevity)
     if(feedbackModal) feedbackModal.classList.add('open');
     document.body.style.overflow = "hidden";
-    if(feedbackTextarea) feedbackTextarea.value = ''; 
-    if(feedbackSuccess) { 
+    if(feedbackTextarea) feedbackTextarea.value = '';
+    if(feedbackSuccess) {
         feedbackSuccess.style.display = 'none';
         feedbackSuccess.textContent = "Thank you for your feedback!";
     }
@@ -904,22 +925,26 @@ document.addEventListener("DOMContentLoaded", () => {
     if(feedbackTextarea) feedbackTextarea.focus();
   });
   if(closeFeedbackModal) closeFeedbackModal.addEventListener('click', () => {
+    // ... (closeFeedbackModal logic remains the same, omitted for brevity)
     if(feedbackModal) feedbackModal.classList.remove('open');
     document.body.style.overflow = "";
   });
 
   function openFavoritesModal() {
+    // ... (openFavoritesModal logic remains the same, omitted for brevity)
     if(favModal) favModal.classList.add('open');
     document.body.style.overflow = "hidden";
-    showFavorites(); 
+    showFavorites();
     const firstFocusable = favModal ? favModal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
-    if (firstFocusable) firstFocusable.focus(); 
+    if (firstFocusable) firstFocusable.focus();
   }
   if(closeFavModal) closeFavModal.addEventListener('click', () => {
+    // ... (closeFavModal logic remains the same, omitted for brevity)
     if(favModal) favModal.classList.remove('open');
     document.body.style.overflow = "";
   });
-  if (closeFavModalLarge) { 
+  if (closeFavModalLarge) {
+    // ... (closeFavModalLarge logic remains the same, omitted for brevity)
     closeFavModalLarge.addEventListener('click', () => {
         if(favModal) favModal.classList.remove('open');
         document.body.style.overflow = "";
@@ -927,6 +952,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showFavorites() {
+    // ... (showFavorites logic remains the same, omitted for brevity)
     if (!favQuotesList) return;
     const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favQuotesList.innerHTML = favs.length
@@ -959,7 +985,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (favoriteQuoteObject) {
                 copyFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author, this);
-            } else { 
+            } else {
                  const displayedText = quoteDiv.querySelector('p:first-child').textContent;
                  const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
                  copyFavorite(displayedText, displayedAuthor, this);
@@ -976,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (favoriteQuoteObject) {
                 shareFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author);
-            } else { 
+            } else {
                  const displayedText = quoteDiv.querySelector('p:first-child').textContent;
                  const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
                  shareFavorite(displayedText, displayedAuthor);
@@ -985,18 +1011,20 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  window.removeFavorite = function(idx) { 
+  window.removeFavorite = function(idx) {
+    // ... (removeFavorite logic remains the same, omitted for brevity)
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    showFavorites(); 
-    updateFavoriteButtonState(); 
+    showFavorites();
+    updateFavoriteButtonState();
   };
 
   window.copyFavorite = function(text, cleanAuthor, buttonElement) {
+    // ... (copyFavorite logic remains the same, omitted for brevity)
     const textToCopy = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
-        if(buttonElement){ 
+        if(buttonElement){
             const originalIconHTML = buttonElement.innerHTML;
             buttonElement.innerHTML = '<i class="fa-solid fa-check" style="color: var(--green-accent);"></i>';
             setTimeout(() => { buttonElement.innerHTML = originalIconHTML; }, 1200);
@@ -1005,21 +1033,23 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.shareFavorite = function(text, cleanAuthor) {
-    const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
-    if (navigator.share) { 
+    // ... (shareFavorite logic remains the same, omitted for brevity)
+     const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
+    if (navigator.share) {
       navigator.share({ title: `Quote by ${cleanAuthor || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
         .catch(err => {
-            if (err.name !== 'AbortError') { 
+            if (err.name !== 'AbortError') {
                 console.error("Sharing favorite failed:", err);
             }
         });
-    } else { 
+    } else {
       navigator.clipboard.writeText(shareText).then(() => alert("Quote copied! You can now paste it to share."))
                          .catch(() => alert("Could not copy quote. Please share manually."));
     }
   };
 
   document.addEventListener('keydown', function(e) {
+    // ... (keydown logic remains the same, omitted for brevity)
     if (e.key === "Escape") {
       const openModals = document.querySelectorAll('.modal.open');
       openModals.forEach(modal => {
@@ -1028,7 +1058,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (quoteImagePreviewContainer && quoteImagePreviewContainer.style.display === 'flex') {
         closeImagePreview();
       }
-      document.body.style.overflow = ""; 
+      document.body.style.overflow = "";
 
       if (shareMenu && shareMenu.classList.contains("open")) {
           shareMenu.classList.remove("open");
@@ -1037,30 +1067,76 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function recordCategoryUse(cat) {
+    // ... (recordCategoryUse logic remains the same, omitted for brevity)
     if (!cat) return;
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     usage[cat] = (usage[cat] || 0) + 1;
     localStorage.setItem('catUsage', JSON.stringify(usage));
   }
   function getMostUsedCategory() {
+    // ... (getMostUsedCategory logic remains the same, omitted for brevity)
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     if (Object.keys(usage).length === 0) return null;
     const sortedUsage = Object.entries(usage).sort(([,a],[,b]) => b-a);
-    return sortedUsage[0][0]; 
+    return sortedUsage[0][0];
   }
 
   function requestNotificationPermission() { /* console.log("Placeholder: Request Notification Permission"); */ }
   function sendDailyQuoteNotification() { /* console.log("Placeholder: Send Daily Quote Notification"); */ }
   function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); */ }
 
+  /**
+   * Adjusts the font size of a text element to fit within its container.
+   * @param {HTMLElement} textEl The text element.
+   * @param {HTMLElement} containerEl The container element.
+   * @param {number} maxFs Max font size in pixels.
+   * @param {number} minFs Min font size in pixels.
+   * @param {number} step Font size adjustment step in pixels.
+   * @param {number} padding Vertical and Horizontal padding within the container to respect.
+   */
+  function adjustFontSizeToFit(textEl, containerEl, maxFs = 32, minFs = 12, step = 1, padding = 20) {
+    if (!textEl || !containerEl) return;
+
+    let currentFs = maxFs;
+    textEl.style.fontSize = currentFs + 'px';
+
+    // Calculate available height and width within the container, considering padding
+    const availableHeight = containerEl.clientHeight - (padding * 2);
+    const availableWidth = containerEl.clientWidth - (padding * 2);
+
+    // Iteratively reduce font size until text fits or minFs is reached
+    while (
+        (textEl.scrollHeight > availableHeight || textEl.scrollWidth > availableWidth) &&
+        currentFs > minFs
+    ) {
+        currentFs -= step;
+        textEl.style.fontSize = currentFs + 'px';
+    }
+    // Final check if even minFs is too large, clamp to minFs
+    if (textEl.scrollHeight > availableHeight || textEl.scrollWidth > availableWidth) {
+        textEl.style.fontSize = minFs + 'px';
+    }
+  }
+
 
   // --- Image Generation Feature Logic ---
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
       if (!lastQuote || !lastQuote.text) {
-        alert("Please generate a quote first!"); 
+        alert("Please generate a quote first!");
         return;
       }
+
+      // Store original font size if not already stored
+      if (!originalImageQuoteTextFontSize && imageQuoteText.style.fontSize) {
+        originalImageQuoteTextFontSize = imageQuoteText.style.fontSize;
+      } else if (!originalImageQuoteTextFontSize) {
+        // Fallback if style.fontSize is not set (e.g., using CSS default)
+        // This might need refinement based on how initial CSS is structured
+        const computedStyle = window.getComputedStyle(imageQuoteText);
+        originalImageQuoteTextFontSize = computedStyle.fontSize;
+      }
+
 
       imageQuoteText.textContent = lastQuote.text;
       if (lastQuote.author) {
@@ -1071,38 +1147,46 @@ document.addEventListener("DOMContentLoaded", () => {
         imageQuoteAuthor.style.display = 'none';
       }
 
+      // Dynamically adjust font size
+      // Parameters: textElement, containerElement, maxFontSize, minFontSize, step, padding
+      // Padding should match the padding set in #quoteImageContent in CSS for an accurate fit.
+      adjustFontSizeToFit(imageQuoteText, quoteImageContent, 30, 14, 1, 25);
+
+
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden'; 
+      document.body.style.overflow = 'hidden';
 
       downloadImageBtn.disabled = true;
       shareGeneratedImageBtn.disabled = true;
 
       setTimeout(() => {
-          html2canvas(quoteImageContent, { 
+          html2canvas(quoteImageContent, {
               allowTaint: true,
               useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, 
-              scale: 2, // Increase scale for better resolution, e.g., if #quoteImageContent is 500x500, output is 1000x1000
-              logging: false 
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor,
+              scale: 2,
+              logging: false
           }).then(canvas => {
-              currentCanvas = canvas; 
-
+              currentCanvas = canvas;
               downloadImageBtn.disabled = false;
               shareGeneratedImageBtn.disabled = false;
-
           }).catch(err => {
               console.error("Error generating image with html2canvas:", err);
               alert("Sorry, couldn't generate the image. Please try again.");
-              closeImagePreview(); 
+              closeImagePreview();
           });
-      }, 100); 
+      }, 100);
     });
   }
 
   function closeImagePreview() {
     if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
-    document.body.style.overflow = ''; 
-    currentCanvas = null; 
+    document.body.style.overflow = '';
+    currentCanvas = null;
+    // Restore original font size if it was changed
+    if (originalImageQuoteTextFontSize && imageQuoteText) {
+        imageQuoteText.style.fontSize = originalImageQuoteTextFontSize;
+    }
   }
 
   if (closeImagePreviewBtn) {
@@ -1110,6 +1194,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (downloadImageBtn) {
+    // ... (downloadImageBtn logic remains the same, omitted for brevity)
     downloadImageBtn.addEventListener('click', () => {
       if (!currentCanvas) {
           alert("Image not generated yet.");
@@ -1128,21 +1213,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (shareGeneratedImageBtn) {
+    // ... (shareGeneratedImageBtn logic remains the same, omitted for brevity)
     shareGeneratedImageBtn.addEventListener('click', async () => {
       if (!currentCanvas) {
           alert("Image not generated yet.");
           return;
       }
 
-      if (navigator.share && navigator.canShare) { 
-        currentCanvas.toBlob(async (blob) => { 
+      if (navigator.share && navigator.canShare) {
+        currentCanvas.toBlob(async (blob) => {
           if (!blob) {
               alert("Error creating image blob for sharing.");
               return;
           }
           const authorName = lastQuote.author || 'Unknown';
           const filesArray = [
-            new File([blob], `WOW_Quote_${authorName}.png`, { 
+            new File([blob], `WOW_Quote_${authorName}.png`, {
               type: 'image/png',
               lastModified: new Date().getTime()
             })
@@ -1160,17 +1246,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 await navigator.share({
                     title: `Quote by ${authorName} - Words of Wisdom`,
                     text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
-                    url: window.location.href 
+                    url: window.location.href
                 });
                 console.log('Shared text content and URL as fallback.');
             }
           } catch (err) {
-            if (err.name !== 'AbortError') { 
+            if (err.name !== 'AbortError') {
                 console.error('Error sharing image:', err);
                 alert('Sharing failed. You can try downloading the image instead.');
             }
           }
-        }, 'image/png'); 
+        }, 'image/png');
       } else {
         alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
       }
@@ -1178,17 +1264,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   (async function initApp(){
-    if(qText) qText.textContent = "✨ Loading Wisdom..."; 
+    // ... (initApp logic remains the same, omitted for brevity)
+    if(qText) qText.textContent = "✨ Loading Wisdom...";
     if(qAuth) qAuth.textContent = "";
     if(quoteMark) {
         quoteMark.textContent = "“";
         quoteMark.style.opacity = 0.18;
     }
 
-    await loadCategoriesAndQuotes(); 
-    renderMenu(); 
+    await loadCategoriesAndQuotes();
+    renderMenu();
 
-    let initialCategory = "inspiration"; 
+    let initialCategory = "inspiration";
     const lastAutoCat = localStorage.getItem("lastAutoSelectedCategory");
     const todayStrInit = new Date().toISOString().slice(0,10);
     const lastBannerDateInit = localStorage.getItem("wowBannerDate");
@@ -1209,7 +1296,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
 
 
-    showRotatingBanner(); 
+    showRotatingBanner();
 
     if (!lastQuote || !lastQuote.text) {
         console.log(`Banner didn't set a quote, or using stored category. Displaying quote for: ${selectedCat}`);
@@ -1224,7 +1311,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     showStreak(streak.count);
-    updateFavoriteButtonState(); 
+    updateFavoriteButtonState();
 
     requestNotificationPermission();
     scheduleDailyNotification();
