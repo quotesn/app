@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     innerpeace:     { color: "#81d4fa", icon: "🌊" },
     spirituality:   { color: "#ba68c8", icon: "✨" },
     perseverance:   { color: "#6d4c41", icon: "🚀" }
-  };
+  ];
 
   function capitalize(str) {
     if (!str) return "";
