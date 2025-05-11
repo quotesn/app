@@ -218,16 +218,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
                 try {
                     const data = await fetchJSON(filePath, cacheKeyPrefix + cat.id);
-                    if (data && data.length > 0) {
+                    // Ensure data is an array before checking its length or content
+                    if (Array.isArray(data) && data.length > 0) {
                         console.log(`Successfully loaded and processed ${filePath} for category ${cat.id}`);
                         quotes[cat.id] = data;
                         buildAuthorIndex(data, cat.id);
                         return true; // Success
+                    } else if (Array.isArray(data) && data.length === 0) {
+                        console.warn(`Empty array in ${filePath} for category ${cat.id}. Category will be empty unless other files contribute.`);
+                        quotes[cat.id] = []; // Initialize as empty array if file is empty array
+                        return true; // Technically successful load of an empty file
                     }
-                    console.warn(`No data or empty data in ${filePath} for category ${cat.id}`);
-                    return false; // No data or empty
+                    console.warn(`No data or invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
+                    return false; // No data or invalid structure
                 } catch (err) {
-                    // Error already logged by fetchJSON, just note which file failed here
                     console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed overall.`);
                     return false; // Failure
                 }
@@ -284,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const authorKey = by.toLowerCase().trim();
         if (!authors[authorKey]) authors[authorKey] = [];
         authors[authorKey].push({
-          text: quote.text || quote.quote || quote.message,
+          text: quote.text || quote.quote || quote.message, // Ensure this matches showQuote
           author: by,
           category: categoryId
         });
@@ -499,8 +503,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function showQuote(item, cat, fromUndo = false) {
-    if (!item || typeof item.text === 'undefined') { // Check if item or item.text is undefined
-        console.warn("showQuote called with invalid item:", item);
+    // Robust check for a valid quote item
+    if (!item || (typeof item.text === 'undefined' && typeof item.quote === 'undefined' && typeof item.message === 'undefined')) {
+        console.warn("showQuote called with invalid item (missing text, quote, or message):", item);
         if(qText) qText.textContent = "No quote available. Try another category or inspire me again!";
         if(qAuth) qAuth.textContent = "";
         lastQuote = null;
@@ -562,48 +567,50 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let pool = [];
+    // Helper function to filter for valid quotes
+    const isValidQuote = q => q && (typeof q.text !== 'undefined' || typeof q.quote !== 'undefined' || typeof q.message !== 'undefined');
+
     if (selectedCat === 'myfavorites') {
-      pool = JSON.parse(localStorage.getItem('favQuotes') || '[]');
-      console.log("Loading from 'myfavorites'. Pool size:", pool.length);
+      const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+      pool = favs.filter(isValidQuote);
+      console.log("Loading from 'myfavorites'. Original size:", favs.length, "Filtered pool size:", pool.length);
       if (pool.length === 0) {
-        if(qText) qText.textContent = "You have no favorite quotes yet. Add some!";
+        if(qText) qText.textContent = "You have no favorite quotes yet, or none are valid. Add some!";
         if(qAuth) qAuth.textContent = "";
         lastQuote = null;
         return;
       }
-    } else if (selectedCat === 'user' && quotes['user'] && quotes['user'].length > 0) {
-      pool = quotes['user'];
-      console.log("Loading from 'user' quotes. Pool size:", pool.length);
-    } else if (quotes[selectedCat] && quotes[selectedCat].length > 0) {
-      pool = quotes[selectedCat];
-      console.log(`Loading from category "${selectedCat}". Pool size:`, pool.length);
-    } else {
-        console.warn(`Category "${selectedCat}" not found or empty in quotes object. Current quotes object:`, JSON.parse(JSON.stringify(quotes)));
-        const allQuotes = Object.values(quotes).flat().filter(q => q && typeof q.text !== 'undefined'); // Ensure quotes are valid
-        console.log("Falling back to all loaded quotes. Total valid quotes available:", allQuotes.length);
-        if (allQuotes.length > 0) {
-            pool = allQuotes;
-            if(!selectedCat && currentCategory) currentCategory.textContent = "All Quotes";
-        } else {
-            if(qText) qText.textContent = "No quotes found. Please check data sources or try again.";
-            if(qAuth) qAuth.textContent = "";
-            lastQuote = null;
-            console.error("No quotes available in any category or fallback.");
-            return;
+    } else if (selectedCat === 'user' && Array.isArray(quotes['user'])) {
+      pool = quotes['user'].filter(isValidQuote);
+      console.log("Loading from 'user' quotes. Original size:", quotes['user'].length, "Filtered pool size:", pool.length);
+    } else if (quotes[selectedCat] && Array.isArray(quotes[selectedCat])) {
+      pool = quotes[selectedCat].filter(isValidQuote);
+      console.log(`Loading from category "${selectedCat}". Original size: ${quotes[selectedCat].length}, Filtered pool size:`, pool.length);
+    }
+    
+    // Fallback if the selected category pool is empty after filtering
+    if (!pool || pool.length === 0) {
+        console.warn(`Pool for "${selectedCat}" is empty after filtering, or category not found. Falling back to all quotes.`);
+        const allQuotesRaw = Object.values(quotes).flat();
+        pool = allQuotesRaw.filter(isValidQuote);
+        console.log("Fallback to all loaded quotes. Total raw items:", allQuotesRaw.length, "Filtered pool size:", pool.length);
+        if (pool.length > 0 && currentCategory && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
+             // Only update if selectedCat was truly invalid or not found
+            currentCategory.textContent = "All Quotes";
         }
     }
     
     if (!pool || pool.length === 0) {
-        if(qText) qText.textContent = "No quotes available for this selection.";
+        if(qText) qText.textContent = "No valid quotes available for this selection or any category.";
         if(qAuth) qAuth.textContent = "";
         lastQuote = null;
-        console.error("Pool is empty before selecting random quote for category:", selectedCat);
+        console.error("CRITICAL: Pool is empty after all fallbacks. No quotes to display.");
         return;
     }
 
     const randomIndex = Math.floor(Math.random() * pool.length);
-    console.log(`Selected random index ${randomIndex} from pool of size ${pool.length} for category "${selectedCat}"`);
-    showQuote(pool[randomIndex], selectedCat);
+    console.log(`Selected random index ${randomIndex} from pool of size ${pool.length} for display.`);
+    showQuote(pool[randomIndex], selectedCat || "all_fallback"); // Pass a category, even if it's a fallback identifier
   }
 
 
@@ -646,6 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     genBtn.addEventListener("touchstart", e => {
         triggerGenerateEffects();
+         // displayQuote(); // Consider if needed, click usually follows touchstart
     }, {passive: true}); 
   }
 
