@@ -36,13 +36,13 @@ document.addEventListener("DOMContentLoaded", () => {
     submitFeedbackBtn = document.getElementById('submitFeedbackBtn'),
     feedbackSuccess = document.getElementById('feedbackSuccess'),
     magicSound = document.getElementById('magicSound'),
-    favSound = document.getElementById('favSound'); // Added favSound
+    favSound = document.getElementById('favSound');
 
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = "inspiration"; // Default category
-  let lastQuote = null;
+  let lastQuote = null; // Stores { text: "...", author: "...", category: "..." }
   let quoteHistory = [];
   let authorMode = false;
   let authorQuotes = [];
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     {cat: "spirituality",   text: "Connect with what lies beyond the seen."},
     {cat: "perseverance",   text: "Advance onward-steady and unyielding."}
   ];
-  const bannerStyles = { // (Keep existing bannerStyles object)
+  const bannerStyles = {
     inspiration:    { color: "#7c5df0", icon: "💡" },
     motivation:     { color: "#ff9800", icon: "⚡" },
     positivethinking: { color: "#43b581", icon: "🌈" },
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showRotatingBanner() {
     const today = new Date();
-    const startDate = new Date("2025-05-05"); // Ensure this is a past date for testing
+    const startDate = new Date("2025-05-05");
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
     const theme = bannerThemes[idx];
@@ -137,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
     specialBanner.style.display = "block";
     specialBanner.style.background = style.color ? style.color : "linear-gradient(90deg, #ffd700 0%, #7c5df0 100%)";
     specialBanner.style.color = style.color && (style.color === "#ffd700" || style.color === "#aeea00") ? "#222" : "#fff";
-
 
     closeBannerBtn.onclick = () => {
       specialBanner.style.display = "none";
@@ -257,13 +256,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function buildAuthorIndex(quoteList, categoryId) {
     if (!Array.isArray(quoteList)) return;
     quoteList.forEach(quote => {
-      const by = quote.author || quote.by;
+      const by = (quote.author || quote.by || "").trim(); // Ensure author is trimmed here
       if (by) {
-        const authorKey = by.toLowerCase().trim();
+        const authorKey = by.toLowerCase(); // Already trimmed
         if (!authors[authorKey]) authors[authorKey] = [];
         authors[authorKey].push({
           text: quote.text || quote.quote || quote.message,
-          author: by,
+          author: by, // Store the trimmed, original case author
           category: categoryId
         });
       }
@@ -439,11 +438,11 @@ document.addEventListener("DOMContentLoaded", () => {
             .forEach(nameKey => {
               const li = document.createElement("li");
               li.setAttribute('role', 'option');
-              li.textContent = authors[nameKey][0].author;
+              li.textContent = authors[nameKey][0].author; // Display original case
               li.tabIndex = -1; 
               li.addEventListener("click", () => {
                 authorMode = true;
-                authorName = nameKey;
+                authorName = nameKey; // Use lowercased key for consistency
                 authorQuotes = [...authors[nameKey]]; 
                 authorQuoteIndex = 0;
                 if(currentCategory) currentCategory.textContent = "Author: " + authors[nameKey][0].author;
@@ -529,8 +528,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
       const txt = item.text || item.quote || item.message || "Quote text missing.";
-      let by = item.author || item.by || "";
-      by = by.replace(/^[-–—\s]+/, "").trim(); 
+      // 'by' is the clean author name, already trimmed during buildAuthorIndex or from input
+      let by = (item.author || item.by || "").trim(); 
 
       if(qText) qText.textContent = txt;
       if(qAuth) {
@@ -548,6 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if(qText) qText.classList.remove('fade-out');
       if(qAuth) qAuth.classList.remove('fade-out');
 
+      // Store the clean author name in lastQuote
       lastQuote = { text: txt, author: by, category: cat };
       updateStreak(); 
     }, 300);
@@ -687,9 +687,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
     btn.addEventListener('click', function() {
       const quoteContent = qText ? qText.textContent || "" : "";
-      // Use the clean author name from lastQuote for sharing
-      const rawAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
-      const textToShare = `${quoteContent}${rawAuthor ? ` — ${rawAuthor}` : ''}`.trim();
+      const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : ""; // Use clean author
+      const textToShare = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
       const pageUrl = window.location.href;
       let shareUrl = '';
 
@@ -715,8 +714,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if(copyBtn) copyBtn.addEventListener("click", () => {
     const quoteContent = qText ? qText.textContent || "" : "";
-    const authorContent = qAuth ? (qAuth.textContent || "").replace(/^[\s–—]+/, "") : "";
-    const textToCopy = `${quoteContent}${authorContent ? ` — ${authorContent}` : ''}`.trim();
+    // FIX: Use the clean author name from lastQuote
+    const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
+    const textToCopy = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
 
     navigator.clipboard.writeText(textToCopy).then(() => {
       const iconElement = copyBtn.querySelector("i");
@@ -747,8 +747,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!lastQuote || !lastQuote.text) return; 
 
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+    // Ensure we are using the clean author from lastQuote for consistency
     const currentQuoteText = lastQuote.text;
-    const currentAuthorText = lastQuote.author;
+    const currentAuthorText = lastQuote.author; // This is already clean
 
     const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
     const isFavorited = favIndex !== -1;
@@ -759,6 +760,7 @@ document.addEventListener("DOMContentLoaded", () => {
       favs.splice(favIndex, 1);
       if(savedPopup) savedPopup.textContent = "Unsaved";
     } else {
+      // Add the clean version to favorites
       favs.push({ text: currentQuoteText, author: currentAuthorText });
       if(favSound) favSound.play().catch(e => console.warn("Fav sound play failed", e));
       if(savedPopup) savedPopup.textContent = "Saved!";
@@ -786,6 +788,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!favIcon) return;
 
     const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+    // Compare with the clean author from lastQuote
     const isFavorited = favs.some(q => q.text === lastQuote.text && q.author === lastQuote.author);
 
     if (isFavorited) {
@@ -922,7 +925,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ? favs.map((q, idx) => `
         <div class="fav-quote" data-index="${idx}">
           <p>${q.text}</p>
-          <p class="author">${q.author ? `&#8213; ${q.author}` : ''}</p> <div class="fav-actions">
+          <p class="author">${q.author ? `&#8213; ${q.author}` : ''}</p> {/* q.author is clean here */}
+          <div class="fav-actions">
             <button class="fav-action-btn remove-fav-btn" title="Remove from Favorites" aria-label="Remove quote by ${q.author || 'Unknown'} from favorites"><i class="fa-solid fa-trash"></i></button>
             <button class="fav-action-btn copy-fav-btn" title="Copy Quote" aria-label="Copy quote by ${q.author || 'Unknown'}"><i class="fa-solid fa-copy"></i></button>
             <button class="fav-action-btn share-fav-btn" title="Share Quote" aria-label="Share quote by ${q.author || 'Unknown'}"><i class="fa-solid fa-share-nodes"></i></button>
@@ -937,20 +941,44 @@ document.addEventListener("DOMContentLoaded", () => {
             removeFavorite(index);
         });
       });
+
+      // FIX for Copy from Favorites
       favQuotesList.querySelectorAll('.copy-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const quoteDiv = this.closest('.fav-quote');
-            const text = quoteDiv.querySelector('p:first-child').textContent;
-            const author = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "");
-            copyFavorite(text, author, this);
+            const index = parseInt(quoteDiv.dataset.index);
+            const currentFavs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+            const favoriteQuoteObject = currentFavs[index];
+
+            if (favoriteQuoteObject) {
+                const text = favoriteQuoteObject.text; 
+                const cleanAuthor = favoriteQuoteObject.author; // Guaranteed clean from stored object
+                copyFavorite(text, cleanAuthor, this); // Pass clean author
+            } else {
+                console.error("Could not find favorite quote object for copying at index:", index);
+                // Fallback or error message
+                const displayedText = quoteDiv.querySelector('p:first-child').textContent;
+                const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
+                copyFavorite(displayedText, displayedAuthor, this);
+            }
         });
       });
+
       favQuotesList.querySelectorAll('.share-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const quoteDiv = this.closest('.fav-quote');
-            const text = quoteDiv.querySelector('p:first-child').textContent;
-            const author = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "");
-            shareFavorite(text, author);
+            const index = parseInt(quoteDiv.dataset.index);
+            const currentFavs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+            const favoriteQuoteObject = currentFavs[index];
+
+            if (favoriteQuoteObject) {
+                shareFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author); // Use clean author
+            } else {
+                 console.error("Could not find favorite quote object for sharing at index:", index);
+                 const displayedText = quoteDiv.querySelector('p:first-child').textContent;
+                 const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
+                 shareFavorite(displayedText, displayedAuthor);
+            }
         });
       });
   }
@@ -963,8 +991,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateFavoriteButtonState(); 
   };
 
-  window.copyFavorite = function(text, author, buttonElement) {
-    const textToCopy = `${text}${author ? ` — ${author}` : ''}`.trim();
+  // copyFavorite now expects a clean author name
+  window.copyFavorite = function(text, cleanAuthor, buttonElement) {
+    const textToCopy = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
         if(buttonElement){
             const originalIconHTML = buttonElement.innerHTML; 
@@ -974,10 +1003,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }).catch(err => console.error("Copying favorite failed:", err));
   };
 
-  window.shareFavorite = function(text, author) {
-    const shareText = `${text}${author ? ` — ${author}` : ''}`.trim();
+  // shareFavorite now expects a clean author name
+  window.shareFavorite = function(text, cleanAuthor) {
+    const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     if (navigator.share) {
-      navigator.share({ title: `Quote by ${author || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
+      navigator.share({ title: `Quote by ${cleanAuthor || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
         .catch(err => {
             if (err.name !== 'AbortError') { 
                 console.error("Sharing favorite failed:", err);
@@ -1015,9 +1045,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return sortedUsage[0][0];
   }
 
-  function requestNotificationPermission() { /* ... */ }
-  function sendDailyQuoteNotification() { /* ... */ }
-  function scheduleDailyNotification() { /* ... */ }
+  function requestNotificationPermission() { /* Placeholder */ }
+  function sendDailyQuoteNotification() { /* Placeholder */ }
+  function scheduleDailyNotification() { /* Placeholder */ }
 
 
   (async function initApp(){
