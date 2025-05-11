@@ -14,7 +14,7 @@
   --light: #555;
   --primary: #7c5df0;
   --gold: #FFD700;
-  --green-accent: #43b581; 
+  --green-accent: #43b581;
   --glow: rgba(124,93,240,0.6);
   --sh-light: rgba(255,255,255,0.7);
   --sh-dark: rgba(136,165,191,0.2);
@@ -25,7 +25,7 @@
   --toggle-checked-bg: #7c5df0;
   --toggle-knob: #fff;
   --toggle-shadow: 0 2px 8px rgba(124,93,240,0.08);
-  --success-green: #28a745; 
+  --success-green: #28a745;
   --image-square-size: 480px; /* Define a variable for the square size */
 }
 
@@ -44,7 +44,7 @@ body.dark {
   --toggle-checked-bg: #ffd700;
   --toggle-knob: #232336;
   --toggle-shadow: 0 2px 8px rgba(255,215,0,0.13);
-  --success-green: #34c759; 
+  --success-green: #34c759;
 }
 
 body {
@@ -56,7 +56,7 @@ body {
   transition: background .4s, color .4s;
 }
 
-/* Header */
+/* Header (omitted for brevity, same as before) */
 header {
   width: 100vw;
   position: fixed;
@@ -67,15 +67,15 @@ header {
   z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: space-between; 
-  padding: 0 1rem; 
+  justify-content: space-between;
+  padding: 0 1rem;
 }
 
 .header-center-content {
   display: flex;
   align-items: center;
-  gap: 0.5rem; 
-  position: absolute; 
+  gap: 0.5rem;
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -84,23 +84,23 @@ header h1 {
   font-family: 'Playfair Display', serif;
   color: var(--primary);
   font-size: 1.5rem;
-  margin: 0; 
+  margin: 0;
   pointer-events: none;
   user-select: none;
   white-space: nowrap;
 }
 
 .streak-badge {
-  color: var(--orange);
+  color: var(--orange); /* Make sure --orange is defined or use another color like var(--gold) */
   font-weight: bold;
-  font-size: 0.9rem; 
+  font-size: 0.9rem;
   letter-spacing: 0.01em;
   background-color: var(--card);
   padding: 0.2rem 0.5rem;
   border-radius: 0.8rem;
   box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light);
   white-space: nowrap;
-  display: none; 
+  display: none;
 }
 body.dark .streak-badge {
     box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light);
@@ -124,7 +124,7 @@ body.dark .streak-badge {
 }
 .home-btn:active { background: rgba(124,93,240,0.13); }
 
-/* Theme toggle */
+/* Theme toggle (omitted for brevity, same as before) */
 .toggle-wrap {
   z-index: 2;
 }
@@ -172,14 +172,14 @@ body.dark .streak-badge {
   box-shadow: 0 0 2px 2px var(--toggle-checked-bg);
 }
 
-/* Main content */
+/* Main content (omitted for brevity, same as before) */
 main {
   padding: 5rem 1rem 1rem;
   text-align: center;
   position: relative;
 }
 
-/* Special banner */
+/* Special banner (omitted for brevity, same as before) */
 .special-banner {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -205,7 +205,7 @@ main {
   cursor: pointer;
 }
 
-/* Quote box */
+/* Quote box (omitted for brevity, same as before) */
 .neomorphic {
   background: var(--card);
   border-radius: 1rem;
@@ -272,7 +272,7 @@ main {
   font-style: normal;
 }
 
-/* Category button */
+/* Category button (omitted for brevity, same as before) */
 .category-btn {
   margin: 0 auto 2.5rem;
   display: flex;
@@ -290,7 +290,7 @@ main {
 }
 .category-btn i { color: var(--primary);}
 
-/* Modal */
+/* Modal and Menu (omitted for brevity, same as before) */
 .modal {
   display: none;
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -312,8 +312,6 @@ main {
   background: none; border: none; color: var(--primary);
   font-size: 1.5rem; cursor: pointer;
 }
-
-/* Sections in menu */
 .section { border-top: 1px solid var(--sh-dark);}
 .section-btn {
   width: 100%; padding: 0.8rem 1.2rem; background: var(--menu-bg); border: none;
@@ -339,7 +337,6 @@ main {
 .nested-list a i { font-size: 1.1em; color: var(--primary);}
 .section-list .fa-face-smile { color: var(--gold)!important; }
 
-/* Author search */
 .author-search-wrapper {
   display: none; padding: 0.5rem 0.5rem 0.5rem 1.2rem; width: 90%;
 }
@@ -358,7 +355,8 @@ main {
 .suggestions-list li { padding: 0.5rem 1rem; cursor: pointer; color: var(--primary); transition: background 0.2s;}
 .suggestions-list li:hover { background: rgba(124,93,240,0.15); color: #fff;}
 
-/* Action buttons and round touch effect */
+
+/* Action buttons (omitted for brevity, same as before) */
 .action-buttons {
   display: flex;
   justify-content: center;
@@ -400,7 +398,7 @@ main {
   transform: scale(1.1) rotate(-30deg);
 }
 
-/* Share Menu */
+/* Share Menu (omitted for brevity, same as before) */
 #shareMenu {
   display: none;
   position: absolute;
@@ -445,7 +443,7 @@ body.dark .share-option:hover, body.dark .share-option:focus {
   box-shadow: 0 0 0 2px #ffd700aa;
 }
 
-/* Icon buttons */
+/* Icon buttons (omitted for brevity, same as before) */
 .icon-btn {
   background: transparent; border: none; outline: none;
   border-radius: 50%; width: 3.2rem; height: 3.2rem;
@@ -470,12 +468,13 @@ body.dark .share-option:hover, body.dark .share-option:focus {
 }
 .icon-btn.copied-feedback { color: var(--green-accent); }
 
-/* Favorite button specific styles */
-#favBtn i.fa-solid.fa-heart { 
-  color: var(--gold); 
+
+/* Favorite button specific styles (omitted for brevity, same as before) */
+#favBtn i.fa-solid.fa-heart {
+  color: var(--gold);
   animation: heartBeat 0.5s ease-in-out;
 }
-#favBtn i.fa-regular.fa-heart { 
+#favBtn i.fa-regular.fa-heart {
     color: var(--primary);
 }
 
@@ -487,9 +486,9 @@ body.dark .share-option:hover, body.dark .share-option:focus {
 
 .saved-popup {
   position: absolute;
-  bottom: 120%; 
+  bottom: 120%;
   left: 50%;
-  transform: translateX(-50%) translateY(10px); 
+  transform: translateX(-50%) translateY(10px);
   background-color: var(--green-accent);
   color: white;
   padding: 0.3rem 0.8rem;
@@ -506,11 +505,10 @@ body.dark .share-option:hover, body.dark .share-option:focus {
 #favBtn.show-saved-popup .saved-popup {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0); 
+  transform: translateX(-50%) translateY(0);
 }
 
-
-/* Generate button */
+/* Generate button (omitted for brevity, same as before) */
 .generate-btn {
   position: fixed;
   left: 50%;
@@ -567,10 +565,10 @@ body.dark .magic-wand-icon.animated {
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
 
-/* Responsive */
+/* Responsive (omitted for brevity, same as before, but ensure --image-square-size is responsive) */
 @media (max-width: 600px) {
   header {
-    padding: 0 0.8rem; 
+    padding: 0 0.8rem;
   }
   .header-center-content {
     gap: 0.3rem;
@@ -590,12 +588,12 @@ body.dark .magic-wand-icon.animated {
   }
   .action-buttons .icon-btn { margin: 0 1.2rem; }
   #shareMenu {
-    min-width: 160px; 
+    min-width: 160px;
   }
  #shareMenu .share-option {
-    width: 2.4rem; 
+    width: 2.4rem;
     height: 2.4rem;
-    font-size: 1.1rem; 
+    font-size: 1.1rem;
   }
   :root {
     --image-square-size: 90vw; /* Make square size responsive for smaller screens */
@@ -603,24 +601,28 @@ body.dark .magic-wand-icon.animated {
   #quoteImageContent {
     max-width: var(--image-square-size);
     max-height: var(--image-square-size);
+    padding: 20px; /* Slightly reduce padding for smaller images */
   }
   #imageQuoteText {
-    font-size: 22px; /* Adjust font size for smaller square */
+    font-size: 20px; /* Adjust default font size for smaller square */
+    /* max-height will be handled by JS to some extent */
   }
   #imageQuoteAuthor {
-    font-size: 16px; /* Adjust font size for smaller square */
+    font-size: 16px; 
   }
   #imageWatermark {
-    font-size: 12px; /* Adjust font size for smaller square */
+    font-size: 12px; 
+    bottom: 10px;
+    right: 15px;
   }
 
 }
-@media (max-width: 380px) { 
+@media (max-width: 380px) {
     header h1 {
         font-size: 1.1rem;
     }
     .streak-badge {
-        display: none; 
+        display: none;
     }
     .home-btn {
         width: 2.2rem;
@@ -638,21 +640,23 @@ body.dark .magic-wand-icon.animated {
     .toggle-wrap .theme-toggle input:checked + .slider:before {
         transform: translateX(18px);
     }
+     #quoteImageContent {
+        padding: 15px;
+    }
     #imageQuoteText {
-      font-size: 18px; 
+      font-size: 16px; /* Further adjust for very small screens */
     }
     #imageQuoteAuthor {
-      font-size: 14px; 
+      font-size: 12px;
     }
     #imageWatermark {
-      font-size: 10px;
-      bottom: 10px;
+      font-size: 9px;
+      bottom: 8px;
       right: 10px;
     }
 }
 
-
-/* Favorites Modal */
+/* Favorites Modal (omitted for brevity, same as before) */
 .fav-modal-content {
   position: relative;
 }
@@ -717,65 +721,65 @@ body.dark .magic-wand-icon.animated {
   color: var(--gold);
 }
 
-/* Embossed Button Style */
+/* Embossed Button Style (omitted for brevity, same as before) */
 .embossed-button {
-  display: inline-block; 
-  margin: 0.5rem; 
+  display: inline-block;
+  margin: 0.5rem;
   background: var(--primary);
   color: #fff;
   font-size: 1.08rem;
-  font-weight: 600; 
+  font-weight: 600;
   border: none;
   border-radius: 2rem;
-  padding: 0.8rem 1.2rem; 
+  padding: 0.8rem 1.2rem;
   box-shadow:
-    inset 2px 2px 5px rgba(255, 255, 255, 0.3), 
-    inset -2px -2px 5px rgba(0, 0, 0, 0.2),    
-    4px 4px 8px var(--sh-dark),               
-    -4px -4px 8px var(--sh-light);            
+    inset 2px 2px 5px rgba(255, 255, 255, 0.3),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.2),
+    4px 4px 8px var(--sh-dark),
+    -4px -4px 8px var(--sh-light);
   cursor: pointer;
   transition: background .2s, color .2s, box-shadow .2s, transform 0.1s;
   outline: none;
   position: relative;
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.2); 
-  min-width: 100px; 
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+  min-width: 100px;
 }
 
 .embossed-button:hover,
 .embossed-button:focus {
-  background: var(--primary-hover, #6a46e0); 
+  background: var(--primary-hover, #6a46e0);
   color: #fff;
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.4),
     inset -1px -1px 3px rgba(0, 0, 0, 0.3),
     2px 2px 5px var(--sh-dark),
     -2px -2px 5px var(--sh-light);
-  transform: translateY(1px); 
+  transform: translateY(1px);
 }
 
 .embossed-button:active {
-  background: var(--primary-active, #5e3cc0); 
+  background: var(--primary-active, #5e3cc0);
   box-shadow:
-    inset 2px 2px 5px rgba(0, 0, 0, 0.3),    
-    inset -2px -2px 5px rgba(255, 255, 255, 0.2); 
-  transform: translateY(2px); 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.2);
+  transform: translateY(2px);
 }
 
 
 body.dark .embossed-button {
-  background: var(--primary); 
-  color: var(--text); 
+  background: var(--primary);
+  color: var(--text);
   box-shadow:
-    inset 2px 2px 5px rgba(255, 255, 255, 0.1),  
-    inset -2px -2px 5px rgba(0, 0, 0, 0.4),     
-    4px 4px 10px rgba(0,0,0,0.5),                
-    -4px -4px 10px rgba(255,255,255,0.05);       
+    inset 2px 2px 5px rgba(255, 255, 255, 0.1),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.4),
+    4px 4px 10px rgba(0,0,0,0.5),
+    -4px -4px 10px rgba(255,255,255,0.05);
   text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
 }
 
 body.dark .embossed-button:hover,
 body.dark .embossed-button:focus {
-  background: var(--primary-hover-dark, #c7aefb); 
+  background: var(--primary-hover-dark, #c7aefb);
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.15),
     inset -1px -1px 3px rgba(0, 0, 0, 0.5),
@@ -790,13 +794,12 @@ body.dark .embossed-button:active {
 }
 #customQuoteForm .embossed-button,
 #feedbackModal .embossed-button {
-    width: 60%; 
-    display: block; 
-    margin: 1.5rem auto 0 auto; 
+    width: 60%;
+    display: block;
+    margin: 1.5rem auto 0 auto;
 }
 
-
-/* Submit Quote Form */
+/* Submit Quote Form (omitted for brevity, same as before) */
 #customQuoteForm input[type="text"] {
   background: var(--card);
   border: 1.5px solid var(--primary);
@@ -807,19 +810,19 @@ body.dark .embossed-button:active {
   font-size: 1.03rem;
   box-shadow: 2px 2px 8px var(--sh-dark), -2px -2px 8px var(--sh-light);
   transition: border .2s;
-  color: var(--text); 
+  color: var(--text);
 }
 #customQuoteForm input[type="text"]:focus {
   border: 2px solid var(--primary);
   outline: none;
 }
 
-.form-success-message { 
-  display: none; 
-  color: var(--success-green) !important; 
+.form-success-message {
+  display: none;
+  color: var(--success-green) !important;
   margin-top: 1.2rem;
   text-align: center;
-  font-size: 1.05rem; 
+  font-size: 1.05rem;
   font-weight: 500;
 }
 
@@ -828,16 +831,15 @@ body.dark #submitQuoteModal input,
 body.dark #submitQuoteModal label,
 body.dark #submitQuoteModal h2
 {
-  color: var(--text) !important; 
-  background-color: var(--card) !important; 
-  border-color: var(--primary) !important; 
+  color: var(--text) !important;
+  background-color: var(--card) !important;
+  border-color: var(--primary) !important;
 }
 body.dark #submitQuoteModal input::placeholder {
-  color: var(--light); 
+  color: var(--light);
 }
 
-
-/* Feedback Button & Modal */
+/* Feedback Button & Modal (omitted for brevity, same as before) */
 .feedback-btn {
   position: fixed;
   right: 1.5rem;
@@ -881,9 +883,9 @@ body.dark #submitQuoteModal input::placeholder {
   background: var(--card);
   color: var(--text);
 }
-.feedback-submit-btn { 
+.feedback-submit-btn {
   width: 80%;
-  margin-bottom: 1rem; 
+  margin-bottom: 1rem;
 }
 
 .feedback-links {
@@ -912,8 +914,7 @@ body.dark #feedbackTextarea::placeholder {
     color: var(--light);
 }
 
-
-/* Footer */
+/* Footer (omitted for brevity, same as before) */
 footer {
   width: 100vw;
   position: fixed;
@@ -943,115 +944,118 @@ footer .author-link:focus {
 
 /* Styles for Image Preview Modal */
 #quoteImagePreviewContainer {
-  display: none; 
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.7); 
+  background: rgba(0,0,0,0.7);
   justify-content: center;
   align-items: center;
-  z-index: 3000; 
-  padding: 1rem; 
-  overflow-y: auto; 
+  z-index: 3000;
+  padding: 1rem;
+  overflow-y: auto;
 }
 
 #quoteImageWrapper {
-  background: var(--card); 
-  color: var(--text);     
-  padding: 20px; 
-  border-radius: 12px;   
+  background: var(--card);
+  color: var(--text);
+  padding: 20px;
+  border-radius: 12px;
   text-align: center;
-  /* max-width is removed to let content define width up to var(--image-square-size) via quoteImageContent */
-  width: auto; /* Allow width to be determined by its content (the square) */
-  min-width: calc(var(--image-square-size) + 40px); /* Ensure wrapper is at least as wide as the square + padding */
-  position: relative;     
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
-  font-family: 'Poppins', sans-serif; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
+  width: auto; 
+  min-width: calc(var(--image-square-size) + 40px); 
+  position: relative;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #quoteImageContent {
-  background: var(--card); 
+  background: var(--card);
   color: var(--text);
-  width: var(--image-square-size); /* Fixed width for the square */
-  height: var(--image-square-size); /* Fixed height for the square */
-  padding: 25px; 
-  border-radius: 10px; 
-  text-align: center; 
-  position: relative; 
+  width: var(--image-square-size); 
+  height: var(--image-square-size); 
+  padding: 25px; /* This padding is used by JS adjustFontSizeToFit */
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Vertically center content */
-  align-items: center; /* Horizontally center content */
-  overflow: hidden; /* Hide overflow if text is too long */
+  justify-content: center; 
+  align-items: center; 
+  overflow: hidden; 
 }
 
 
 body.dark #quoteImageWrapper {
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4); 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
 }
 body.dark #quoteImageContent {
-  background: var(--card); 
+  background: var(--card);
   color: var(--text);
 }
 
 
 #imageQuoteText {
-  font-family: 'Playfair Display', serif; 
-  font-size: 28px; 
-  color: var(--text); 
-  margin-bottom: 20px; 
-  word-wrap: break-word; 
-  line-height: 1.4; /* Adjusted for better spacing in a square */
-  text-align: center; 
-  max-height: 60%; /* Limit height to prevent overflow with long quotes */
-  overflow-y: auto; /* Allow scroll for very long text if needed, though ideally font size adjusts */
+  font-family: 'Playfair Display', serif;
+  /* font-size is now set by JS - initial value can be small or removed */
+  font-size: 14px; /* Start with a base, JS will adjust */
+  color: var(--text);
+  margin-bottom: 15px; /* Reduced margin for tighter packing */
+  word-wrap: break-word;
+  line-height: 1.3; /* Slightly tighter line height */
+  text-align: center;
+  width: 100%; /* Ensure it uses the container width for calculations */
+  /* max-height: 70%; /* Increased slightly, but JS is primary controller */
+  /* overflow: hidden; /* Let JS handle overflow by reducing font size */
 }
 
 #imageQuoteAuthor {
-  font-family: 'Poppins', sans-serif; 
-  font-size: 20px; 
-  color: var(--light); 
-  margin-top: auto; /* Pushes author towards the bottom if quote is short */
-  padding-top: 15px; /* Space between quote and author */
-  margin-bottom: 30px; /* Space before watermark if author is present */
-  font-style: italic; 
-  text-align: center; 
-  width: 100%; /* Ensure it takes full width for centering */
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px; /* Slightly smaller default, can be adjusted */
+  color: var(--light);
+  margin-top: auto; 
+  padding-top: 10px; 
+  margin-bottom: 25px; /* Space for watermark */
+  font-style: italic;
+  text-align: center;
+  width: 100%;
+  flex-shrink: 0; /* Prevent author from shrinking too much */
 }
 
 #imageWatermark {
-  font-family: 'Poppins', sans-serif; 
-  font-size: 14px; 
-  color: var(--light); 
-  opacity: 0.7; 
-  position: absolute; 
-  bottom: 15px; 
-  right: 20px; 
-  text-align: right; 
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: var(--light);
+  opacity: 0.7;
+  position: absolute;
+  bottom: 15px;
+  right: 20px;
+  text-align: right;
+  flex-shrink: 0; /* Prevent watermark from shrinking */
 }
 
 body.dark #imageWatermark {
-  color: var(--light); 
-  opacity: 0.5; 
+  color: var(--light);
+  opacity: 0.5;
 }
 
 .image-buttons-container {
-  margin-top: 20px; 
+  margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  width: 100%; 
+  width: 100%;
 }
 
 #quoteImageWrapper .embossed-button {
-    padding: 0.6rem 1rem; 
-    font-size: 0.9rem;    
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
 }
 
 
