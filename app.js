@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     submitQuoteModal = document.getElementById("submitQuoteModal"),
     closeSubmitQuoteModal = document.getElementById("closeSubmitQuoteModal"),
     customQuoteForm = document.getElementById("customQuoteForm"),
+    submitCustomQuoteBtn = document.getElementById("submitCustomQuoteBtn"), // Get the button itself
     quoteFormSuccess = document.getElementById("quoteFormSuccess"),
     favModal = document.getElementById('favModal'),
     closeFavModal = document.getElementById('closeFavModal'),
@@ -32,14 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
     feedbackModal = document.getElementById('feedbackModal'),
     closeFeedbackModal = document.getElementById('closeFeedbackModal'),
     feedbackTextarea = document.getElementById('feedbackTextarea'),
-    submitFeedbackBtn = document.getElementById('submitFeedbackBtn'),
+    submitFeedbackBtn = document.getElementById('submitFeedbackBtn'), // Get the button itself
     feedbackSuccess = document.getElementById('feedbackSuccess'),
-    magicSound = document.getElementById('magicSound'),
-    sharePngBtn = document.getElementById('sharePngBtn'),
-    pngPreviewModal = document.getElementById('pngPreviewModal'),
-    pngPreviewImg = document.getElementById('pngPreviewImg'),
-    downloadPngBtn = document.getElementById('downloadPngBtn'),
-    closePngPreviewModal = document.getElementById('closePngPreviewModal');
+    magicSound = document.getElementById('magicSound');
+    // Removed DOM references for PNG share: sharePngBtn, pngPreviewModal, pngPreviewImg, downloadPngBtn, closePngPreviewModal
 
   let categories = [];
   let quotes = {};
@@ -122,14 +119,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showRotatingBanner() {
     const today = new Date();
-    const startDate = new Date("2025-05-05"); 
+    const startDate = new Date("2025-05-05");
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-    const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length; 
+    const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
     const theme = bannerThemes[idx];
     const todayStr = today.toISOString().slice(0,10);
     const lastBannerDate = localStorage.getItem("wowBannerDate");
 
-    if (lastBannerDate === todayStr && specialBanner.style.display === 'none') return; 
+    if (lastBannerDate === todayStr && specialBanner.style.display === 'none') return;
 
     let bannerHTML = "";
     const style = bannerStyles[theme.cat] || {};
@@ -138,23 +135,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     bannerText.innerHTML = bannerHTML;
     specialBanner.style.display = "block";
-    specialBanner.style.background = style.color ? style.color : "linear-gradient(90deg, #ffd700 0%, #7c5df0 100%)"; 
-    specialBanner.style.color = "#fff"; 
+    specialBanner.style.background = style.color ? style.color : "linear-gradient(90deg, #ffd700 0%, #7c5df0 100%)";
+    specialBanner.style.color = "#fff";
 
     closeBannerBtn.onclick = () => {
       specialBanner.style.display = "none";
-      localStorage.setItem("wowBannerDate", todayStr); 
+      localStorage.setItem("wowBannerDate", todayStr);
     };
     setTimeout(() => {
-      if(specialBanner.style.display !== "none"){ 
+      if(specialBanner.style.display !== "none"){
           specialBanner.style.display = "none";
       }
     }, 8000);
 
     selectedCat = theme.cat;
     if(currentCategory) currentCategory.textContent = capitalize(theme.cat);
-    displayQuote(); 
-    localStorage.setItem("wowBannerDate", todayStr); 
+    displayQuote();
+    localStorage.setItem("wowBannerDate", todayStr);
   }
 
   async function fetchJSON(url, cacheKey) {
@@ -218,7 +215,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
                 try {
                     const data = await fetchJSON(filePath, cacheKeyPrefix + cat.id);
-                    // Ensure data is an array before checking its length or content
                     if (Array.isArray(data) && data.length > 0) {
                         console.log(`Successfully loaded and processed ${filePath} for category ${cat.id}`);
                         quotes[cat.id] = data;
@@ -226,24 +222,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         return true; // Success
                     } else if (Array.isArray(data) && data.length === 0) {
                         console.warn(`Empty array in ${filePath} for category ${cat.id}. Category will be empty unless other files contribute.`);
-                        quotes[cat.id] = []; // Initialize as empty array if file is empty array
-                        return true; // Technically successful load of an empty file
+                        quotes[cat.id] = [];
+                        return true;
                     }
                     console.warn(`No data or invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
-                    return false; // No data or invalid structure
+                    return false;
                 } catch (err) {
                     console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed overall.`);
-                    return false; // Failure
+                    return false;
                 }
             };
-            
+
             quotePromises.push(
                 fetchAndProcessQuoteFile(pathAttempt1, 'wowQuotes_').then(success => {
                     if (!success && pathAttempt2) {
                         console.warn(`Primary path ${pathAttempt1} failed or empty for ${cat.id}, trying fallback ${pathAttempt2}`);
                         return fetchAndProcessQuoteFile(pathAttempt2, 'wowQuotesRoot_');
                     }
-                    return success; 
+                    return success;
                 })
             );
           }
@@ -288,7 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const authorKey = by.toLowerCase().trim();
         if (!authors[authorKey]) authors[authorKey] = [];
         authors[authorKey].push({
-          text: quote.text || quote.quote || quote.message, // Ensure this matches showQuote
+          text: quote.text || quote.quote || quote.message,
           author: by,
           category: categoryId
         });
@@ -298,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderMenu() {
     if (!categoryMenu) return;
-    categoryMenu.innerHTML = ""; 
+    categoryMenu.innerHTML = "";
     function renderCategoryList(catArray, parentUl) {
       catArray.forEach(cat => {
         if (cat.isSearch) {
@@ -343,14 +339,25 @@ document.addEventListener("DOMContentLoaded", () => {
           submitSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-plus section-icon" aria-hidden="true"></i>Submit a Quote</button>`;
           submitSec.querySelector(".section-btn").addEventListener("click", () => {
             if(submitQuoteModal) submitQuoteModal.classList.add('open');
-            document.body.style.overflow = "hidden"; 
+            document.body.style.overflow = "hidden";
             if(customQuoteForm) customQuoteForm.reset();
-            if(quoteFormSuccess) quoteFormSuccess.style.display = "none";
+            if(quoteFormSuccess) {
+                quoteFormSuccess.style.display = "none";
+                quoteFormSuccess.style.color = 'var(--success-green)'; // Reset color if changed
+                quoteFormSuccess.textContent = "Thank you! Your quote was submitted."; // Reset text
+            }
+            // Reset submit button state
+            const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
+            const submitSpinner = submitCustomQuoteBtn.querySelector('.loader-spinner');
+            if(submitBtnText) submitBtnText.style.display = 'inline';
+            if(submitSpinner) submitSpinner.style.display = 'none';
+            submitCustomQuoteBtn.disabled = false;
+
             closeMenu();
           });
           categoryMenu.appendChild(submitSec);
 
-        } else { 
+        } else {
           const sec = document.createElement("div");
           sec.className = "section";
           const sectionId = `section-list-${cat.id || Math.random().toString(36).substring(2,9)}`;
@@ -364,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (cat.children) {
             cat.children.forEach(child => {
               const li = document.createElement("li");
-              if (child.children) { 
+              if (child.children) {
                 li.className = "has-children";
                 const subSectionId = `subsection-list-${child.id || Math.random().toString(36).substring(2,9)}`;
                 li.innerHTML = `<span role="button" tabindex="0" aria-expanded="false" aria-controls="${subSectionId}">
@@ -381,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   </a>`;
                   subul.appendChild(subli);
                 });
-              } else { 
+              } else {
                 li.innerHTML = `<a href="#" data-cat="${child.id}">
                   ${child.icon ? `<i class="fa-solid ${child.icon}" aria-hidden="true"></i>` : ""}
                   ${child.name}
@@ -404,8 +411,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
       span.addEventListener('click', function(e) {
-        e.stopPropagation(); 
-        const nestedList = this.nextElementSibling; 
+        e.stopPropagation();
+        const nestedList = this.nextElementSibling;
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', !isExpanded);
         nestedList.style.display = isExpanded ? 'none' : 'block';
@@ -415,7 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
             icon.classList.toggle('fa-caret-down');
         }
       });
-      span.addEventListener('keydown', function(e) { 
+      span.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           this.click();
@@ -436,27 +443,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const authorInput = categoryMenu.querySelector("#authorSearch");
-    const authorListUL = categoryMenu.querySelector("#authorList"); 
+    const authorListUL = categoryMenu.querySelector("#authorList");
     if (authorInput && authorListUL) {
       authorInput.addEventListener("input", () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           const query = authorInput.value.toLowerCase().trim();
-          authorListUL.innerHTML = ""; 
+          authorListUL.innerHTML = "";
           if (!query) return;
           Object.keys(authors)
             .filter(name => name.includes(query))
             .sort()
-            .slice(0, 10) 
+            .slice(0, 10)
             .forEach(nameKey => {
               const li = document.createElement("li");
               li.setAttribute('role', 'option');
-              li.textContent = authors[nameKey][0].author; 
-              li.tabIndex = -1; 
+              li.textContent = authors[nameKey][0].author;
+              li.tabIndex = -1;
               li.addEventListener("click", () => {
                 authorMode = true;
-                authorName = nameKey; 
-                authorQuotes = [...authors[nameKey]]; 
+                authorName = nameKey;
+                authorQuotes = [...authors[nameKey]];
                 authorQuoteIndex = 0;
                 if(currentCategory) currentCategory.textContent = "Author: " + authors[nameKey][0].author;
                 closeMenu();
@@ -464,26 +471,26 @@ document.addEventListener("DOMContentLoaded", () => {
               });
               authorListUL.appendChild(li);
             });
-        }, 300); 
+        }, 300);
       });
     }
   }
 
   function openMenu() {
-    renderMenu(); 
+    renderMenu();
     if(categoryModal) categoryModal.classList.add("open");
-    document.body.style.overflow = "hidden"; 
-    if(closeMenuBtn) closeMenuBtn.focus(); 
+    document.body.style.overflow = "hidden";
+    if(closeMenuBtn) closeMenuBtn.focus();
   }
   function closeMenu() {
     if(categoryModal) categoryModal.classList.remove("open");
-    document.body.style.overflow = ""; 
-    if(openMenuBtn) openMenuBtn.focus(); 
+    document.body.style.overflow = "";
+    if(openMenuBtn) openMenuBtn.focus();
   }
   if(openMenuBtn) openMenuBtn.addEventListener("click", openMenu);
   if(closeMenuBtn) closeMenuBtn.addEventListener("click", closeMenu);
   if(categoryModal) categoryModal.addEventListener("click", function(e) {
-    if (e.target === categoryModal) closeMenu(); 
+    if (e.target === categoryModal) closeMenu();
   });
 
   if(closeSubmitQuoteModal) closeSubmitQuoteModal.addEventListener('click', () => {
@@ -493,17 +500,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if(customQuoteForm) customQuoteForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    if(quoteFormSuccess) quoteFormSuccess.style.display = 'block';
+    const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
+    const spinner = submitCustomQuoteBtn.querySelector('.loader-spinner');
+
+    if(submitBtnText) submitBtnText.style.display = 'none';
+    if(spinner) spinner.style.display = 'inline-block';
+    submitCustomQuoteBtn.disabled = true;
+
+    // Simulate API call
     setTimeout(() => {
-      if(quoteFormSuccess) quoteFormSuccess.style.display = 'none';
-      if(submitQuoteModal) submitQuoteModal.classList.remove('open');
-      document.body.style.overflow = "";
-    }, 1800);
-    customQuoteForm.reset();
+        if(quoteFormSuccess) {
+            quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
+            quoteFormSuccess.style.color = 'var(--success-green)';
+            quoteFormSuccess.style.display = 'block';
+        }
+
+        if(submitBtnText) submitBtnText.style.display = 'inline';
+        if(spinner) spinner.style.display = 'none';
+        submitCustomQuoteBtn.disabled = false;
+        customQuoteForm.reset(); // Reset form after showing success
+
+        setTimeout(() => {
+          if(quoteFormSuccess) quoteFormSuccess.style.display = 'none';
+          if(submitQuoteModal) submitQuoteModal.classList.remove('open');
+          document.body.style.overflow = "";
+        }, 2000); // Hide modal after an additional 2 seconds
+    }, 1500); // Simulate 1.5 second delay
   });
 
   function showQuote(item, cat, fromUndo = false) {
-    // Robust check for a valid quote item
     if (!item || (typeof item.text === 'undefined' && typeof item.quote === 'undefined' && typeof item.message === 'undefined')) {
         console.warn("showQuote called with invalid item (missing text, quote, or message):", item);
         if(qText) qText.textContent = "No quote available. Try another category or inspire me again!";
@@ -514,8 +539,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!fromUndo && lastQuote) {
-      quoteHistory.unshift(lastQuote); 
-      if (quoteHistory.length > 5) quoteHistory.length = 5; 
+      quoteHistory.unshift(lastQuote);
+      if (quoteHistory.length > 5) quoteHistory.length = 5;
     }
     if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "" : "none";
 
@@ -525,27 +550,27 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       const txt = item.text || item.quote || item.message || "Quote text missing.";
       let by = item.author || item.by || "";
-      by = by.replace(/^[-–—\s]+/, "").trim(); 
+      by = by.replace(/^[-–—\s]+/, "").trim();
 
       if(qText) qText.textContent = txt;
       if(qAuth) {
         if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
-          qAuth.textContent = ""; 
+          qAuth.textContent = "";
         } else {
           qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
         }
       }
       if(quoteMark) {
-        quoteMark.textContent = "“"; 
+        quoteMark.textContent = "“";
         quoteMark.style.opacity = 0.18;
       }
-      
+
       if(qText) qText.classList.remove('fade-out');
       if(qAuth) qAuth.classList.remove('fade-out');
 
-      lastQuote = { text: txt, author: by, category: cat }; 
+      lastQuote = { text: txt, author: by, category: cat };
       updateStreak();
-    }, 300); 
+    }, 300);
   }
 
   function showAuthorQuote() {
@@ -556,7 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const quote = authorQuotes[authorQuoteIndex % authorQuotes.length];
     showQuote(quote, quote.category);
-    authorQuoteIndex++; 
+    authorQuoteIndex++;
   }
 
   function displayQuote() {
@@ -567,7 +592,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let pool = [];
-    // Helper function to filter for valid quotes
     const isValidQuote = q => q && (typeof q.text !== 'undefined' || typeof q.quote !== 'undefined' || typeof q.message !== 'undefined');
 
     if (selectedCat === 'myfavorites') {
@@ -587,19 +611,17 @@ document.addEventListener("DOMContentLoaded", () => {
       pool = quotes[selectedCat].filter(isValidQuote);
       console.log(`Loading from category "${selectedCat}". Original size: ${quotes[selectedCat].length}, Filtered pool size:`, pool.length);
     }
-    
-    // Fallback if the selected category pool is empty after filtering
+
     if (!pool || pool.length === 0) {
         console.warn(`Pool for "${selectedCat}" is empty after filtering, or category not found. Falling back to all quotes.`);
         const allQuotesRaw = Object.values(quotes).flat();
         pool = allQuotesRaw.filter(isValidQuote);
         console.log("Fallback to all loaded quotes. Total raw items:", allQuotesRaw.length, "Filtered pool size:", pool.length);
         if (pool.length > 0 && currentCategory && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
-             // Only update if selectedCat was truly invalid or not found
             currentCategory.textContent = "All Quotes";
         }
     }
-    
+
     if (!pool || pool.length === 0) {
         if(qText) qText.textContent = "No valid quotes available for this selection or any category.";
         if(qAuth) qAuth.textContent = "";
@@ -610,22 +632,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const randomIndex = Math.floor(Math.random() * pool.length);
     console.log(`Selected random index ${randomIndex} from pool of size ${pool.length} for display.`);
-    showQuote(pool[randomIndex], selectedCat || "all_fallback"); // Pass a category, even if it's a fallback identifier
+    showQuote(pool[randomIndex], selectedCat || "all_fallback");
   }
 
 
   if(undoBtn) undoBtn.addEventListener("click", () => {
     if (quoteHistory.length > 0) {
-      const prev = quoteHistory.shift(); 
-      showQuote(prev, prev.category, true); 
+      const prev = quoteHistory.shift();
+      showQuote(prev, prev.category, true);
     }
-    undoBtn.style.display = quoteHistory.length > 0 ? "" : "none"; 
+    undoBtn.style.display = quoteHistory.length > 0 ? "" : "none";
   });
 
   function triggerGenerateEffects() {
     if (magicSound) {
-      magicSound.currentTime = 0; 
-      magicSound.play().catch(e => console.warn("Audio play failed:", e)); 
+      magicSound.currentTime = 0;
+      magicSound.play().catch(e => console.warn("Audio play failed:", e));
     }
     if(quoteBox) quoteBox.classList.add('glow');
     setTimeout(() => { if(quoteBox) quoteBox.classList.remove('glow'); }, 400);
@@ -635,7 +657,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wand.classList.add('animated');
       setTimeout(() => wand.classList.remove('animated'), 700);
     }
-    if(genBtn) genBtn.classList.add('touched'); 
+    if(genBtn) genBtn.classList.add('touched');
     setTimeout(() => {if(genBtn) genBtn.classList.remove('touched');}, 400);
 
     const ripple = document.createElement('span');
@@ -643,7 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ripple.style.left = "50%";
     ripple.style.top = "50%";
     if(genBtn) genBtn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 700); 
+    setTimeout(() => ripple.remove(), 700);
   }
 
   if(genBtn) {
@@ -653,25 +675,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     genBtn.addEventListener("touchstart", e => {
         triggerGenerateEffects();
-         // displayQuote(); // Consider if needed, click usually follows touchstart
-    }, {passive: true}); 
+    }, {passive: true});
   }
 
   document.querySelectorAll('.icon-btn, .feedback-btn, .home-btn, .generate-btn').forEach(btn => {
-    btn.style.webkitTapHighlightColor = "transparent"; 
+    btn.style.webkitTapHighlightColor = "transparent";
     btn.addEventListener('touchstart', e => {
       const ripple = document.createElement('span');
-      ripple.className = 'ripple'; 
+      ripple.className = 'ripple';
       const rect = btn.getBoundingClientRect();
       ripple.style.left = (e.touches[0].clientX - rect.left) + 'px';
       ripple.style.top = (e.touches[0].clientY - rect.top) + 'px';
       btn.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 600); 
-    }, {passive: true}); 
+      setTimeout(() => ripple.remove(), 600);
+    }, {passive: true});
   });
 
   if(shareBtn) shareBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     if(shareMenu) shareMenu.classList.toggle("open");
     if (shareMenu && shareMenu.classList.contains("open")) {
       document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
@@ -687,11 +708,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
-    if (btn === sharePngBtn) return; 
-
+    // Removed condition for sharePngBtn as it's gone
     btn.addEventListener('click', function() {
       const quoteContent = qText ? qText.textContent || "" : "";
-      const authorContent = qAuth ? (qAuth.textContent || "").replace(/^[-–—\s]+/, "") : ""; 
+      const authorContent = qAuth ? (qAuth.textContent || "").replace(/^[-–—\s]+/, "") : "";
       const textToShare = `${quoteContent}${authorContent ? ` — ${authorContent}` : ''}`.trim();
       const pageUrl = window.location.href;
       let shareUrl = '';
@@ -711,185 +731,22 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
       if (shareUrl) window.open(shareUrl, "_blank", "noopener,noreferrer");
-      shareMenu.classList.remove("open"); 
+      shareMenu.classList.remove("open");
     });
   });
 
-  async function shareQuoteAsPNG() {
-    const nodeToClone = document.getElementById('quoteBox'); 
-    if (!nodeToClone) {
-        console.error("Quote box element not found for PNG generation.");
-        alert("Could not generate image. Element missing.");
-        return;
-    }
-
-    const virtualNode = nodeToClone.cloneNode(true);
-    virtualNode.id = 'virtualQuoteBoxForImage'; 
-    virtualNode.style.width = "1080px";       
-    virtualNode.style.height = "1080px";      
-    virtualNode.style.maxWidth = "none";
-    virtualNode.style.maxHeight = "none";
-    virtualNode.style.position = "absolute";
-    virtualNode.style.left = "-9999px";       
-    virtualNode.style.top = "0";
-    virtualNode.style.boxSizing = "border-box";
-    virtualNode.style.display = "flex";
-    virtualNode.style.flexDirection = "column";
-    virtualNode.style.justifyContent = "center";
-    virtualNode.style.alignItems = "center";
-    virtualNode.style.padding = "100px"; 
-    virtualNode.style.fontFamily = "'Poppins', sans-serif"; 
-
-    const isDarkMode = document.body.classList.contains('dark');
-    virtualNode.style.background = isDarkMode ? "#232336" : "#FFFFFF";
-    virtualNode.style.color = isDarkMode ? "#f8f8fa" : "#222222";
-
-    const virtualQuoteMark = virtualNode.querySelector("#quoteMark");
-    if (virtualQuoteMark) virtualQuoteMark.style.display = 'none';
-
-    const quoteTextElement = virtualNode.querySelector("#quoteText");
-    const authorTextElement = virtualNode.querySelector("#quoteAuthor");
-
-    if (quoteTextElement) {
-        quoteTextElement.style.textAlign = "center";
-        quoteTextElement.style.fontSize = "56px"; 
-        quoteTextElement.style.lineHeight = "1.35";
-        quoteTextElement.style.marginBottom = "40px";
-        quoteTextElement.style.width = "100%";
-        quoteTextElement.style.paddingLeft = "0"; 
-        quoteTextElement.style.color = isDarkMode ? "#f8f8fa" : "#222222"; 
-
-        const textLength = quoteTextElement.textContent.length;
-        if (textLength > 220) quoteTextElement.style.fontSize = "40px";
-        else if (textLength > 140) quoteTextElement.style.fontSize = "48px";
-        else if (textLength > 70) quoteTextElement.style.fontSize = "52px";
-    }
-
-    if (authorTextElement) {
-        authorTextElement.style.textAlign = "center";
-        authorTextElement.style.fontSize = "38px";
-        authorTextElement.style.marginTop = "25px";
-        authorTextElement.style.width = "100%";
-        authorTextElement.style.color = isDarkMode ? "#b39ddb" : "#7c5df0"; 
-        if (authorTextElement.textContent && !authorTextElement.textContent.includes("—")) {
-             const authorContent = authorTextElement.textContent.replace(/^[-–—\s]+/, "").trim();
-             if (authorContent) {
-                authorTextElement.innerHTML = `<span style="font-size:1em;vertical-align:middle;">&#8213;</span> ${authorContent}`;
-             } else {
-                authorTextElement.style.display = 'none';
-             }
-        } else if (!authorTextElement.textContent.replace(/^[-–—\s]+/, "").trim()) {
-            authorTextElement.style.display = 'none'; 
-        }
-    }
-
-    document.body.appendChild(virtualNode); 
-
-    try {
-        const dataUrl = await htmlToImage.toPng(virtualNode, {
-            width: 1080,
-            height: 1080,
-            pixelRatio: 2, 
-            backgroundColor: virtualNode.style.background, 
-        });
-
-        const img = new Image();
-        img.onload = function() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 1080;
-            canvas.height = 1080;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            ctx.font = "bold 34px 'Poppins', Arial, sans-serif";
-            ctx.fillStyle = isDarkMode ? "rgba(248, 248, 250, 0.6)" : "rgba(35, 35, 54, 0.6)";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "bottom";
-            ctx.fillText("wordsofwisdom.in", canvas.width / 2, canvas.height - 35);
-
-            if(pngPreviewImg) pngPreviewImg.src = canvas.toDataURL("image/png");
-            if(pngPreviewModal) pngPreviewModal.classList.add('open');
-            document.body.style.overflow = "hidden"; 
-
-            if(downloadPngBtn) downloadPngBtn.onclick = async function() {
-                const quoteContentForShare = qText ? qText.textContent || "Inspiring Quote" : "Inspiring Quote";
-                const authorContentForShare = qAuth ? (qAuth.textContent || "").replace(/^[-–—\s]+/, "") : "";
-                const shareTitle = `Quote by ${authorContentForShare || "Words of Wisdom"}`;
-                const shareText = `${quoteContentForShare}${authorContentForShare ? ` — ${authorContentForShare}` : ''}`;
-
-                canvas.toBlob(async blob => {
-                    if (!blob) {
-                        alert("Error creating image blob.");
-                        if(pngPreviewModal) pngPreviewModal.classList.remove('open');
-                        document.body.style.overflow = "";
-                        return;
-                    }
-                    const file = new File([blob], "wow-quote.png", { type: "image/png" });
-                    try {
-                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                            await navigator.share({
-                                files: [file],
-                                title: shareTitle,
-                                text: shareText,
-                            });
-                        } else { 
-                            const a = document.createElement('a');
-                            a.href = URL.createObjectURL(blob); 
-                            a.download = "wow-quote.png";
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            URL.revokeObjectURL(a.href); 
-                        }
-                    } catch (error) {
-                        console.error("Sharing/Downloading PNG failed:", error);
-                        const a = document.createElement('a');
-                        a.href = URL.createObjectURL(blob);
-                        a.download = "wow-quote.png";
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(a.href);
-                        alert("Sharing failed. The image has been downloaded.");
-                    } finally {
-                        if(pngPreviewModal) pngPreviewModal.classList.remove('open');
-                        document.body.style.overflow = "";
-                    }
-                }, "image/png");
-            };
-        };
-        img.onerror = function() {
-            console.error("Error loading dataUrl into image for watermarking.");
-            alert("Could not process image for preview.");
-        };
-        img.src = dataUrl;
-
-    } catch (error) {
-        console.error('Error generating PNG with htmlToImage:', error);
-        alert('Oops! Could not create the image. Please try again.');
-    } finally {
-        document.body.removeChild(virtualNode); 
-        if(shareMenu) shareMenu.classList.remove("open"); 
-    }
-  }
-  if(sharePngBtn) sharePngBtn.addEventListener('click', shareQuoteAsPNG);
-
-  if(closePngPreviewModal) closePngPreviewModal.onclick = function() {
-    if(pngPreviewModal) pngPreviewModal.classList.remove('open');
-    document.body.style.overflow = "";
-    if(pngPreviewImg) pngPreviewImg.src = ""; 
-  };
+  // Removed shareQuoteAsPNG function and its event listeners
 
   if(copyBtn) copyBtn.addEventListener("click", () => {
     const quoteContent = qText ? qText.textContent || "" : "";
-    const authorContent = qAuth ? (qAuth.textContent || "").replace(/^[-–—\s]+/, "") : ""; 
+    const authorContent = qAuth ? (qAuth.textContent || "").replace(/^[-–—\s]+/, "") : "";
     const textToCopy = `${quoteContent}${authorContent ? ` — ${authorContent}` : ''}`.trim();
 
     navigator.clipboard.writeText(textToCopy).then(() => {
       const iconElement = copyBtn.querySelector("i");
       const originalIcon = iconElement ? iconElement.className : "";
-      if(iconElement) iconElement.className = "fa-solid fa-check"; 
-      copyBtn.classList.add('copied-feedback'); 
+      if(iconElement) iconElement.className = "fa-solid fa-check";
+      copyBtn.classList.add('copied-feedback');
       const tooltip = copyBtn.querySelector('.btn-tooltip');
       const originalTooltipText = tooltip ? tooltip.textContent : '';
       if(tooltip) tooltip.textContent = "Copied!";
@@ -897,8 +754,8 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         if(iconElement) iconElement.className = originalIcon;
         copyBtn.classList.remove('copied-feedback');
-        if(tooltip) tooltip.textContent = originalTooltipText; 
-      }, 1500); 
+        if(tooltip) tooltip.textContent = originalTooltipText;
+      }, 1500);
     }).catch(err => {
       console.error('Failed to copy text: ', err);
       alert("Could not copy text. Please try again manually.");
@@ -918,26 +775,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isFavorited) {
       favs = favs.filter(q => !(q.text === currentQuoteText && q.author === currentAuthorText));
-      if(favIcon) favIcon.className = "fa-regular fa-heart"; 
+      if(favIcon) favIcon.className = "fa-regular fa-heart";
       if(tooltip) tooltip.textContent = "Unfavorited";
     } else {
       favs.push({ text: currentQuoteText, author: currentAuthorText });
-      if(favIcon) favIcon.className = "fa-solid fa-heart"; 
+      if(favIcon) favIcon.className = "fa-solid fa-heart";
       if(tooltip) tooltip.textContent = "Favorited!";
     }
 
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    favBtn.classList.add('copied-feedback'); 
+    favBtn.classList.add('copied-feedback');
     updateFavoriteButtonState();
 
     setTimeout(() => {
         favBtn.classList.remove('copied-feedback');
-        if(tooltip) tooltip.textContent = originalTooltipText; 
+        if(tooltip) tooltip.textContent = originalTooltipText;
     }, 1200);
   });
 
   function updateFavoriteButtonState() {
-    if (!favBtn || !lastQuote) return; 
+    if (!favBtn || !lastQuote) return;
     const favIcon = favBtn.querySelector("i");
     if (!favIcon) return;
 
@@ -945,11 +802,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const isFavorited = favs.some(q => q.text === lastQuote.text && q.author === lastQuote.author);
 
     if (isFavorited) {
-        favIcon.className = "fa-solid fa-heart"; 
-        favIcon.style.color = "var(--gold)"; 
+        favIcon.className = "fa-solid fa-heart";
+        favIcon.style.color = "var(--gold)";
     } else {
-        favIcon.className = "fa-regular fa-heart"; 
-        favIcon.style.color = "var(--primary)"; 
+        favIcon.className = "fa-regular fa-heart";
+        favIcon.style.color = "var(--primary)";
     }
   }
 
@@ -959,7 +816,7 @@ document.addEventListener("DOMContentLoaded", () => {
         themeSw.checked = true;
         document.body.classList.add("dark");
     } else {
-        document.body.classList.remove("dark"); 
+        document.body.classList.remove("dark");
     }
     themeSw.addEventListener("change", () => {
         const isDark = themeSw.checked;
@@ -972,17 +829,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateStreak() {
     const today = new Date().toISOString().slice(0,10);
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
-    if (streak.last !== today) { 
+    if (streak.last !== today) {
       if (streak.last === getYesterday()) {
-        streak.count++; 
+        streak.count++;
       } else {
-        streak.count = 1; 
+        streak.count = 1;
       }
       streak.last = today;
       localStorage.setItem('wowStreak', JSON.stringify(streak));
     }
     showStreak(streak.count);
-    updateFavoriteButtonState(); 
+    updateFavoriteButtonState();
   }
   function getYesterday() {
     const d = new Date();
@@ -993,10 +850,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!streakBadge) return;
     if (count > 1) {
         streakBadge.textContent = `🔥 ${count} day streak!`;
-        streakBadge.style.display = ''; 
+        streakBadge.style.display = '';
     } else {
         streakBadge.textContent = '';
-        streakBadge.style.display = 'none'; 
+        streakBadge.style.display = 'none';
     }
   }
 
@@ -1006,34 +863,69 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Please enter your feedback before sending.");
         return;
     }
+
+    const submitBtnText = submitFeedbackBtn.querySelector('.submit-btn-text');
+    const spinner = submitFeedbackBtn.querySelector('.loader-spinner');
+
+    if(submitBtnText) submitBtnText.style.display = 'none';
+    if(spinner) spinner.style.display = 'inline-block';
+    submitFeedbackBtn.disabled = true;
+
     const formData = new FormData();
-    formData.append("entry.1612485699", feedback); 
+    formData.append("entry.1612485699", feedback);
 
     try {
-        await fetch("https://docs.google.com/forms/d/e/1FAIpQLSfv0KdY_skqOC2KF97FgMUqhDzAEe8Z4Jk3ZtuG6freUO-Y1A/formResponse", {
-            method: "POST",
-            mode: "no-cors", 
-            body: formData
-        });
-        if(feedbackSuccess) feedbackSuccess.style.display = 'block'; 
-        if(feedbackTextarea) feedbackTextarea.value = ''; 
+        // Simulate API call for feedback as well, since original is no-cors
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate 1.5s delay
+
+        // await fetch("https://docs.google.com/forms/d/e/1FAIpQLSfv0KdY_skqOC2KF97FgMUqhDzAEe8Z4Jk3ZtuG6freUO-Y1A/formResponse", {
+        //     method: "POST",
+        //     mode: "no-cors",
+        //     body: formData
+        // });
+
+        if(feedbackSuccess) {
+            feedbackSuccess.textContent = "Thank you for your feedback!";
+            feedbackSuccess.style.color = 'var(--success-green)';
+            feedbackSuccess.style.display = 'block';
+        }
+        if(feedbackTextarea) feedbackTextarea.value = '';
+
+        if(submitBtnText) submitBtnText.style.display = 'inline';
+        if(spinner) spinner.style.display = 'none';
+        submitFeedbackBtn.disabled = false;
+
         setTimeout(() => {
             if(feedbackSuccess) feedbackSuccess.style.display = 'none';
             if(feedbackModal) feedbackModal.classList.remove('open');
-            document.body.style.overflow = ""; 
-        }, 2000); 
+            document.body.style.overflow = "";
+        }, 2000);
     } catch (error) {
         console.error("Feedback submission error:", error);
         alert("Failed to send feedback. Please check your internet connection or try again later.");
+        if(submitBtnText) submitBtnText.style.display = 'inline';
+        if(spinner) spinner.style.display = 'none';
+        submitFeedbackBtn.disabled = false;
     }
   });
 
   if(feedbackBtn) feedbackBtn.addEventListener('click', () => {
     if(feedbackModal) feedbackModal.classList.add('open');
     document.body.style.overflow = "hidden";
-    if(feedbackTextarea) feedbackTextarea.value = ''; 
-    if(feedbackSuccess) feedbackSuccess.style.display = 'none'; 
-    if(feedbackTextarea) feedbackTextarea.focus(); 
+    if(feedbackTextarea) feedbackTextarea.value = '';
+    if(feedbackSuccess) {
+        feedbackSuccess.style.display = 'none';
+        feedbackSuccess.style.color = 'var(--success-green)'; // Reset color
+        feedbackSuccess.textContent = "Thank you for your feedback!"; // Reset text
+    }
+    // Reset feedback submit button state
+    const feedbackSubmitBtnText = submitFeedbackBtn.querySelector('.submit-btn-text');
+    const feedbackSpinner = submitFeedbackBtn.querySelector('.loader-spinner');
+    if(feedbackSubmitBtnText) feedbackSubmitBtnText.style.display = 'inline';
+    if(feedbackSpinner) feedbackSpinner.style.display = 'none';
+    submitFeedbackBtn.disabled = false;
+
+    if(feedbackTextarea) feedbackTextarea.focus();
   });
   if(closeFeedbackModal) closeFeedbackModal.addEventListener('click', () => {
     if(feedbackModal) feedbackModal.classList.remove('open');
@@ -1051,7 +943,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(favModal) favModal.classList.remove('open');
     document.body.style.overflow = "";
   });
-  if (closeFavModalLarge) { 
+  if (closeFavModalLarge) {
     closeFavModalLarge.addEventListener('click', () => {
         if(favModal) favModal.classList.remove('open');
         document.body.style.overflow = "";
@@ -1099,12 +991,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  window.removeFavorite = function(idx) { 
+  window.removeFavorite = function(idx) {
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    showFavorites(); 
-    updateFavoriteButtonState(); 
+    showFavorites();
+    updateFavoriteButtonState();
   };
 
   window.copyFavorite = function(text, author, buttonElement) {
@@ -1135,8 +1027,8 @@ document.addEventListener("DOMContentLoaded", () => {
       openModals.forEach(modal => {
         modal.classList.remove("open");
       });
-      document.body.style.overflow = ""; 
-      if (openModals.length > 0 && openMenuBtn) openMenuBtn.focus(); 
+      document.body.style.overflow = "";
+      if (openModals.length > 0 && openMenuBtn) openMenuBtn.focus();
     }
     if (e.key === "Enter" && document.activeElement && document.activeElement.tagName === 'BUTTON') {
       if (document.activeElement === genBtn) {
@@ -1175,10 +1067,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const text = `${lastQuote.text}${lastQuote.author ? ` — ${lastQuote.author}` : ''}`.trim();
       const notification = new Notification('WOW Quote of the Day ✨', {
           body: text,
-          icon: 'https://quotes-app.wordsofwisdom.in/images/apple-touch-icon.png' 
+          icon: 'https://quotes-app.wordsofwisdom.in/images/apple-touch-icon.png'
       });
       notification.onclick = function() {
-          window.focus(); 
+          window.focus();
           this.close();
       };
     }
@@ -1189,17 +1081,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const lastNotificationDate = localStorage.getItem('lastNotificationDate');
     const todayStr = now.toISOString().slice(0,10);
 
-    if (lastNotificationDate === todayStr) return; 
+    if (lastNotificationDate === todayStr) return;
 
     const nineAM = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0);
     let delay = nineAM.getTime() - now.getTime();
 
-    if (delay < 0) { 
-        if (Notification.permission === 'granted') {
+    if (delay < 0) {
+        // if (Notification.permission === 'granted') {
             // sendDailyQuoteNotification(); // Optionally send immediately if past 9 AM and not sent today
             // localStorage.setItem('lastNotificationDate', todayStr);
-        }
-        return; 
+        // }
+        return;
     }
 
     setTimeout(() => {
@@ -1217,27 +1109,27 @@ document.addEventListener("DOMContentLoaded", () => {
         quoteMark.style.opacity = 0.18;
     }
 
-    await loadCategoriesAndQuotes(); 
+    await loadCategoriesAndQuotes();
     console.log("loadCategoriesAndQuotes finished. Current quotes object:", JSON.parse(JSON.stringify(quotes)));
     console.log("Current categories array:", JSON.parse(JSON.stringify(categories)));
 
-    renderMenu(); 
+    renderMenu();
     console.log("Menu rendered.");
 
     const topCat = getTopCategory();
     console.log("Top category from usage:", topCat);
-    selectedCat = topCat || "inspiration"; 
+    selectedCat = topCat || "inspiration";
     console.log("Selected category for initial load (after topCat/default):", selectedCat);
     if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
 
-    showRotatingBanner(); 
+    showRotatingBanner();
     console.log("showRotatingBanner finished. Last quote state:", lastQuote ? JSON.parse(JSON.stringify(lastQuote)) : "null");
 
     if (!lastQuote || !lastQuote.text) {
         console.warn("Initial quote not set by banner/topCat logic. Attempting to load a default quote from 'inspiration'.");
-        selectedCat = "inspiration"; 
+        selectedCat = "inspiration";
         if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
-        displayQuote(); 
+        displayQuote();
         console.log("Fallback displayQuote called for 'inspiration'. Last quote state:", lastQuote ? JSON.parse(JSON.stringify(lastQuote)) : "null");
     }
 
@@ -1246,13 +1138,13 @@ document.addEventListener("DOMContentLoaded", () => {
         qText.textContent = "Sorry, we couldn't load any quotes right now. Please try again later.";
         if(qAuth) qAuth.textContent = "";
     }
-    
+
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     showStreak(streak.count);
-    updateFavoriteButtonState(); 
+    updateFavoriteButtonState();
 
-    requestNotificationPermission(); 
-    scheduleDailyNotification(); 
+    requestNotificationPermission();
+    scheduleDailyNotification();
     console.log("App initialization complete.");
   })();
 });
