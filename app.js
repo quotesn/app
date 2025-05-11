@@ -40,9 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // DOM references for Image Generation Modal
   const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer');
-  const quoteImageWrapper = document.getElementById('quoteImageWrapper');
+  // const quoteImageWrapper = document.getElementById('quoteImageWrapper'); // Keep if needed for overall styling/modal structure
+  const quoteImageContent = document.getElementById('quoteImageContent'); // The new div to capture
   const imageQuoteText = document.getElementById('imageQuoteText');
   const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');
+  // const imageWatermark = document.getElementById('imageWatermark'); // Already in HTML, styled by CSS
   const downloadImageBtn = document.getElementById('downloadImageBtn');
   const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
@@ -130,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showRotatingBanner() {
     const today = new Date();
-    const startDate = new Date("2025-05-05"); // Ensure this date is in the past or current for testing
+    const startDate = new Date("2025-05-05"); 
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
     const theme = bannerThemes[idx];
@@ -229,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
                     return false; // Failure due to structure
                 } catch (err) {
-                    // Error already logged by fetchJSON, just indicate failure
                     console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed.`);
                     return false; // Failure due to fetch/parse
                 }
@@ -237,10 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
             quotePromises.push(
                 fetchAndProcessQuoteFile(pathAttempt1, 'wowQuotes_').then(success => {
                     if (!success && pathAttempt2) {
-                        // If first attempt failed and there's a fallback path, try it
                         return fetchAndProcessQuoteFile(pathAttempt2, 'wowQuotesRoot_');
                     }
-                    return success; // Return result of first attempt or indicate it was the only one
+                    return success; 
                 })
             );
           }
@@ -248,21 +248,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       collectCategories(categories);
 
-      // Load user-submitted quotes if they exist
       if (localStorage.getItem('userQuotes')) {
         const userQuotesData = JSON.parse(localStorage.getItem('userQuotes'));
-        quotes['user'] = userQuotesData; // Assuming 'user' is a valid category ID for these
+        quotes['user'] = userQuotesData; 
         buildAuthorIndex(userQuotesData, 'user');
       }
       await Promise.all(quotePromises);
 
-      // Check if any quotes were loaded at all
       if (Object.keys(quotes).length === 0 && (!localStorage.getItem('userQuotes') || JSON.parse(localStorage.getItem('userQuotes')).length === 0)) {
           if(qText) qText.textContent = "No quote data could be loaded. Please check your connection or try again later.";
           if(qAuth) qAuth.textContent = "";
       }
     } catch (err) {
-      // This catch is for errors in loadCategoriesAndQuotes itself, like issues with categories.json loading
       console.error('CRITICAL FAILURE in loadCategoriesAndQuotes:', err);
       if(qText) qText.textContent = "A critical error occurred while loading app data.";
       if(qAuth) qAuth.textContent = "";
@@ -278,7 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!authors[authorKey]) authors[authorKey] = [];
         authors[authorKey].push({
           text: quote.text || quote.quote || quote.message,
-          author: by, // Store the trimmed, original case author
+          author: by, 
           category: categoryId
         });
       }
@@ -287,10 +284,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderMenu() {
     if (!categoryMenu) return;
-    categoryMenu.innerHTML = ""; // Clear previous menu
+    categoryMenu.innerHTML = ""; 
     function renderCategoryList(catArray, parentUl) {
       catArray.forEach(cat => {
-        if (cat.isSearch) { // Handle the special search section
+        if (cat.isSearch) { 
           const sec = document.createElement("div");
           sec.className = "section search-section";
           sec.innerHTML = `<button class="section-btn" aria-expanded="false" aria-controls="authorSearchWrapper-${cat.id || 'search'}"><i class="fa-solid fa-user section-icon"></i>Search by Author <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
@@ -298,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <input id="authorSearch" type="text" placeholder="Type author name…" autocomplete="off" aria-label="Search by author name" />
               <ul id="authorList" class="suggestions-list" role="listbox"></ul>
             </div>`;
-          categoryMenu.appendChild(sec); // Append directly to categoryMenu
+          categoryMenu.appendChild(sec); 
           sec.querySelector('.section-btn').addEventListener('click', function() {
             const wrapper = sec.querySelector('.author-search-wrapper');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
@@ -307,7 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!isExpanded) wrapper.querySelector('input').focus();
           });
 
-          // Add "View Favorites" and "Submit a Quote" directly after search
           const favSec = document.createElement("div");
           favSec.className = "section";
           favSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-heart section-icon" aria-hidden="true"></i>View Favorites</button>`;
@@ -341,7 +337,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 quoteFormSuccess.style.display = "none";
                 quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
             }
-            // Reset spinner and button state
             const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
             const submitSpinner = submitCustomQuoteBtn.querySelector('.loader-spinner');
             if(submitBtnText) submitBtnText.style.display = 'inline';
@@ -351,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           categoryMenu.appendChild(submitSec);
 
-        } else { // Handle regular categories and subcategories
+        } else { 
           const sec = document.createElement("div");
           sec.className = "section";
           const sectionId = `section-list-${cat.id || Math.random().toString(36).substring(2,9)}`;
@@ -365,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (cat.children) {
             cat.children.forEach(child => {
               const li = document.createElement("li");
-              if (child.children) { // Nested subcategories
+              if (child.children) { 
                 li.className = "has-children";
                 const subSectionId = `subsection-list-${child.id || Math.random().toString(36).substring(2,9)}`;
                 li.innerHTML = `<span role="button" tabindex="0" aria-expanded="false" aria-controls="${subSectionId}">
@@ -382,7 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   </a>`;
                   subul.appendChild(subli);
                 });
-              } else { // Direct child category
+              } else { 
                 li.innerHTML = `<a href="#" data-cat="${child.id}">
                   ${child.icon ? `<i class="fa-solid ${child.icon}" aria-hidden="true"></i>` : ""}
                   ${child.name}
@@ -391,14 +386,13 @@ document.addEventListener("DOMContentLoaded", () => {
               ul.appendChild(li);
             });
           }
-          categoryMenu.appendChild(sec); // Append section to categoryMenu
-          // Add click listener for section toggle
+          categoryMenu.appendChild(sec); 
           sec.querySelector('.section-btn').addEventListener('click', function() {
             const list = sec.querySelector('.section-list');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
             list.style.display = isExpanded ? 'none' : 'block';
-            const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up'); // Chevron toggle
+            const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up'); 
             if(icon){
                 icon.classList.toggle('fa-chevron-down');
                 icon.classList.toggle('fa-chevron-up');
@@ -407,23 +401,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
-    renderCategoryList(categories, categoryMenu); // Initial call
+    renderCategoryList(categories, categoryMenu); 
 
-    // Event listeners for nested lists (sub-subcategories)
     categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
       span.addEventListener('click', function(e) {
-        e.stopPropagation(); // Prevent parent section from toggling
+        e.stopPropagation(); 
         const nestedList = this.nextElementSibling;
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', !isExpanded);
         nestedList.style.display = isExpanded ? 'none' : 'block';
-        const icon = this.querySelector('.fa-caret-right, .fa-caret-down'); // Caret toggle
+        const icon = this.querySelector('.fa-caret-right, .fa-caret-down'); 
         if (icon) {
             icon.classList.toggle('fa-caret-right');
             icon.classList.toggle('fa-caret-down');
         }
       });
-      span.addEventListener('keydown', function(e) { // Accessibility for keyboard
+      span.addEventListener('keydown', function(e) { 
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           this.click();
@@ -431,12 +424,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Event listeners for category links
     categoryMenu.querySelectorAll('.section-list a, .nested-list a').forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
         selectedCat = link.dataset.cat;
-        authorMode = false; // Reset author mode
+        authorMode = false; 
         if(currentCategory) currentCategory.textContent = capitalize(link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim());
         closeMenu();
         displayQuote();
@@ -444,7 +436,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Author search input handling
     const authorInput = categoryMenu.querySelector("#authorSearch");
     const authorListUL = categoryMenu.querySelector("#authorList");
     if (authorInput && authorListUL) {
@@ -452,52 +443,51 @@ document.addEventListener("DOMContentLoaded", () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           const query = authorInput.value.toLowerCase().trim();
-          authorListUL.innerHTML = ""; // Clear previous suggestions
-          if (!query) return; // No query, no suggestions
+          authorListUL.innerHTML = ""; 
+          if (!query) return; 
           Object.keys(authors)
-            .filter(name => name.includes(query)) // Filter authors by query
-            .sort() // Sort alphabetically
-            .slice(0, 10) // Limit to 10 suggestions
+            .filter(name => name.includes(query)) 
+            .sort() 
+            .slice(0, 10) 
             .forEach(nameKey => {
               const li = document.createElement("li");
               li.setAttribute('role', 'option');
-              li.textContent = authors[nameKey][0].author; // Display original case author name
-              li.tabIndex = -1; // For accessibility, not focusable by default
+              li.textContent = authors[nameKey][0].author; 
+              li.tabIndex = -1; 
               li.addEventListener("click", () => {
                 authorMode = true;
-                authorName = nameKey; // Use lowercased key for consistency
-                authorQuotes = [...authors[nameKey]]; // Get all quotes by this author
-                authorQuoteIndex = 0; // Reset index for this author
+                authorName = nameKey; 
+                authorQuotes = [...authors[nameKey]]; 
+                authorQuoteIndex = 0; 
                 if(currentCategory) currentCategory.textContent = "Author: " + authors[nameKey][0].author;
                 closeMenu();
-                showAuthorQuote(); // Display first quote by this author
+                showAuthorQuote(); 
               });
               authorListUL.appendChild(li);
             });
-        }, 300); // Debounce for 300ms
+        }, 300); 
       });
     }
   }
 
 
   function openMenu() {
-    renderMenu(); // Re-render menu each time it opens to ensure it's up-to-date
+    renderMenu(); 
     if(categoryModal) categoryModal.classList.add("open");
-    document.body.style.overflow = "hidden"; // Prevent background scroll
-    if(closeMenuBtn) closeMenuBtn.focus(); // Focus on close button for accessibility
+    document.body.style.overflow = "hidden"; 
+    if(closeMenuBtn) closeMenuBtn.focus(); 
   }
   function closeMenu() {
     if(categoryModal) categoryModal.classList.remove("open");
-    document.body.style.overflow = ""; // Restore background scroll
-    if(openMenuBtn) openMenuBtn.focus(); // Focus back on menu open button
+    document.body.style.overflow = ""; 
+    if(openMenuBtn) openMenuBtn.focus(); 
   }
   if(openMenuBtn) openMenuBtn.addEventListener("click", openMenu);
   if(closeMenuBtn) closeMenuBtn.addEventListener("click", closeMenu);
   if(categoryModal) categoryModal.addEventListener("click", function(e) {
-    if (e.target === categoryModal) closeMenu(); // Close if clicking outside modal content
+    if (e.target === categoryModal) closeMenu(); 
   });
 
-  // Submit Quote Modal
   if(closeSubmitQuoteModal) closeSubmitQuoteModal.addEventListener('click', () => {
     if(submitQuoteModal) submitQuoteModal.classList.remove('open');
     document.body.style.overflow = "";
@@ -512,20 +502,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if(spinner) spinner.style.display = 'inline-block';
     submitCustomQuoteBtn.disabled = true;
 
-    // Simulate submission
     setTimeout(() => {
         if(quoteFormSuccess) {
-            quoteFormSuccess.textContent = "Thank you! Your quote was submitted."; // Or actual success message
+            quoteFormSuccess.textContent = "Thank you! Your quote was submitted."; 
             quoteFormSuccess.style.display = 'block';
         }
 
-        // Reset button and form
         if(submitBtnText) submitBtnText.style.display = 'inline';
         if(spinner) spinner.style.display = 'none';
         submitCustomQuoteBtn.disabled = false;
         customQuoteForm.reset();
 
-        // Hide success message and modal after a delay
         setTimeout(() => {
           if(quoteFormSuccess) quoteFormSuccess.style.display = 'none';
           if(submitQuoteModal) submitQuoteModal.classList.remove('open');
@@ -544,41 +531,39 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    if (!fromUndo && lastQuote) { // Add to history if not an undo action
+    if (!fromUndo && lastQuote) { 
       quoteHistory.unshift(lastQuote);
-      if (quoteHistory.length > 5) quoteHistory.length = 5; // Keep history to 5 items
+      if (quoteHistory.length > 5) quoteHistory.length = 5; 
     }
     if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
 
-    // Fade out current quote
     if(qText) qText.classList.add('fade-out');
     if(qAuth) qAuth.classList.add('fade-out');
 
-    setTimeout(() => { // After fade out, update and fade in
+    setTimeout(() => { 
       const txt = item.text || item.quote || item.message || "Quote text missing.";
       let by = (item.author || item.by || "").trim();
 
       if(qText) qText.textContent = txt;
       if(qAuth) {
         if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
-          qAuth.textContent = ""; // Hide author if anonymous/unknown
+          qAuth.textContent = ""; 
         } else {
           qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
         }
       }
-      if(quoteMark) { // Reset quote mark
+      if(quoteMark) { 
         quoteMark.textContent = "“";
         quoteMark.style.opacity = 0.18;
       }
 
-      // Fade in new quote
       if(qText) qText.classList.remove('fade-out');
       if(qAuth) qAuth.classList.remove('fade-out');
 
-      lastQuote = { text: txt, author: by, category: cat }; // Store current quote
-      updateStreak(); // Update daily streak
-      updateFavoriteButtonState(); // Update favorite button
-    }, 300); // Duration of fade effect
+      lastQuote = { text: txt, author: by, category: cat }; 
+      updateStreak(); 
+      updateFavoriteButtonState(); 
+    }, 300); 
   }
 
   function showAuthorQuote() {
@@ -618,17 +603,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // Fallback if selected category has no quotes or is invalid
     if (!pool || pool.length === 0) {
-        const allQuotesRaw = Object.values(quotes).flat(); // Flatten all quotes from all categories
+        const allQuotesRaw = Object.values(quotes).flat(); 
         pool = allQuotesRaw.filter(isValidQuote);
         if (pool.length > 0 && currentCategory && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
-            // If we fell back to all quotes, update the display
             if(currentCategory) currentCategory.textContent = "All Quotes";
         }
     }
 
-    // If still no quotes after all fallbacks
     if (!pool || pool.length === 0) {
         if(qText) qText.textContent = "No valid quotes available for this selection or any category.";
         if(qAuth) qAuth.textContent = "";
@@ -639,58 +621,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const randomIndex = Math.floor(Math.random() * pool.length);
-    showQuote(pool[randomIndex], selectedCat || "all_fallback"); // Use "all_fallback" if category was not specific
+    showQuote(pool[randomIndex], selectedCat || "all_fallback"); 
   }
 
 
   if(undoBtn) undoBtn.addEventListener("click", () => {
     if (quoteHistory.length > 0) {
-      const prev = quoteHistory.shift(); // Get the last quote from history
-      showQuote(prev, prev.category, true); // Display it, marking as 'fromUndo'
+      const prev = quoteHistory.shift(); 
+      showQuote(prev, prev.category, true); 
     }
-    undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none"; // Update undo button visibility
+    undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none"; 
   });
 
   function triggerGenerateEffects() {
     if (magicSound) {
-      magicSound.currentTime = 0; // Rewind sound
+      magicSound.currentTime = 0; 
       magicSound.play().catch(e => console.warn("Audio play failed:", e));
     }
-    if(quoteBox) quoteBox.classList.add('glow'); // Add glow effect to quote box
+    if(quoteBox) quoteBox.classList.add('glow'); 
     setTimeout(() => { if(quoteBox) quoteBox.classList.remove('glow'); }, 400);
 
     const wand = genBtn ? genBtn.querySelector('.magic-wand-icon') : null;
-    if (wand) { // Animate magic wand icon
+    if (wand) { 
       wand.classList.add('animated');
       setTimeout(() => wand.classList.remove('animated'), 700);
     }
-    if(genBtn) genBtn.classList.add('touched'); // Visual feedback for button press
+    if(genBtn) genBtn.classList.add('touched'); 
     setTimeout(() => {if(genBtn) genBtn.classList.remove('touched');}, 400);
 
-    // Ripple effect for generate button
     const ripple = document.createElement('span');
     ripple.className = 'ripple';
-    ripple.style.left = "50%"; // Center ripple
+    ripple.style.left = "50%"; 
     ripple.style.top = "50%";
     if(genBtn) genBtn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 700); // Remove ripple after animation
+    setTimeout(() => ripple.remove(), 700); 
   }
 
   if(genBtn) {
     genBtn.addEventListener("click", e => {
         triggerGenerateEffects();
-        displayQuote(); // Get and display a new quote
+        displayQuote(); 
     });
   }
 
-  // Ripple effect for other icon buttons
   document.querySelectorAll('.icon-btn, .feedback-btn, .home-btn').forEach(btn => {
-    btn.style.webkitTapHighlightColor = "transparent"; // Remove tap highlight on mobile
+    btn.style.webkitTapHighlightColor = "transparent"; 
     btn.addEventListener('click', function(e) {
       const rect = btn.getBoundingClientRect();
       const ripple = document.createElement('span');
       ripple.className = 'ripple';
-      // Position ripple at click location
       ripple.style.left = (e.clientX - rect.left) + 'px';
       ripple.style.top = (e.clientY - rect.top) + 'px';
       btn.appendChild(ripple);
@@ -699,32 +678,26 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  // Share Menu Toggle
   if(shareBtn) shareBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent click from bubbling up
+    e.stopPropagation(); 
     if(shareMenu) shareMenu.classList.toggle("open");
-    // Add listener to close menu if clicking outside
     if (shareMenu && shareMenu.classList.contains("open")) {
-      setTimeout(() => { // Use timeout to ensure this listener is added after the current click event is processed
+      setTimeout(() => { 
         document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
       }, 0);
     }
   });
 
   function closeShareMenuOnClickOutside(event) {
-    // Check if the click was outside the share menu and not on the share button itself
     if (shareMenu && shareMenu.classList.contains("open") && !shareMenu.contains(event.target) && event.target !== shareBtn && (shareBtn && !shareBtn.contains(event.target))) {
       shareMenu.classList.remove("open");
     } else if (shareMenu && shareMenu.classList.contains("open")) {
-         // If menu is still open (e.g., clicked inside), re-add the listener for the next click
          document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
     }
   }
 
 
-  // Share Options (Twitter, Facebook, etc.)
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
-    // Skip the image generation button here, it's handled separately
     if (btn.id === 'generateImageShareOption') return;
 
     btn.addEventListener('click', function() {
@@ -749,35 +722,33 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
       if (shareUrl) window.open(shareUrl, "_blank", "noopener,noreferrer");
-      if(shareMenu) shareMenu.classList.remove("open"); // Close share menu after action
+      if(shareMenu) shareMenu.classList.remove("open"); 
     });
   });
 
 
-  // Copy to Clipboard
   if(copyBtn) copyBtn.addEventListener("click", () => {
     const quoteContent = qText ? qText.textContent || "" : "";
     const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
     const textToCopy = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
 
     navigator.clipboard.writeText(textToCopy).then(() => {
-      // Visual feedback for successful copy
       const iconElement = copyBtn.querySelector("i");
       const originalIcon = iconElement ? iconElement.className : "";
-      if(iconElement) iconElement.className = "fa-solid fa-check"; // Change to checkmark
+      if(iconElement) iconElement.className = "fa-solid fa-check"; 
       copyBtn.classList.add('copied-feedback');
       const tooltip = copyBtn.querySelector('.btn-tooltip');
       const originalTooltipText = tooltip ? tooltip.textContent : '';
       if(tooltip) tooltip.textContent = "Copied!";
 
-      setTimeout(() => { // Revert after 1.5 seconds
+      setTimeout(() => { 
         if(iconElement) iconElement.className = originalIcon;
         copyBtn.classList.remove('copied-feedback');
         if(tooltip) tooltip.textContent = originalTooltipText;
       }, 1500);
     }).catch(err => {
       console.error('Failed to copy text: ', err);
-      const tooltip = copyBtn.querySelector('.btn-tooltip'); // Error feedback
+      const tooltip = copyBtn.querySelector('.btn-tooltip'); 
       if(tooltip) {
           const originalTooltipText = tooltip.textContent;
           tooltip.textContent = "Copy failed!";
@@ -786,32 +757,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Favorite Button
   if(favBtn) favBtn.addEventListener('click', () => {
-    if (!lastQuote || !lastQuote.text) return; // No quote to favorite
+    if (!lastQuote || !lastQuote.text) return; 
 
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     const currentQuoteText = lastQuote.text;
-    const currentAuthorText = lastQuote.author; // Already clean
+    const currentAuthorText = lastQuote.author; 
 
     const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
     const isFavorited = favIndex !== -1;
 
     const savedPopup = favBtn.querySelector('.saved-popup');
 
-    if (isFavorited) { // Unfavorite
+    if (isFavorited) { 
       favs.splice(favIndex, 1);
       if(savedPopup) savedPopup.textContent = "Unsaved";
-    } else { // Favorite
+    } else { 
       favs.push({ text: currentQuoteText, author: currentAuthorText });
       if(favSound) favSound.play().catch(e => console.warn("Fav sound play failed", e));
       if(savedPopup) savedPopup.textContent = "Saved!";
     }
 
-    localStorage.setItem('favQuotes', JSON.stringify(favs)); // Save to local storage
-    updateFavoriteButtonState(); // Update heart icon
+    localStorage.setItem('favQuotes', JSON.stringify(favs)); 
+    updateFavoriteButtonState(); 
 
-    // Show "Saved!" / "Unsaved" popup
     if(favBtn) favBtn.classList.add('show-saved-popup');
     setTimeout(() => {
         if(favBtn) favBtn.classList.remove('show-saved-popup');
@@ -822,7 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!favBtn || !lastQuote || !lastQuote.text) {
         const favIcon = favBtn ? favBtn.querySelector("i") : null;
         if (favIcon) {
-            favIcon.className = "fa-regular fa-heart"; // Default empty heart
+            favIcon.className = "fa-regular fa-heart"; 
         }
         return;
     }
@@ -834,45 +803,42 @@ document.addEventListener("DOMContentLoaded", () => {
     const isFavorited = favs.some(q => q.text === lastQuote.text && q.author === lastQuote.author);
 
     if (isFavorited) {
-        favIcon.className = "fa-solid fa-heart"; // Solid heart if favorited
+        favIcon.className = "fa-solid fa-heart"; 
     } else {
-        favIcon.className = "fa-regular fa-heart"; // Empty heart if not
+        favIcon.className = "fa-regular fa-heart"; 
     }
   }
 
 
-  // Theme Switch (Dark/Light Mode)
   if(themeSw) {
     const savedTheme = localStorage.getItem("wowDark");
-    if (savedTheme === "true") { // Apply saved theme on load
+    if (savedTheme === "true") { 
         themeSw.checked = true;
         document.body.classList.add("dark");
     } else {
         document.body.classList.remove("dark");
     }
-    themeSw.addEventListener("change", () => { // Toggle theme
+    themeSw.addEventListener("change", () => { 
         const isDark = themeSw.checked;
         document.body.classList.toggle("dark", isDark);
-        localStorage.setItem("wowDark", isDark); // Save preference
+        localStorage.setItem("wowDark", isDark); 
     });
   }
 
 
-  // Daily Streak
   function updateStreak() {
     const today = new Date().toISOString().slice(0,10);
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
-    if (streak.last !== today) { // If last visit was not today
-      if (streak.last === getYesterday()) { // If last visit was yesterday, increment streak
+    if (streak.last !== today) { 
+      if (streak.last === getYesterday()) { 
         streak.count++;
-      } else { // Otherwise, reset streak to 1
+      } else { 
         streak.count = 1;
       }
-      streak.last = today; // Update last visit date
+      streak.last = today; 
       localStorage.setItem('wowStreak', JSON.stringify(streak));
     }
-    showStreak(streak.count); // Display streak
-    // updateFavoriteButtonState(); // Already called in showQuote, but can be here too if needed
+    showStreak(streak.count); 
   }
   function getYesterday() {
     const d = new Date();
@@ -890,7 +856,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Feedback Modal
   if(submitFeedbackBtn) submitFeedbackBtn.addEventListener('click', async () => {
     const feedback = feedbackTextarea ? feedbackTextarea.value.trim() : "";
     if (!feedback) {
@@ -906,20 +871,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if(spinner) spinner.style.display = 'inline-block';
     submitFeedbackBtn.disabled = true;
 
-    // Simulate feedback submission
     setTimeout(async () => {
             if(feedbackSuccess) {
                 feedbackSuccess.textContent = "Thank you for your feedback!";
                 feedbackSuccess.style.display = 'block';
             }
-            if(feedbackTextarea) feedbackTextarea.value = ''; // Clear textarea
+            if(feedbackTextarea) feedbackTextarea.value = ''; 
 
-            // Reset button
             if(submitBtnText) submitBtnText.style.display = 'inline';
             if(spinner) spinner.style.display = 'none';
             submitFeedbackBtn.disabled = false;
 
-            // Hide success and close modal
             setTimeout(() => {
                 if(feedbackSuccess) feedbackSuccess.style.display = 'none';
                 if(feedbackModal) feedbackModal.classList.remove('open');
@@ -931,12 +893,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if(feedbackBtn) feedbackBtn.addEventListener('click', () => {
     if(feedbackModal) feedbackModal.classList.add('open');
     document.body.style.overflow = "hidden";
-    if(feedbackTextarea) feedbackTextarea.value = ''; // Clear textarea
-    if(feedbackSuccess) { // Reset success message
+    if(feedbackTextarea) feedbackTextarea.value = ''; 
+    if(feedbackSuccess) { 
         feedbackSuccess.style.display = 'none';
         feedbackSuccess.textContent = "Thank you for your feedback!";
     }
-    // Reset spinner and button state
     const feedbackSubmitBtnText = submitFeedbackBtn.querySelector('.submit-btn-text');
     const feedbackSpinner = submitFeedbackBtn.querySelector('.loader-spinner');
     if(feedbackSubmitBtnText) feedbackSubmitBtnText.style.display = 'inline';
@@ -949,19 +910,18 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.style.overflow = "";
   });
 
-  // Favorites Modal
   function openFavoritesModal() {
     if(favModal) favModal.classList.add('open');
     document.body.style.overflow = "hidden";
-    showFavorites(); // Populate favorites list
+    showFavorites(); 
     const firstFocusable = favModal ? favModal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
-    if (firstFocusable) firstFocusable.focus(); // Accessibility: focus first element
+    if (firstFocusable) firstFocusable.focus(); 
   }
   if(closeFavModal) closeFavModal.addEventListener('click', () => {
     if(favModal) favModal.classList.remove('open');
     document.body.style.overflow = "";
   });
-  if (closeFavModalLarge) { // For larger close button outside modal
+  if (closeFavModalLarge) { 
     closeFavModalLarge.addEventListener('click', () => {
         if(favModal) favModal.classList.remove('open');
         document.body.style.overflow = "";
@@ -985,7 +945,6 @@ document.addEventListener("DOMContentLoaded", () => {
       `).join('')
       : "<p>No favorites yet. Click the heart icon on a quote to save it!</p>";
 
-      // Add event listeners for actions on favorite quotes
       favQuotesList.querySelectorAll('.remove-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const index = parseInt(this.closest('.fav-quote').dataset.index);
@@ -1002,7 +961,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (favoriteQuoteObject) {
                 copyFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author, this);
-            } else { // Fallback if object not found (should not happen ideally)
+            } else { 
                  const displayedText = quoteDiv.querySelector('p:first-child').textContent;
                  const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
                  copyFavorite(displayedText, displayedAuthor, this);
@@ -1019,7 +978,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (favoriteQuoteObject) {
                 shareFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author);
-            } else { // Fallback
+            } else { 
                  const displayedText = quoteDiv.querySelector('p:first-child').textContent;
                  const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
                  shareFavorite(displayedText, displayedAuthor);
@@ -1028,18 +987,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  window.removeFavorite = function(idx) { // Make accessible globally if needed, or handle differently
+  window.removeFavorite = function(idx) { 
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    showFavorites(); // Refresh list
-    updateFavoriteButtonState(); // Update main heart icon if current quote was removed
+    showFavorites(); 
+    updateFavoriteButtonState(); 
   };
 
   window.copyFavorite = function(text, cleanAuthor, buttonElement) {
     const textToCopy = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
-        if(buttonElement){ // Visual feedback on the button
+        if(buttonElement){ 
             const originalIconHTML = buttonElement.innerHTML;
             buttonElement.innerHTML = '<i class="fa-solid fa-check" style="color: var(--green-accent);"></i>';
             setTimeout(() => { buttonElement.innerHTML = originalIconHTML; }, 1200);
@@ -1049,34 +1008,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.shareFavorite = function(text, cleanAuthor) {
     const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
-    if (navigator.share) { // Use Web Share API if available
+    if (navigator.share) { 
       navigator.share({ title: `Quote by ${cleanAuthor || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
         .catch(err => {
-            if (err.name !== 'AbortError') { // Don't log error if user cancels share
+            if (err.name !== 'AbortError') { 
                 console.error("Sharing favorite failed:", err);
             }
         });
-    } else { // Fallback: copy to clipboard and alert
+    } else { 
       navigator.clipboard.writeText(shareText).then(() => alert("Quote copied! You can now paste it to share."))
                          .catch(() => alert("Could not copy quote. Please share manually."));
     }
   };
 
-  // Global Escape Key Listener for Modals
   document.addEventListener('keydown', function(e) {
     if (e.key === "Escape") {
-      // Close any open modals
       const openModals = document.querySelectorAll('.modal.open');
       openModals.forEach(modal => {
         modal.classList.remove("open");
       });
-      // Close image preview modal specifically if it's open
       if (quoteImagePreviewContainer && quoteImagePreviewContainer.style.display === 'flex') {
         closeImagePreview();
       }
-      document.body.style.overflow = ""; // Restore scroll
+      document.body.style.overflow = ""; 
 
-      // Close share menu if open
       if (shareMenu && shareMenu.classList.contains("open")) {
           shareMenu.classList.remove("open");
       }
@@ -1093,10 +1048,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     if (Object.keys(usage).length === 0) return null;
     const sortedUsage = Object.entries(usage).sort(([,a],[,b]) => b-a);
-    return sortedUsage[0][0]; // Returns the category ID with highest count
+    return sortedUsage[0][0]; 
   }
 
-  // Placeholder for notification functions (to be implemented)
   function requestNotificationPermission() { /* console.log("Placeholder: Request Notification Permission"); */ }
   function sendDailyQuoteNotification() { /* console.log("Placeholder: Send Daily Quote Notification"); */ }
   function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); */ }
@@ -1106,11 +1060,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
       if (!lastQuote || !lastQuote.text) {
-        alert("Please generate a quote first!"); // Or use a nicer modal
+        alert("Please generate a quote first!"); 
         return;
       }
 
-      // Populate the image content
       imageQuoteText.textContent = lastQuote.text;
       if (lastQuote.author) {
         imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
@@ -1120,54 +1073,45 @@ document.addEventListener("DOMContentLoaded", () => {
         imageQuoteAuthor.style.display = 'none';
       }
 
-      // Show the preview container
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      document.body.style.overflow = 'hidden'; 
 
-      // Disable buttons until canvas is ready
       downloadImageBtn.disabled = true;
       shareGeneratedImageBtn.disabled = true;
 
-      // Use html2canvas
-      // A small delay can sometimes help ensure styles are fully applied, especially web fonts
       setTimeout(() => {
-          html2canvas(quoteImageWrapper, {
+          // *** MODIFICATION: Target quoteImageContent instead of quoteImageWrapper ***
+          html2canvas(quoteImageContent, { // <<<< TARGET CHANGED HERE
               allowTaint: true,
               useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageWrapper).backgroundColor, // Crucial for themed background
-              scale: 2, // Increase scale for better resolution
-              logging: false // Suppress html2canvas console logs if desired
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Get background from the content div
+              scale: 2, 
+              logging: false 
           }).then(canvas => {
-              currentCanvas = canvas; // Store for download/share
+              currentCanvas = canvas; 
 
-              // Enable buttons now that canvas is ready
               downloadImageBtn.disabled = false;
               shareGeneratedImageBtn.disabled = false;
 
           }).catch(err => {
               console.error("Error generating image with html2canvas:", err);
               alert("Sorry, couldn't generate the image. Please try again.");
-              closeImagePreview(); // Close modal on error
+              closeImagePreview(); 
           });
-      }, 100); // 100ms delay
+      }, 100); 
     });
   }
 
   function closeImagePreview() {
     if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
-    document.body.style.overflow = ''; // Restore scrolling
-    currentCanvas = null; // Clear stored canvas
-    // Optional: If shareMenu was open and closed by this, decide if it should reopen
-    // if (shareMenu && !shareMenu.classList.contains('open')) {
-    //   // Logic to reopen share menu if desired
-    // }
+    document.body.style.overflow = ''; 
+    currentCanvas = null; 
   }
 
   if (closeImagePreviewBtn) {
     closeImagePreviewBtn.addEventListener('click', closeImagePreview);
   }
 
-  // Download Image Functionality
   if (downloadImageBtn) {
     downloadImageBtn.addEventListener('click', () => {
       if (!currentCanvas) {
@@ -1177,7 +1121,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const imageURL = currentCanvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = imageURL;
-      // Sanitize author name and quote start for filename
       const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'Unknown';
       const quoteStartForFile = lastQuote.text.substring(0,15).replace(/[^a-z0-9]/gi, '_').toLowerCase();
       a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
@@ -1187,7 +1130,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Share Generated Image Functionality (Web Share API)
   if (shareGeneratedImageBtn) {
     shareGeneratedImageBtn.addEventListener('click', async () => {
       if (!currentCanvas) {
@@ -1195,15 +1137,15 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
       }
 
-      if (navigator.share && navigator.canShare) { // Check for Web Share API support
-        currentCanvas.toBlob(async (blob) => { // Convert canvas to blob
+      if (navigator.share && navigator.canShare) { 
+        currentCanvas.toBlob(async (blob) => { 
           if (!blob) {
               alert("Error creating image blob for sharing.");
               return;
           }
           const authorName = lastQuote.author || 'Unknown';
           const filesArray = [
-            new File([blob], `WOW_Quote_${authorName}.png`, { // Create a File object
+            new File([blob], `WOW_Quote_${authorName}.png`, { 
               type: 'image/png',
               lastModified: new Date().getTime()
             })
@@ -1214,47 +1156,42 @@ document.addEventListener("DOMContentLoaded", () => {
             text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
           };
           try {
-            // Check if files can be shared (some platforms/targets might not support it)
             if (navigator.canShare({ files: filesArray })) {
                 await navigator.share(shareData);
                 console.log('Image shared successfully');
             } else {
-                // Fallback if files cannot be shared, try sharing text and URL only
                 await navigator.share({
                     title: `Quote by ${authorName} - Words of Wisdom`,
                     text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
-                    url: window.location.href // Share the app's URL as a fallback
+                    url: window.location.href 
                 });
                 console.log('Shared text content and URL as fallback.');
             }
           } catch (err) {
-            if (err.name !== 'AbortError') { // Don't show error if user cancels share dialog
+            if (err.name !== 'AbortError') { 
                 console.error('Error sharing image:', err);
                 alert('Sharing failed. You can try downloading the image instead.');
             }
           }
-        }, 'image/png'); // Specify blob type
+        }, 'image/png'); 
       } else {
-        // Web Share API not supported or cannot share files
         alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
       }
     });
   }
 
-  // App Initialization
   (async function initApp(){
-    if(qText) qText.textContent = "✨ Loading Wisdom..."; // Initial loading message
+    if(qText) qText.textContent = "✨ Loading Wisdom..."; 
     if(qAuth) qAuth.textContent = "";
     if(quoteMark) {
         quoteMark.textContent = "“";
         quoteMark.style.opacity = 0.18;
     }
 
-    await loadCategoriesAndQuotes(); // Load all data
-    renderMenu(); // Build the category menu
+    await loadCategoriesAndQuotes(); 
+    renderMenu(); 
 
-    // Determine initial category based on banner or most used
-    let initialCategory = "inspiration"; // Default
+    let initialCategory = "inspiration"; 
     const lastAutoCat = localStorage.getItem("lastAutoSelectedCategory");
     const todayStrInit = new Date().toISOString().slice(0,10);
     const lastBannerDateInit = localStorage.getItem("wowBannerDate");
@@ -1275,28 +1212,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
 
 
-    showRotatingBanner(); // Show daily banner (which might override selectedCat)
+    showRotatingBanner(); 
 
-    // If banner didn't lead to a quote display OR if we are using a stored category, display a quote.
-    // This ensures a quote is displayed on initial load if the banner logic doesn't trigger one.
     if (!lastQuote || !lastQuote.text) {
         console.log(`Banner didn't set a quote, or using stored category. Displaying quote for: ${selectedCat}`);
         displayQuote();
     }
 
 
-    // Final check if still loading after everything
     if ((!lastQuote || !lastQuote.text) && qText && qText.textContent.includes("Loading Wisdom")) {
         qText.textContent = "Sorry, we couldn't load any quotes right now. Please try again later.";
         if(qAuth) qAuth.textContent = "";
     }
 
-    // Initialize streak and favorite button state
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     showStreak(streak.count);
-    updateFavoriteButtonState(); // Call this after a quote might have been displayed
+    updateFavoriteButtonState(); 
 
-    // Placeholders for future notification features
     requestNotificationPermission();
     scheduleDailyNotification();
     console.log("App initialization complete.");
