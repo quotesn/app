@@ -39,8 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pngPreviewModal = document.getElementById('pngPreviewModal'),
     pngPreviewImg = document.getElementById('pngPreviewImg'),
     downloadPngBtn = document.getElementById('downloadPngBtn'),
-    closePngPreviewModal = document.getElementById('closePngPreviewModal'),
-    pngRenderBox = document.getElementById('pngRenderBox');
+    closePngPreviewModal = document.getElementById('closePngPreviewModal');
 
   let categories = [];
   let quotes = {};
@@ -53,37 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
-// --- Voice Command Support ---
-function setupVoiceCommands() {
-  if (!('webkitSpeechRecognition' in window)) return;
-  const recognition = new webkitSpeechRecognition();
-  recognition.continuous = false;
-  recognition.lang = 'en-US';
-  voiceBtn.addEventListener('click', () => {
-    recognition.start();
-    showToast("Listening...", "info");
-    voiceBtn.classList.add('listening');
-  });
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript.toLowerCase();
-    if (transcript.includes('new quote') || transcript.includes('inspire')) {
-      genBtn.click();
-    } else if (transcript.includes('favorite') || transcript.includes('save')) {
-      favBtn.click();
-    } else if (transcript.includes('share')) {
-      shareBtn.click();
-    } else if (transcript.includes('copy')) {
-      copyBtn.click();
-    } else if (transcript.includes('dark mode')) {
-      if (!document.body.classList.contains('dark')) themeSw.click();
-    } else if (transcript.includes('light mode')) {
-      if (document.body.classList.contains('dark')) themeSw.click();
-    }
-    voiceBtn.classList.remove('listening');
-  };
-  recognition.onend = () => voiceBtn.classList.remove('listening');
-}
-setupVoiceCommands();
 
   // --- Banner themes and styles ---
   const bannerThemes = [
@@ -425,20 +393,10 @@ setupVoiceCommands();
     document.body.style.overflow = "";
   });
 
-  // --- Submit Quote Form Handling with Progress Spinner ---
-customQuoteForm.addEventListener('submit', function(e) {
-  e.preventDefault();
-  const submitBtn = customQuoteForm.querySelector('button[type="submit"]');
-  const btnText = submitBtn.querySelector('.btn-text');
-  const btnSpinner = submitBtn.querySelector('.btn-spinner');
-  btnText.style.display = 'none';
-  btnSpinner.style.display = 'inline-block';
-  submitBtn.disabled = true;
-
-  setTimeout(() => {
-    btnSpinner.style.display = 'none';
-    btnText.style.display = '';
-    submitBtn.disabled = false;
+  // --- Submit Quote Form Handling ---
+  customQuoteForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    // You can add your Google Form submission here if needed
     quoteFormSuccess.style.display = 'block';
     setTimeout(() => {
       quoteFormSuccess.style.display = 'none';
@@ -446,24 +404,6 @@ customQuoteForm.addEventListener('submit', function(e) {
       document.body.style.overflow = "";
     }, 1800);
     customQuoteForm.reset();
-  }, 1200);
-});
-
-    // Simulate async submission (replace with real submission if needed)
-    setTimeout(() => {
-      // Hide spinner, enable button, restore text
-      btnSpinner.style.display = 'none';
-      btnText.style.display = '';
-      submitBtn.disabled = false;
-
-      quoteFormSuccess.style.display = 'block';
-      setTimeout(() => {
-        quoteFormSuccess.style.display = 'none';
-        submitQuoteModal.classList.remove('open');
-        document.body.style.overflow = "";
-      }, 1800);
-      customQuoteForm.reset();
-    }, 1200);
   });
 
   // --- Undo/Go Back for Previous Quotes ---
@@ -615,52 +555,30 @@ customQuoteForm.addEventListener('submit', function(e) {
     });
   });
 
-  // --- Share as PNG with Preview (includes UI for user-friendliness) ---
+  // --- Share as PNG with Preview ---
   async function shareQuoteAsPNG() {
-    // Clone the quote box including UI for a friendly share image
-    const node = quoteBox.cloneNode(true);
-    node.style.width = "1080px";
-    node.style.height = "1080px";
-    node.style.maxWidth = "none";
-    node.style.maxHeight = "none";
-    node.style.position = "absolute";
-    node.style.left = "-9999px";
-    node.style.top = "0";
-    node.style.background = document.body.classList.contains("dark") ? "#232336" : "#fff";
-    node.style.color = document.body.classList.contains("dark") ? "#fff" : "#232336";
-    node.style.padding = "120px 80px 160px 80px";
-    node.style.display = "flex";
-    node.style.flexDirection = "column";
-    node.style.justifyContent = "center";
-    node.style.alignItems = "center";
-    node.style.borderRadius = "40px";
-    // Remove fade-out if present
-    node.querySelector("#quoteText")?.classList.remove("fade-out");
-    node.querySelector("#quoteAuthor")?.classList.remove("fade-out");
-
-    // Remove any tooltips, ripples, etc.
-    node.querySelectorAll('.btn-tooltip, .ripple').forEach(el => el.remove());
-
-    // Add watermark
-    let watermark = node.querySelector('.png-watermark');
-    if (!watermark) {
-      watermark = document.createElement('div');
-      watermark.className = 'png-watermark';
-      watermark.textContent = "wordsofwisdom.in";
-      watermark.style.position = "absolute";
-      watermark.style.right = "60px";
-      watermark.style.bottom = "60px";
-      watermark.style.fontSize = "1.6rem";
-      watermark.style.color = document.body.classList.contains("dark") ? "#ffd700" : "#7c5df0";
-      watermark.style.opacity = "0.82";
-      watermark.style.fontFamily = "Poppins, sans-serif";
-      watermark.style.fontWeight = "bold";
-      node.appendChild(watermark);
-    }
+    const node = document.getElementById('quoteBox');
+    // Prepare a virtual node for image rendering
+    const virtualNode = node.cloneNode(true);
+    virtualNode.style.width = "1080px";
+    virtualNode.style.height = "1080px";
+    virtualNode.style.maxWidth = "none";
+    virtualNode.style.maxHeight = "none";
+    virtualNode.style.position = "absolute";
+    virtualNode.style.left = "-9999px";
+    virtualNode.style.top = "0";
+    virtualNode.style.background = "#fff";
+    virtualNode.style.color = "#232336";
+    virtualNode.style.padding = "120px 80px 160px 80px";
+    virtualNode.style.display = "flex";
+    virtualNode.style.flexDirection = "column";
+    virtualNode.style.justifyContent = "center";
+    virtualNode.style.alignItems = "center";
+    virtualNode.querySelector("#quoteMark")?.remove();
 
     // Adjust text size dynamically
-    const quoteText = node.querySelector("#quoteText");
-    const authorText = node.querySelector("#quoteAuthor");
+    const quoteText = virtualNode.querySelector("#quoteText");
+    const authorText = virtualNode.querySelector("#quoteAuthor");
     if (quoteText) {
       quoteText.style.fontSize = "2.1rem";
       quoteText.style.textAlign = "center";
@@ -677,88 +595,63 @@ customQuoteForm.addEventListener('submit', function(e) {
       authorText.style.textAlign = "center";
       authorText.style.width = "100%";
       authorText.style.marginTop = "1.2rem";
-      authorText.style.color = document.body.classList.contains("dark") ? "#ffd700" : "#7c5df0";
+      authorText.style.color = "#7c5df0";
     }
-    document.body.appendChild(node);
+    document.body.appendChild(virtualNode);
 
     // Render to PNG
-    const dataUrl = await htmlToImage.toPng(node, { width: 1080, height: 1080, pixelRatio: 2 });
-    document.body.removeChild(node);
+    const dataUrl = await htmlToImage.toPng(virtualNode, { width: 1080, height: 1080, pixelRatio: 2 });
+    document.body.removeChild(virtualNode);
 
-    pngPreviewImg.src = dataUrl;
-    pngPreviewModal.classList.add('open');
-    document.body.style.overflow = "hidden";
-    downloadPngBtn.onclick = async function() {
-      const file = await (await fetch(dataUrl)).blob();
-      const pngFile = new File([file], "wow-quote.png", { type: "image/png" });
-      if (navigator.canShare?.({ files: [pngFile] })) {
-        await navigator.share({ files: [pngFile], title: "WOW Quote" });
-      } else {
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = "wow-quote.png";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-      pngPreviewModal.classList.remove('open');
-      document.body.style.overflow = "";
+    // Add watermark and ensure text fits
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 1080, 1080);
+
+      // Watermark
+      ctx.font = "bold 40px Poppins, Arial, sans-serif";
+      ctx.fillStyle = "#7c5df0";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "bottom";
+      ctx.shadowColor = "#fff";
+      ctx.shadowBlur = 2;
+      ctx.fillText("wordsofwisdom.in", 1040, 1050);
+
+      // Show preview modal
+      pngPreviewImg.src = canvas.toDataURL("image/png");
+      pngPreviewModal.classList.add('open');
+      document.body.style.overflow = "hidden";
+
+      // Download/share logic
+      downloadPngBtn.onclick = async function() {
+        canvas.toBlob(async blob => {
+          const file = new File([blob], "wow-quote.png", { type: "image/png" });
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file], title: "WOW Quote" });
+          } else {
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL("image/png");
+            a.download = "wow-quote.png";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          }
+          pngPreviewModal.classList.remove('open');
+          document.body.style.overflow = "";
+        }, "image/png");
+      };
     };
-async function shareAsPng() {
-  try {
-    pngRenderBox.innerHTML = "";
-    pngRenderBox.style.display = "flex";
-    pngRenderBox.style.position = "absolute";
-    pngRenderBox.style.left = "-9999px";
-    pngRenderBox.style.top = "0";
-    pngRenderBox.style.width = "1080px";
-    pngRenderBox.style.height = "1080px";
-    pngRenderBox.style.background = document.body.classList.contains('dark') ? "#232336" : "#fff";
-    pngRenderBox.style.color = document.body.classList.contains('dark') ? "#fff" : "#232336";
-    pngRenderBox.style.borderRadius = "40px";
-    pngRenderBox.style.boxShadow = "0 2px 32px #0002";
-    pngRenderBox.style.padding = "120px 80px 160px 80px";
-    pngRenderBox.style.fontFamily = "'Playfair Display', serif, Poppins, sans-serif";
-    pngRenderBox.style.justifyContent = "center";
-    pngRenderBox.style.alignItems = "center";
-    pngRenderBox.style.fontWeight = "700";
-    pngRenderBox.innerHTML = `
-      <div class="png-quote" style="font-size:2.7rem;line-height:1.3;text-align:center;width:100%;word-break:break-word;margin-bottom:2.2rem;">
-        ${qText.textContent}
-      </div>
-      <div class="png-author" style="font-size:1.7rem;text-align:center;width:100%;margin-top:1.2rem;color:${document.body.classList.contains('dark') ? "#ffd700" : "#7c5df0"};">
-        ${qAuth.textContent}
-      </div>
-      <div class="png-watermark" style="position:absolute;right:60px;bottom:60px;font-size:1.6rem;color:${document.body.classList.contains('dark') ? "#ffd700" : "#7c5df0"};opacity:0.82;font-weight:bold;">
-        ${document.body.classList.contains('dark') ? '✨' : '💫'} WOW
-      </div>
-    `;
-    document.body.appendChild(pngRenderBox);
-
-    const canvas = await html2canvas(pngRenderBox, {
-      scale: 3,
-      backgroundColor: null,
-      useCORS: true
-    });
-    pngPreviewImg.src = canvas.toDataURL("image/png");
-    pngPreviewModal.classList.add('open');
-    document.body.style.overflow = "hidden";
-    pngRenderBox.style.display = "none";
-  } catch (err) {
-    showToast("Failed to generate image.", "error");
-    pngRenderBox.style.display = "none";
   }
-}
-downloadPngBtn.addEventListener('click', () => {
-  const link = document.createElement('a');
-  link.download = `wow-quote-${Date.now()}.png`;
-  link.href = pngPreviewImg.src;
-  link.click();
-});
-closePngPreviewModal.addEventListener('click', () => {
-  pngPreviewModal.classList.remove('open');
-  document.body.style.overflow = "";
-});
+  sharePngBtn.addEventListener('click', shareQuoteAsPNG);
+  closePngPreviewModal.onclick = function() {
+    pngPreviewModal.classList.remove('open');
+    document.body.style.overflow = "";
+  };
 
   // --- Copy logic ---
   copyBtn.addEventListener("click", () => {
@@ -815,52 +708,18 @@ closePngPreviewModal.addEventListener('click', () => {
     streakBadge.textContent = count > 1 ? `🔥 ${count} day streak!` : '';
   }
 
-  // --- Custom Google Forms Feedback Submission with Progress Spinner ---
-submitFeedbackBtn.addEventListener("click", () => {
-  const btnText = submitFeedbackBtn.querySelector('.btn-text');
-  const btnSpinner = submitFeedbackBtn.querySelector('.btn-spinner');
-  btnText.style.display = 'none';
-  btnSpinner.style.display = 'inline-block';
-  submitFeedbackBtn.disabled = true;
-
-  setTimeout(() => {
-    btnSpinner.style.display = 'none';
-    btnText.style.display = '';
-    submitFeedbackBtn.disabled = false;
-    feedbackSuccess.style.display = "block";
-    setTimeout(() => {
-      feedbackModal.classList.remove('open');
-      feedbackSuccess.style.display = "none";
-      document.body.style.overflow = "";
-    }, 1500);
-  }, 1000);
-});
-
-    // Simulate async submission (replace with real submission if needed)
-    setTimeout(() => {
-      btnSpinner.style.display = 'none';
-      btnText.style.display = '';
-      submitBtn.disabled = false;
-      feedbackSuccess.style.display = '';
-      setTimeout(() => {
-        feedbackSuccess.style.display = 'none';
-        feedbackModal.classList.remove('open');
-        document.body.style.overflow = "";
-      }, 1800);
-    }, 1200);
-
-    // Uncomment and use this for real Google Forms submission:
-    /*
+  // --- Custom Google Forms Feedback Submission ---
+  submitFeedbackBtn.addEventListener('click', () => {
+    const feedback = feedbackTextarea.value.trim();
+    if (!feedback) return;
     const formData = new FormData();
     formData.append("entry.1612485699", feedback);
+
     fetch("https://docs.google.com/forms/d/e/1FAIpQLSfv0KdY_skqOC2KF97FgMUqhDzAEe8Z4Jk3ZtuG6freUO-Y1A/formResponse", {
       method: "POST",
       mode: "no-cors",
       body: formData
     }).then(() => {
-      btnSpinner.style.display = 'none';
-      btnText.style.display = '';
-      submitBtn.disabled = false;
       feedbackSuccess.style.display = '';
       setTimeout(() => {
         feedbackSuccess.style.display = 'none';
@@ -869,11 +728,7 @@ submitFeedbackBtn.addEventListener("click", () => {
       }, 1800);
     }).catch(() => {
       alert("Failed to send feedback. Please try again.");
-      btnSpinner.style.display = 'none';
-      btnText.style.display = '';
-      submitBtn.disabled = false;
     });
-    */
   });
 
   // --- Feedback Modal Open/Close ---
@@ -882,10 +737,6 @@ submitFeedbackBtn.addEventListener("click", () => {
     document.body.style.overflow = "hidden";
     feedbackTextarea.value = '';
     feedbackSuccess.style.display = 'none';
-    const submitBtn = feedbackModal.querySelector('.feedback-submit-btn');
-    submitBtn.disabled = false;
-    submitBtn.querySelector('.btn-spinner').style.display = 'none';
-    submitBtn.querySelector('.btn-text').style.display = '';
   });
   closeFeedbackModal.addEventListener('click', () => {
     feedbackModal.classList.remove('open');
@@ -974,29 +825,6 @@ submitFeedbackBtn.addEventListener("click", () => {
   }
 
   // --- Daily Quote Notifications ---
-if ('Notification' in window && Notification.permission !== 'denied') {
-  Notification.requestPermission();
-}
-function sendDailyQuoteNotification() {
-  if (Notification.permission === 'granted') {
-    const text = `${qText.textContent} ${qAuth.textContent}`.trim();
-    new Notification('WOW Quote of the Day', { body: text });
-  }
-}
-function scheduleDailyNotification() {
-  const now = new Date();
-  const target = new Date();
-  target.setHours(9, 0, 0, 0);
-  if (now > target) target.setDate(target.getDate() + 1);
-  setTimeout(() => {
-    sendDailyQuoteNotification();
-    setInterval(sendDailyQuoteNotification, 24 * 60 * 60 * 1000);
-  }, target - now);
-}
-scheduleDailyNotification();
-
-
-  // --- Daily Quote Notifications ---
   if ('Notification' in window && Notification.permission !== 'denied') {
     Notification.requestPermission();
   }
@@ -1039,6 +867,3 @@ scheduleDailyNotification();
     showStreak(streak.count);
   })();
 });
-
-
-
