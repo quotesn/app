@@ -426,8 +426,6 @@ body.dark .share-option:hover, body.dark .share-option:focus {
   color: #222;
   box-shadow: 0 0 0 2px #ffd700aa;
 }
-#sharePngBtn { color: #4CAF50; }
-#sharePngBtn:hover { background: #4CAF50; color: white; }
 
 /* Icon buttons */
 .icon-btn {
