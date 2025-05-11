@@ -126,7 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const todayStr = today.toISOString().slice(0,10);
     const lastBannerDate = localStorage.getItem("wowBannerDate");
 
-    // Only show banner if it's a new day OR if it was closed previously on the same day (for testing, remove latter for prod)
     if (lastBannerDate === todayStr && specialBanner.style.display === 'none' && !localStorage.getItem("bannerForceShow")) return;
 
     let bannerHTML = "";
@@ -143,41 +142,35 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBannerBtn.onclick = () => {
       specialBanner.style.display = "none";
       localStorage.setItem("wowBannerDate", todayStr);
-      localStorage.removeItem("bannerForceShow"); // Clear force show flag
+      localStorage.removeItem("bannerForceShow"); 
     };
     setTimeout(() => {
       if(specialBanner.style.display !== "none"){
           specialBanner.style.display = "none";
-          localStorage.setItem("wowBannerDate", todayStr); // Also set if auto-closed
+          localStorage.setItem("wowBannerDate", todayStr); 
           localStorage.removeItem("bannerForceShow");
       }
     }, 8000);
 
-    // Auto-select category based on banner
     selectedCat = theme.cat;
-    authorMode = false; // Ensure not in author mode
+    authorMode = false; 
     if(currentCategory) currentCategory.textContent = capitalize(theme.cat);
     console.log(`Banner set category to: ${selectedCat}`);
-    // displayQuote will be called in initApp after banner setup
     localStorage.setItem("wowBannerDate", todayStr);
-    localStorage.setItem("lastAutoSelectedCategory", theme.cat); // Store the auto-selected category
+    localStorage.setItem("lastAutoSelectedCategory", theme.cat); 
   }
 
   async function fetchJSON(url, cacheKey) {
-    // console.log(`Attempting to fetch: ${url} (cacheKey: ${cacheKey})`); // Keep for debugging if needed
     try {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
-        // console.log(`Found cached data for ${cacheKey}`);
         return JSON.parse(cached);
       }
-      // console.log(`No cache for ${cacheKey}, fetching from network: ${url}`);
       const res = await fetch(url);
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status} for ${url}`);
       }
       const data = await res.json();
-      // console.log(`Successfully fetched ${url}, caching as ${cacheKey}`);
       localStorage.setItem(cacheKey, JSON.stringify(data));
       return data;
     } catch (e) {
@@ -187,7 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadCategoriesAndQuotes() {
-    // console.log("Starting loadCategoriesAndQuotes..."); // Keep for debugging if needed
     try {
       try {
         categories = await fetchJSON('data/categories.json', 'wowCategories');
@@ -219,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
                 try {
                     const data = await fetchJSON(filePath, cacheKeyPrefix + cat.id);
-                    if (Array.isArray(data)) { // Allow empty arrays
+                    if (Array.isArray(data)) { 
                         quotes[cat.id] = data;
                         buildAuthorIndex(data, cat.id);
                         return true;
@@ -278,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function renderMenu() { // (Keep existing renderMenu structure, no changes needed for these requests)
+  function renderMenu() { 
     if (!categoryMenu) return;
     categoryMenu.innerHTML = "";
     function renderCategoryList(catArray, parentUl) {
@@ -330,7 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if(customQuoteForm) customQuoteForm.reset();
             if(quoteFormSuccess) {
                 quoteFormSuccess.style.display = "none";
-                 // Color is set by CSS class .form-success-message
                 quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
             }
             const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
@@ -449,11 +440,11 @@ document.addEventListener("DOMContentLoaded", () => {
               const li = document.createElement("li");
               li.setAttribute('role', 'option');
               li.textContent = authors[nameKey][0].author;
-              li.tabIndex = -1; // Make it focusable for keyboard nav if needed later
+              li.tabIndex = -1; 
               li.addEventListener("click", () => {
                 authorMode = true;
                 authorName = nameKey;
-                authorQuotes = [...authors[nameKey]]; // Create a copy for manipulation
+                authorQuotes = [...authors[nameKey]]; 
                 authorQuoteIndex = 0;
                 if(currentCategory) currentCategory.textContent = "Author: " + authors[nameKey][0].author;
                 closeMenu();
@@ -468,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   function openMenu() {
-    renderMenu(); // Re-render menu each time to ensure it's up-to-date
+    renderMenu(); 
     if(categoryModal) categoryModal.classList.add("open");
     document.body.style.overflow = "hidden";
     if(closeMenuBtn) closeMenuBtn.focus();
@@ -501,7 +492,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
         if(quoteFormSuccess) {
             quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
-            // quoteFormSuccess.style.color = 'var(--success-green)'; // Color handled by CSS
             quoteFormSuccess.style.display = 'block';
         }
 
@@ -523,8 +513,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if(qText) qText.textContent = "No quote available. Try another category or inspire me again!";
         if(qAuth) qAuth.textContent = "";
         lastQuote = null;
-        if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none"; // Use flex for icon-btn
-        updateFavoriteButtonState(); // Update fav button even if no quote
+        if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none"; 
+        updateFavoriteButtonState(); 
         return;
     }
 
@@ -540,14 +530,14 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       const txt = item.text || item.quote || item.message || "Quote text missing.";
       let by = item.author || item.by || "";
-      by = by.replace(/^[-–—\s]+/, "").trim(); // Clean leading em-dashes or hyphens
+      by = by.replace(/^[-–—\s]+/, "").trim(); 
 
       if(qText) qText.textContent = txt;
       if(qAuth) {
         if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
           qAuth.textContent = "";
         } else {
-          qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`; // Single em-dash
+          qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`; 
         }
       }
       if(quoteMark) {
@@ -559,7 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if(qAuth) qAuth.classList.remove('fade-out');
 
       lastQuote = { text: txt, author: by, category: cat };
-      updateStreak(); // This also calls updateFavoriteButtonState
+      updateStreak(); 
     }, 300);
   }
 
@@ -575,7 +565,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayQuote() {
-    // console.log(`displayQuote called. selectedCat: "${selectedCat}", authorMode: ${authorMode}`);
     if (authorMode && authorQuotes.length > 0) {
       showAuthorQuote();
       return;
@@ -602,11 +591,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (!pool || pool.length === 0) {
-        // console.warn(`Pool for "${selectedCat}" is empty. Falling back to all quotes.`);
         const allQuotesRaw = Object.values(quotes).flat();
         pool = allQuotesRaw.filter(isValidQuote);
         if (pool.length > 0 && currentCategory && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
-            if(currentCategory) currentCategory.textContent = "All Quotes"; // Indicate fallback
+            if(currentCategory) currentCategory.textContent = "All Quotes"; 
         }
     }
 
@@ -627,7 +615,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if(undoBtn) undoBtn.addEventListener("click", () => {
     if (quoteHistory.length > 0) {
       const prev = quoteHistory.shift();
-      showQuote(prev, prev.category, true); // Pass true for fromUndo
+      showQuote(prev, prev.category, true); 
     }
     undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
   });
@@ -650,8 +638,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const ripple = document.createElement('span');
     ripple.className = 'ripple';
-    // Calculate ripple position based on click (more accurate for touch)
-    // For simplicity, keeping it centered as before if not passed event
     ripple.style.left = "50%";
     ripple.style.top = "50%";
     if(genBtn) genBtn.appendChild(ripple);
@@ -663,29 +649,16 @@ document.addEventListener("DOMContentLoaded", () => {
         triggerGenerateEffects();
         displayQuote();
     });
-    // Optional: Add touchstart for immediate visual feedback if desired,
-    // but click usually handles both tap and mouse click well.
-    // genBtn.addEventListener("touchstart", e => {
-    //     triggerGenerateEffects();
-    // }, {passive: true});
   }
 
-  // Ripple effect for icon buttons
   document.querySelectorAll('.icon-btn, .feedback-btn, .home-btn').forEach(btn => {
-    btn.style.webkitTapHighlightColor = "transparent"; // Remove tap highlight
-    btn.addEventListener('click', function(e) { // Use click for broader compatibility
+    btn.style.webkitTapHighlightColor = "transparent"; 
+    btn.addEventListener('click', function(e) { 
       const rect = btn.getBoundingClientRect();
       const ripple = document.createElement('span');
-      ripple.className = 'ripple'; // Assuming you have a .ripple class for styling
-      // Use clientX/Y from the event for more accurate ripple origin
+      ripple.className = 'ripple'; 
       ripple.style.left = (e.clientX - rect.left) + 'px';
       ripple.style.top = (e.clientY - rect.top) + 'px';
-      // Style the ripple (e.g., from CSS or inline)
-      // ripple.style.background = 'rgba(255,255,255,0.3)';
-      // ripple.style.position = 'absolute';
-      // ripple.style.borderRadius = '50%';
-      // ripple.style.transform = 'scale(0)';
-      // ripple.style.animation = 'waterRipple 0.6s linear'; // Keyframes for ripple
       btn.appendChild(ripple);
       setTimeout(() => ripple.remove(), 600);
     });
@@ -693,10 +666,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(shareBtn) shareBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent click from closing menu immediately
+    e.stopPropagation(); 
     if(shareMenu) shareMenu.classList.toggle("open");
     if (shareMenu && shareMenu.classList.contains("open")) {
-      // Use a slight delay to ensure the menu is rendered before adding listener
       setTimeout(() => {
         document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
       }, 0);
@@ -707,7 +679,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (shareMenu && shareMenu.classList.contains("open") && !shareMenu.contains(event.target) && event.target !== shareBtn && (shareBtn && !shareBtn.contains(event.target))) {
       shareMenu.classList.remove("open");
     } else if (shareMenu && shareMenu.classList.contains("open")) {
-         // If menu is still open (e.g., clicked inside), re-add listener
          document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
     }
   }
@@ -716,8 +687,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
     btn.addEventListener('click', function() {
       const quoteContent = qText ? qText.textContent || "" : "";
-      const authorContent = qAuth ? (qAuth.textContent || "").replace(/^[\s–—]+/, "") : ""; // Cleaned author
-      const textToShare = `${quoteContent}${authorContent ? ` — ${authorContent}` : ''}`.trim();
+      // Use the clean author name from lastQuote for sharing
+      const rawAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
+      const textToShare = `${quoteContent}${rawAuthor ? ` — ${rawAuthor}` : ''}`.trim();
       const pageUrl = window.location.href;
       let shareUrl = '';
 
@@ -750,7 +722,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const iconElement = copyBtn.querySelector("i");
       const originalIcon = iconElement ? iconElement.className : "";
       if(iconElement) iconElement.className = "fa-solid fa-check";
-      copyBtn.classList.add('copied-feedback'); // Uses --green-accent
+      copyBtn.classList.add('copied-feedback'); 
       const tooltip = copyBtn.querySelector('.btn-tooltip');
       const originalTooltipText = tooltip ? tooltip.textContent : '';
       if(tooltip) tooltip.textContent = "Copied!";
@@ -762,7 +734,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 1500);
     }).catch(err => {
       console.error('Failed to copy text: ', err);
-      // Consider a more user-friendly error display than alert
       const tooltip = copyBtn.querySelector('.btn-tooltip');
       if(tooltip) {
           const originalTooltipText = tooltip.textContent;
@@ -773,7 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if(favBtn) favBtn.addEventListener('click', () => {
-    if (!lastQuote || !lastQuote.text) return; // Don't favorite if no quote displayed
+    if (!lastQuote || !lastQuote.text) return; 
 
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     const currentQuoteText = lastQuote.text;
@@ -794,9 +765,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    updateFavoriteButtonState(); // Update icon immediately
+    updateFavoriteButtonState(); 
 
-    // Show "Saved!" / "Unsaved" popup
     if(favBtn) favBtn.classList.add('show-saved-popup');
     setTimeout(() => {
         if(favBtn) favBtn.classList.remove('show-saved-popup');
@@ -804,12 +774,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function updateFavoriteButtonState() {
-    if (!favBtn || !lastQuote || !lastQuote.text) { // Check if lastQuote and its text exist
-        // Default to non-favorited state if no current quote
+    if (!favBtn || !lastQuote || !lastQuote.text) { 
         const favIcon = favBtn ? favBtn.querySelector("i") : null;
         if (favIcon) {
-            favIcon.className = "fa-regular fa-heart"; // Empty heart
-            // favIcon.style.color = "var(--primary)"; // Reset color or let CSS handle
+            favIcon.className = "fa-regular fa-heart"; 
         }
         return;
     }
@@ -821,11 +789,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const isFavorited = favs.some(q => q.text === lastQuote.text && q.author === lastQuote.author);
 
     if (isFavorited) {
-        favIcon.className = "fa-solid fa-heart"; // Filled heart
-        // favIcon.style.color = "var(--gold)"; // Color is handled by CSS : #favBtn i.fa-solid.fa-heart
+        favIcon.className = "fa-solid fa-heart"; 
     } else {
-        favIcon.className = "fa-regular fa-heart"; // Empty heart
-        // favIcon.style.color = "var(--primary)"; // Reset color or let CSS handle
+        favIcon.className = "fa-regular fa-heart"; 
     }
   }
 
@@ -836,7 +802,7 @@ document.addEventListener("DOMContentLoaded", () => {
         themeSw.checked = true;
         document.body.classList.add("dark");
     } else {
-        document.body.classList.remove("dark"); // Ensure it's removed if not true
+        document.body.classList.remove("dark"); 
     }
     themeSw.addEventListener("change", () => {
         const isDark = themeSw.checked;
@@ -853,13 +819,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (streak.last === getYesterday()) {
         streak.count++;
       } else {
-        streak.count = 1; // Reset if not yesterday
+        streak.count = 1; 
       }
       streak.last = today;
       localStorage.setItem('wowStreak', JSON.stringify(streak));
     }
     showStreak(streak.count);
-    updateFavoriteButtonState(); // Also update fav button as quote might have changed
+    updateFavoriteButtonState(); 
   }
   function getYesterday() {
     const d = new Date();
@@ -870,9 +836,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!streakBadge) return;
     if (count > 1) {
         streakBadge.innerHTML = `🔥 <span class="streak-count">${count}</span> day streak!`;
-        streakBadge.style.display = 'inline-flex'; // Use inline-flex for better alignment if needed
+        streakBadge.style.display = 'inline-flex'; 
     } else {
-        streakBadge.textContent = ''; // Clear content
+        streakBadge.textContent = ''; 
         streakBadge.style.display = 'none';
     }
   }
@@ -880,7 +846,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if(submitFeedbackBtn) submitFeedbackBtn.addEventListener('click', async () => {
     const feedback = feedbackTextarea ? feedbackTextarea.value.trim() : "";
     if (!feedback) {
-        // Consider a less intrusive notification, e.g., temporary message near textarea
         feedbackTextarea.placeholder = "Please enter your feedback first!";
         setTimeout(() => { if(feedbackTextarea) feedbackTextarea.placeholder = "Your feedback...";}, 2000);
         return;
@@ -893,19 +858,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if(spinner) spinner.style.display = 'inline-block';
     submitFeedbackBtn.disabled = true;
 
-    // Simulate API call
     setTimeout(async () => {
-        // const formData = new FormData(); // If actual submission is re-enabled
-        // formData.append("entry.1612485699", feedback);
-        // try {
-        //     await fetch("YOUR_GOOGLE_FORM_URL/formResponse", {
-        //         method: "POST",
-        //         mode: "no-cors",
-        //         body: formData
-        //     });
             if(feedbackSuccess) {
                 feedbackSuccess.textContent = "Thank you for your feedback!";
-                // feedbackSuccess.style.color = 'var(--success-green)'; // Handled by CSS
                 feedbackSuccess.style.display = 'block';
             }
             if(feedbackTextarea) feedbackTextarea.value = '';
@@ -919,17 +874,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(feedbackModal) feedbackModal.classList.remove('open');
                 document.body.style.overflow = "";
             }, 2500);
-        // } catch (error) {
-        //     console.error("Feedback submission error:", error);
-        //     if(feedbackSuccess) { // Show error in the same spot
-        //         feedbackSuccess.textContent = "Submission failed. Try again.";
-        //         feedbackSuccess.style.color = 'var(--danger-red)'; // Define a danger color
-        //         feedbackSuccess.style.display = 'block';
-        //     }
-        //     if(submitBtnText) submitBtnText.style.display = 'inline';
-        //     if(spinner) spinner.style.display = 'none';
-        //     submitFeedbackBtn.disabled = false;
-        // }
     }, 1500);
   });
 
@@ -939,7 +883,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if(feedbackTextarea) feedbackTextarea.value = '';
     if(feedbackSuccess) {
         feedbackSuccess.style.display = 'none';
-        // feedbackSuccess.style.color = 'var(--success-green)'; // Reset color via CSS
         feedbackSuccess.textContent = "Thank you for your feedback!";
     }
     const feedbackSubmitBtnText = submitFeedbackBtn.querySelector('.submit-btn-text');
@@ -1016,15 +959,15 @@ document.addEventListener("DOMContentLoaded", () => {
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    showFavorites(); // Refresh list
-    updateFavoriteButtonState(); // Update main button if current quote was removed
+    showFavorites(); 
+    updateFavoriteButtonState(); 
   };
 
   window.copyFavorite = function(text, author, buttonElement) {
     const textToCopy = `${text}${author ? ` — ${author}` : ''}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
         if(buttonElement){
-            const originalIconHTML = buttonElement.innerHTML; // Store full HTML
+            const originalIconHTML = buttonElement.innerHTML; 
             buttonElement.innerHTML = '<i class="fa-solid fa-check" style="color: var(--green-accent);"></i>';
             setTimeout(() => { buttonElement.innerHTML = originalIconHTML; }, 1200);
         }
@@ -1036,11 +979,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (navigator.share) {
       navigator.share({ title: `Quote by ${author || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
         .catch(err => {
-            if (err.name !== 'AbortError') { // Don't log error if user cancels share sheet
+            if (err.name !== 'AbortError') { 
                 console.error("Sharing favorite failed:", err);
             }
         });
-    } else { // Fallback for browsers that don't support navigator.share
+    } else { 
       navigator.clipboard.writeText(shareText).then(() => alert("Quote copied! You can now paste it to share."))
                          .catch(() => alert("Could not copy quote. Please share manually."));
     }
@@ -1052,14 +995,11 @@ document.addEventListener("DOMContentLoaded", () => {
       openModals.forEach(modal => {
         modal.classList.remove("open");
       });
-      document.body.style.overflow = ""; // Reset body overflow
+      document.body.style.overflow = ""; 
       if (shareMenu && shareMenu.classList.contains("open")) {
           shareMenu.classList.remove("open");
       }
-      // Focus logic can be tricky, consider what's best UX
-      // if (openModals.length > 0 && openMenuBtn) openMenuBtn.focus();
     }
-    // Removed Enter key on generate button as it's not standard for all buttons
   });
 
   function recordCategoryUse(cat) {
@@ -1068,14 +1008,13 @@ document.addEventListener("DOMContentLoaded", () => {
     usage[cat] = (usage[cat] || 0) + 1;
     localStorage.setItem('catUsage', JSON.stringify(usage));
   }
-  function getMostUsedCategory() { // Renamed for clarity
+  function getMostUsedCategory() { 
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
-    if (Object.keys(usage).length === 0) return null; // No usage yet
+    if (Object.keys(usage).length === 0) return null; 
     const sortedUsage = Object.entries(usage).sort(([,a],[,b]) => b-a);
     return sortedUsage[0][0];
   }
 
-  // --- Notification Functions (Keep existing, no changes needed for these requests) ---
   function requestNotificationPermission() { /* ... */ }
   function sendDailyQuoteNotification() { /* ... */ }
   function scheduleDailyNotification() { /* ... */ }
@@ -1090,15 +1029,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     await loadCategoriesAndQuotes();
-    renderMenu(); // Render menu after quotes are loaded (for author search etc.)
+    renderMenu(); 
 
-    // Determine initial category: 1. Banner, 2. Last auto-selected, 3. Most used, 4. Default
-    let initialCategory = "inspiration"; // Default
+    let initialCategory = "inspiration"; 
     const lastAutoCat = localStorage.getItem("lastAutoSelectedCategory");
     const todayStr = new Date().toISOString().slice(0,10);
     const lastBannerDate = localStorage.getItem("wowBannerDate");
 
-    if (lastBannerDate === todayStr && lastAutoCat) { // If banner was shown today for this cat
+    if (lastBannerDate === todayStr && lastAutoCat) { 
         initialCategory = lastAutoCat;
         console.log(`Initial category from today's banner: ${initialCategory}`);
     } else {
@@ -1114,11 +1052,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
 
 
-    showRotatingBanner(); // This might override selectedCat if banner logic runs for a new day
-    // displayQuote will be called by showRotatingBanner if it changes category,
-    // or explicitly if banner doesn't run/change category.
-
-    if (!lastQuote || !lastQuote.text) { // If banner didn't load a quote (e.g. banner closed or same day)
+    showRotatingBanner(); 
+    
+    if (!lastQuote || !lastQuote.text) { 
         console.log(`Banner didn't set a quote, or using stored category. Displaying quote for: ${selectedCat}`);
         displayQuote();
     }
@@ -1130,8 +1066,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
-    showStreak(streak.count); // Show initial streak
-    updateFavoriteButtonState(); // Set initial favorite button state
+    showStreak(streak.count); 
+    updateFavoriteButtonState(); 
 
     requestNotificationPermission();
     scheduleDailyNotification();
