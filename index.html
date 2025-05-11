@@ -22,7 +22,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
-  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
   <style>
     #loading-wisdom {
       position: fixed;
@@ -46,6 +45,27 @@
       opacity: 0;
       pointer-events: none;
     }
+    /* Styles for loading spinner */
+    .loader-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: var(--primary); /* Or use #fff for dark mode if needed */
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        display: inline-block; /* Changed from none */
+        margin-left: 10px; /* Adjust as needed */
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    body.dark .loader-spinner {
+        border-left-color: var(--gold); /* Spinner color for dark mode */
+    }
+
   </style>
 </head>
 <body>
@@ -99,9 +119,6 @@
         <span class="btn-tooltip">Copy</span>
       </button>
       <div id="shareMenu" class="share-menu" aria-label="Share Options">
-        <button class="share-option" id="sharePngBtn" title="Share as PNG" aria-label="Share as PNG">
-          <i class="fa-solid fa-image"></i>
-        </button>
         <button class="share-option" data-network="twitter" title="Share on Twitter" aria-label="Share on Twitter">
           <i class="fa-brands fa-x-twitter"></i>
         </button>
@@ -124,12 +141,15 @@
         <button class="close-btn" id="closeSubmitQuoteModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
         <h2 style="margin-bottom:1rem;">Submit Your Quote</h2>
         <form id="customQuoteForm" autocomplete="off">
-          <label for="quoteText">Quote <span style="color:red">*</span></label>
-          <input type="text" id="quoteText" name="entry.739419974" required maxlength="240" placeholder="Your quote...">
-          <label for="quoteAuthor">Author (optional)</label>
-          <input type="text" id="quoteAuthor" name="entry.1816264212" maxlength="80" placeholder="Author">
-          <button type="submit">Submit</button>
-          <div id="quoteFormSuccess">Thank you! Your quote was submitted.</div>
+          <label for="quoteTextSubmit">Quote <span style="color:red">*</span></label>
+          <input type="text" id="quoteTextSubmit" name="entry.739419974" required maxlength="240" placeholder="Your quote...">
+          <label for="quoteAuthorSubmit">Author (optional)</label>
+          <input type="text" id="quoteAuthorSubmit" name="entry.1816264212" maxlength="80" placeholder="Author">
+          <button type="submit" id="submitCustomQuoteBtn">
+            <span class="submit-btn-text">Submit</span>
+            <span class="loader-spinner" style="display: none;"></span>
+          </button>
+          <div id="quoteFormSuccess" class="form-success-message">Thank you! Your quote was submitted.</div>
         </form>
       </div>
     </div>
@@ -140,37 +160,29 @@
         <div id="favQuotesList"></div>
       </div>
     </div>
-    <!-- Large close button outside modal-content for Favorites modal -->
     <button id="closeFavModalLarge" class="large-close-btn-outside" aria-label="Close Favorites">
       <i class="fa-solid fa-xmark"></i>
     </button>
-    <!-- Feedback Button -->
     <button id="feedbackBtn" class="feedback-btn" title="Send Feedback" aria-label="Send Feedback">
       <i class="fa-regular fa-message"></i>
     </button>
-    <!-- Feedback Modal -->
     <div id="feedbackModal" class="modal" aria-modal="true" role="dialog">
       <div class="modal-content feedback-modal-content">
         <button class="close-btn" id="closeFeedbackModal" aria-label="Close Feedback"><i class="fa-solid fa-xmark"></i></button>
         <h2>Feedback</h2>
         <textarea id="feedbackTextarea" maxlength="400" placeholder="Your feedback..."></textarea>
-        <button id="submitFeedbackBtn" class="feedback-submit-btn">Send</button>
+        <button id="submitFeedbackBtn" class="feedback-submit-btn">
+            <span class="submit-btn-text">Send</span>
+            <span class="loader-spinner" style="display: none;"></span>
+        </button>
         <div class="feedback-links">
           <a href="https://www.wordsofwisdom.in/p/privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>
           <a href="https://www.wordsofwisdom.in/p/terms-and-conditions.html" target="_blank" rel="noopener">T&amp;C</a>
         </div>
-        <div id="feedbackSuccess" class="feedback-success">Thank you for your feedback!</div>
+        <div id="feedbackSuccess" class="form-success-message">Thank you for your feedback!</div>
       </div>
     </div>
-    <!-- PNG Preview Modal -->
-    <div id="pngPreviewModal" class="modal" aria-modal="true" role="dialog">
-      <div class="modal-content" style="max-width:95vw;max-height:95vh;display:flex;flex-direction:column;align-items:center;">
-        <button class="close-btn" id="closePngPreviewModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
-        <img id="pngPreviewImg" src="" alt="Quote Preview" style="width:100%;max-width:420px;max-height:80vh;border-radius:1rem;box-shadow:0 2px 16px #0002;margin-bottom:1rem;">
-        <button id="downloadPngBtn" class="feedback-submit-btn" style="width:70%;margin:auto;">Download / Share</button>
-      </div>
-    </div>
-  </main>
+    </main>
   <footer>
     <div>
       © 2025 <a href="https://www.wordsofwisdom.in/p/about.html" class="author-link" target="_blank" rel="noopener">Words of Wisdom</a>
