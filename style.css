@@ -107,13 +107,9 @@ body.dark .streak-badge {
 
 
 .home-btn {
-  /* position: absolute; */ /* No longer absolute */
-  /* left: 1.5rem; */
   color: var(--primary);
   font-size: 1.3rem;
   text-decoration: none;
-  /* top: 50%; */
-  /* transform: translateY(-50%); */
   z-index: 2;
   border-radius: 50% !important;
   width: 2.6rem;
@@ -129,10 +125,6 @@ body.dark .streak-badge {
 
 /* Theme toggle */
 .toggle-wrap {
-  /* position: absolute; */ /* No longer absolute */
-  /* right: 1.2rem; */
-  /* top: 50%; */
-  /* transform: translateY(-50%); */
   z-index: 2;
 }
 .theme-toggle {
@@ -597,8 +589,14 @@ body.dark .magic-wand-icon.animated {
   }
   .action-buttons .icon-btn { margin: 0 1.2rem; }
   #shareMenu {
-    min-width: 160px;
-    font-size: 1.1rem;
+    min-width: 160px; /* Adjusted for potential new icon */
+    /* font-size: 1.1rem; */ /* Keep font size consistent or adjust if needed */
+  }
+  /* Ensure share options fit if more are added */
+ #shareMenu .share-option {
+    width: 2.4rem; /* Slightly reduce size if needed */
+    height: 2.4rem;
+    font-size: 1.1rem; /* Adjust icon size */
   }
 }
 @media (max-width: 380px) { /* Even smaller screens */
@@ -796,7 +794,6 @@ body.dark .embossed-button:active {
 body.dark #submitQuoteModal input,
 body.dark #submitQuoteModal label,
 body.dark #submitQuoteModal h2
-/* body.dark #submitQuoteModal button - Handled by .embossed-button specific dark styles */
 {
   color: var(--text) !important; /* Use dark theme text color */
   background-color: var(--card) !important; /* Use dark theme card background */
@@ -873,7 +870,6 @@ body.dark #submitQuoteModal input::placeholder {
 
 body.dark #feedbackTextarea,
 body.dark .feedback-modal-content
-/* body.dark .feedback-submit-btn - Handled by .embossed-button specific dark styles */
 {
   background-color: var(--card) !important;
   color: var(--text) !important;
@@ -911,6 +907,80 @@ footer .author-link:hover,
 footer .author-link:focus {
   text-decoration: underline;
 }
+
+/* Styles for Image Preview Modal */
+#quoteImagePreviewContainer {
+  display: none; /* Initially hidden */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7); /* Semi-transparent background */
+  justify-content: center;
+  align-items: center;
+  z-index: 3000; /* Ensure it's above other content */
+  padding: 1rem; /* Padding for smaller screens */
+  overflow-y: auto; /* Allow scrolling if content is too tall */
+}
+
+#quoteImageWrapper {
+  background: var(--card); /* Uses theme variable for background */
+  color: var(--text);     /* Uses theme variable for main text color */
+  padding: 30px 25px;     /* Padding inside the image box */
+  border-radius: 12px;    /* Rounded corners */
+  text-align: center;
+  max-width: 500px;       /* Max width for the image content */
+  width: 90%;             /* Responsive width */
+  position: relative;     /* For watermark positioning */
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Subtle shadow */
+  font-family: 'Poppins', sans-serif; /* Default font, can be overridden by specific elements */
+}
+
+body.dark #quoteImageWrapper {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* Darker shadow for dark mode */
+}
+
+#imageQuoteText {
+  font-family: 'Playfair Display', serif; /* Specific font for quote text */
+  font-size: 28px; /* As per HTML */
+  color: var(--text); /* Inherits from quoteImageWrapper or set explicitly */
+  margin-bottom: 20px; /* As per HTML */
+  word-wrap: break-word; /* As per HTML */
+  line-height: 1.5; /* Improved readability */
+}
+
+#imageQuoteAuthor {
+  font-family: 'Poppins', sans-serif; /* Specific font for author */
+  font-size: 20px; /* As per HTML */
+  color: var(--light); /* Uses theme variable for author text color */
+  margin-bottom: 30px; /* As per HTML */
+  font-style: italic; /* Make author italic */
+}
+
+#imageWatermark {
+  font-family: 'Poppins', sans-serif; /* As per HTML */
+  font-size: 14px; /* As per HTML */
+  color: var(--light); /* Use a theme-aware color */
+  opacity: 0.7; /* Slightly transparent */
+  position: absolute; /* As per HTML */
+  bottom: 15px; /* As per HTML */
+  right: 20px; /* As per HTML */
+}
+
+body.dark #imageWatermark {
+  color: var(--light); /* Ensure it's visible in dark mode */
+  opacity: 0.5; /* Adjust opacity for dark mode if needed */
+}
+
+/* Styling for buttons within the preview modal */
+#quoteImageWrapper .embossed-button {
+    padding: 0.6rem 1rem; /* Adjust padding for smaller buttons */
+    font-size: 0.9rem;    /* Adjust font size for smaller buttons */
+    min-width: 100px;     /* Ensure buttons have a decent tap/click target size */
+    margin: 5px;          /* Add some margin around buttons */
+}
+
 
 /* High contrast mode */
 @media (prefers-contrast: more) {
