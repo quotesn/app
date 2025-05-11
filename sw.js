@@ -1,7 +1,7 @@
 // sw.js
 
-const CACHE_VERSION = 'v3';
-const CACHE_NAME = `wow-quotes-cache-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v4';
+const CACHE_NAME = `quotesn-cache-${CACHE_VERSION}`;
 
 // List all assets and JSON files to precache
 const PRECACHE_ASSETS = [
