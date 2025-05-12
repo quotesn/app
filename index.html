@@ -8,52 +8,75 @@
   <meta name="keywords" content="quotes app, inspirational quotes, motivational quotes, wisdom quotes, daily quotes, shareable quotes, positive quotes, resilience quotes, mindfulness quotes, love quotes, motivation quotes, daily inspiration">
   <meta property="og:title" content="WOW Quotes - Daily Inspiration & Wisdom">
   <meta property="og:description" content="Get daily doses of wisdom! Discover powerful quotes across themes like Resilience, Mindfulness, Love, and Motivation – ready to inspire and uplift you. Share your favorite insights effortlessly with friends, all within a beautiful modern app that adapts to your style with dark/light themes.">
-  <meta property="og:image" content="https://quotes-app.wordsofwisdom.in/images/app_logo.png"> <meta property="og:url" content="https://quotes-app.wordsofwisdom.in"> <meta property="og:type" content="website">
+  <meta property="og:image" content="https://quotes-app.wordsofwisdom.in/images/app_logo.png">
+  <meta property="og:url" content="https://quotes-app.wordsofwisdom.in">
+  <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="WOW Quotes - Daily Inspiration & Wisdom">
   <meta name="twitter:description" content="Discover inspiring and uplifting quotes daily with Words of Wisdom. Get daily doses of wisdom, share with friends and stay positive. Explore categories like Resilience, Mindfulness, Love and Motivation. Enjoy a modern design with easy sharing and dark/light themes.">
-  <meta name="twitter:image" content="https://quotes-app.wordsofwisdom.in/images/app_logo.png"> <link rel="icon" href="https://quotes-app.wordsofwisdom.in/images/favicon.ico" type="image/x-icon"> <link rel="apple-touch-icon" sizes="180x180" href="https://quotes-app.wordsofwisdom.in/images/apple-touch-icon.png"> <link rel="icon" type="image/png" sizes="32x32" href="https://quotes-app.wordsofwisdom.in/images/favicon-32x32.png"> <link rel="icon" type="image/png" sizes="16x16" href="https://quotes-app.wordsofwisdom.in/images/favicon-16x16.png"> <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
-  
+  <meta name="twitter:image" content="https://quotes-app.wordsofwisdom.in/images/app_logo.png">
+  <link rel="icon" href="https://quotes-app.wordsofwisdom.in/images/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://quotes-app.wordsofwisdom.in/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://quotes-app.wordsofwisdom.in/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://quotes-app.wordsofwisdom.in/images/favicon-16x16.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
   <style>
-    /* Minimal inline styles for initial loading screen, rest are in style.css */
     #loading-wisdom {
       position: fixed;
-      z-index: 2000; /* High z-index to be on top */
+      z-index: 2000;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(245,245,250,0.95); /* Light theme loading background */
-      color: #7c5df0; /* Light theme loading text */
+      background: rgba(245,245,250,0.95);
+      color: #7c5df0;
       font-family: 'Playfair Display', serif;
       font-size: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
       letter-spacing: 0.04em;
-      transition: opacity .4s ease-out; /* Smooth fade out */
-      pointer-events: none; /* Allow clicks to pass through when hidden */
+      transition: opacity .4s;
     }
     body.dark #loading-wisdom {
-      background: rgba(24,24,38,0.98); /* Dark theme loading background */
-      color: #ffd700; /* Dark theme loading text */
+      background: rgba(24,24,38,0.98);
+      color: #ffd700;
     }
     #loading-wisdom.hide {
       opacity: 0;
+      pointer-events: none;
     }
+    /* Styles for loading spinner */
+    .loader-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: var(--primary); /* Or use #fff for dark mode if needed */
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        display: inline-block; /* Changed from none */
+        margin-left: 10px; /* Adjust as needed */
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    body.dark .loader-spinner {
+        border-left-color: var(--gold); /* Spinner color for dark mode */
+    }
+
   </style>
 </head>
 <body>
   <div id="loading-wisdom">✨ Loading Wisdom...</div>
-
-  <div id="specialBanner" class="special-banner">
+  <div id="specialBanner" class="special-banner" style="display:none;">
     <span id="bannerText"></span>
     <button id="closeBannerBtn" class="close-btn" aria-label="Close Banner">&times;</button>
   </div>
 
   <header>
-    <a href="https://www.wordsofwisdom.in" class="home-btn icon-btn" aria-label="Home" title="Visit Words of Wisdom Home" target="_blank" rel="noopener">
+    <a href="https://www.wordsofwisdom.in" class="home-btn icon-btn" aria-label="Home" target="_blank" rel="noopener">
       <i class="fa-solid fa-house"></i>
     </a>
     <div class="header-center-content">
@@ -61,7 +84,7 @@
         <span id="streakBadge" class="streak-badge" aria-live="polite"></span>
     </div>
     <div class="toggle-wrap">
-      <label class="theme-toggle" title="Toggle Dark/Light Theme" aria-label="Toggle Dark/Light Theme">
+      <label class="theme-toggle">
         <input type="checkbox" id="themeSwitch" />
         <span class="slider"></span>
       </label>
@@ -79,27 +102,26 @@
       <i class="fa-solid fa-bars"></i> <span id="currentCategory">Inspiration</span>
     </button>
 
-    <div id="categoryModal" class="modal" aria-modal="true" role="dialog" aria-labelledby="categoryModalTitle">
+    <div id="categoryModal" class="modal" aria-modal="true" role="dialog">
       <div class="modal-content">
-        <h2 id="categoryModalTitle" class="sr-only">Select Category</h2> <button class="close-btn" id="closeMenuBtn" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
-        <div id="categoryMenu">
-          </div>
+        <button class="close-btn" id="closeMenuBtn" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
+        <div id="categoryMenu"></div>
       </div>
     </div>
 
     <div class="action-buttons">
-      <button id="undoBtn" class="icon-btn undo-btn" title="Previous Quote" aria-label="Previous Quote">
+      <span id="undoBtn" class="icon-btn undo-btn" title="Previous Quote" aria-label="Previous Quote" style="display:none;">
         <i class="fa-solid fa-rotate-left"></i>
-      </button>
-      <button id="shareBtn" class="icon-btn" title="Share Quote" aria-label="Share Quote Options">
+      </span>
+      <button id="shareBtn" class="icon-btn" title="Share" aria-label="Share">
         <i class="fa-solid fa-share-nodes"></i>
         <span class="btn-tooltip">Share</span>
       </button>
-      <button id="favBtn" class="icon-btn" title="Favorite Quote" aria-label="Favorite this quote">
+      <button id="favBtn" class="icon-btn" title="Favorite" aria-label="Favorite">
         <i class="fa-regular fa-heart"></i> <span class="btn-tooltip">Favorite</span>
         <span class="saved-popup">Saved!</span>
       </button>
-      <button id="copyBtn" class="icon-btn" title="Copy Quote to Clipboard" aria-label="Copy quote">
+      <button id="copyBtn" class="icon-btn" title="Copy to clipboard" aria-label="Copy to clipboard">
         <i class="fa-solid fa-copy"></i>
         <span class="btn-tooltip">Copy</span>
       </button>
@@ -116,125 +138,104 @@
         <button class="share-option" data-network="whatsapp" title="Share on WhatsApp" aria-label="Share on WhatsApp">
           <i class="fa-brands fa-whatsapp"></i>
         </button>
-        <button id="generateImageShareOption" class="share-option" title="Create Image of Quote" aria-label="Create Image of Quote">
+        <button id="generateImageShareOption" class="share-option" title="Create Image" aria-label="Create Image of Quote">
           <i class="fa-solid fa-image"></i>
         </button>
       </div>
-      <button id="generateBtn" class="generate-btn" title="Inspire Me - Generate New Quote" aria-label="Generate new quote">
+      <button id="generateBtn" class="generate-btn" title="Inspire Me" aria-label="Generate new quote">
         <i class="fa-solid fa-wand-magic-sparkles magic-wand-icon"></i>
       </button>
     </div>
 
-    <div id="submitQuoteModal" class="modal" aria-modal="true" role="dialog" aria-labelledby="submitQuoteModalTitle">
+    <div id="submitQuoteModal" class="modal" aria-modal="true" role="dialog">
       <div class="modal-content">
-        <button class="close-btn" id="closeSubmitQuoteModal" aria-label="Close Submit Quote Form"><i class="fa-solid fa-xmark"></i></button>
-        <h2 id="submitQuoteModalTitle" style="margin-bottom:1rem;">Submit Your Quote</h2>
+        <button class="close-btn" id="closeSubmitQuoteModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        <h2 style="margin-bottom:1rem;">Submit Your Quote</h2>
         <form id="customQuoteForm" autocomplete="off">
-          <label for="quoteTextSubmit">Quote <span class="required-asterisk" aria-hidden="true">*</span></label>
-          <input type="text" id="quoteTextSubmit" name="entry.739419974" required maxlength="240" placeholder="Your inspiring quote...">
+          <label for="quoteTextSubmit">Quote <span style="color:red">*</span></label>
+          <input type="text" id="quoteTextSubmit" name="entry.739419974" required maxlength="240" placeholder="Your quote...">
           <label for="quoteAuthorSubmit">Author (optional)</label>
-          <input type="text" id="quoteAuthorSubmit" name="entry.1816264212" maxlength="80" placeholder="Author's name">
+          <input type="text" id="quoteAuthorSubmit" name="entry.1816264212" maxlength="80" placeholder="Author">
           <button type="submit" id="submitCustomQuoteBtn" class="embossed-button">
             <span class="submit-btn-text">Submit</span>
-            <span class="loader-spinner"></span>
+            <span class="loader-spinner" style="display: none;"></span>
           </button>
-          <div id="quoteFormSuccess" class="form-success-message">Thank you! Your quote was submitted.</div>
+          <div id="quoteFormSuccess" class="form-success-message" style="display:none;">Thank you! Your quote was submitted.</div>
         </form>
       </div>
     </div>
 
-    <div id="favModal" class="modal" aria-modal="true" role="dialog" aria-labelledby="favModalTitle">
+    <div id="favModal" class="modal" aria-modal="true" role="dialog">
       <div class="modal-content fav-modal-content">
-        <button class="close-btn" id="closeFavModal" aria-label="Close Favorites List"><i class="fa-solid fa-xmark"></i></button>
-        <h2 id="favModalTitle">My Favorite Quotes</h2>
-        <div id="favQuotesList">
-          </div>
+        <button class="close-btn" id="closeFavModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        <h2>Favorites</h2>
+        <div id="favQuotesList"></div>
       </div>
     </div>
-    <button id="closeFavModalLarge" class="large-close-btn-outside" aria-label="Close Favorites List">
+    <button id="closeFavModalLarge" class="large-close-btn-outside" aria-label="Close Favorites">
       <i class="fa-solid fa-xmark"></i>
     </button>
 
     <button id="feedbackBtn" class="feedback-btn" title="Send Feedback" aria-label="Send Feedback">
       <i class="fa-regular fa-message"></i>
     </button>
-    <div id="feedbackModal" class="modal" aria-modal="true" role="dialog" aria-labelledby="feedbackModalTitle">
+    <div id="feedbackModal" class="modal" aria-modal="true" role="dialog">
       <div class="modal-content feedback-modal-content">
-        <button class="close-btn" id="closeFeedbackModal" aria-label="Close Feedback Form"><i class="fa-solid fa-xmark"></i></button>
-        <h2 id="feedbackModalTitle">Send Feedback</h2>
-        <form id="feedbackForm">
-            <label for="feedbackTextarea" class="sr-only">Your Feedback</label>
-            <textarea id="feedbackTextarea" maxlength="400" placeholder="Your feedback, suggestions, or issues..."></textarea>
-            <button type="button" id="submitFeedbackBtn" class="feedback-submit-btn embossed-button"> <span class="submit-btn-text">Send</span>
-                <span class="loader-spinner"></span>
-            </button>
-        </form>
+        <button class="close-btn" id="closeFeedbackModal" aria-label="Close Feedback"><i class="fa-solid fa-xmark"></i></button>
+        <h2>Feedback</h2>
+        <textarea id="feedbackTextarea" maxlength="400" placeholder="Your feedback..."></textarea>
+        <button id="submitFeedbackBtn" class="feedback-submit-btn embossed-button">
+            <span class="submit-btn-text">Send</span>
+            <span class="loader-spinner" style="display: none;"></span>
+        </button>
         <div class="feedback-links">
           <a href="https://www.wordsofwisdom.in/p/privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>
           <a href="https://www.wordsofwisdom.in/p/terms.html" target="_blank" rel="noopener">T&amp;C</a>
         </div>
-        <div id="feedbackSuccess" class="form-success-message">Thank you for your feedback!</div>
+        <div id="feedbackSuccess" class="form-success-message" style="display:none;">Thank you for your feedback!</div>
       </div>
     </div>
   </main>
 
   <footer>
     <div>
-      © <span id="currentYear">2025</span> <a href="https://www.wordsofwisdom.in/p/about.html" class="author-link" target="_blank" rel="noopener">Words of Wisdom</a>
+      © 2025 <a href="https://www.wordsofwisdom.in/p/about.html" class="author-link" target="_blank" rel="noopener">Words of Wisdom</a>
     </div>
   </footer>
 
-  <div id="quoteImagePreviewContainer" role="dialog" aria-modal="true" aria-labelledby="imagePreviewTitle">
-    <h2 id="imagePreviewTitle" class="sr-only">Quote Image Preview</h2>
+  <div id="quoteImagePreviewContainer" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 3000; padding: 1rem;">
     <div id="quoteImageWrapper">
-      <p id="imageQuoteText"></p>
-      <p id="imageQuoteAuthor"></p>
-      <p id="imageWatermark">wordsofwisdom.in</p>
-    </div>
-    <div class="image-preview-actions">
-      <button id="downloadImageBtn" class="embossed-button" aria-label="Download Image" title="Download Image" disabled>
-        <i class="fa-solid fa-download"></i>
-      </button>
-      <button id="shareGeneratedImageBtn" class="embossed-button" aria-label="Share Image" title="Share Image" disabled>
-        <i class="fa-solid fa-share-alt"></i>
-      </button>
-      <button id="closeImagePreviewBtn" class="embossed-button close-image-preview-style" aria-label="Close Preview" title="Close Preview">
-        <i class="fa-solid fa-times"></i>
-      </button>
+      <p id="imageQuoteText" style="font-size: 28px; font-family: 'Playfair Display', serif; margin-bottom: 20px; word-wrap: break-word;"></p>
+      <p id="imageQuoteAuthor" style="font-size: 20px; font-family: 'Poppins', sans-serif; margin-bottom: 30px;"></p>
+      <p id="imageWatermark" style="position: absolute; bottom: 15px; right: 20px; font-size: 14px; font-family: 'Poppins', sans-serif;">wordsofwisdom.in</p>
+      <div style="margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+        <button id="downloadImageBtn" class="embossed-button" disabled>Download</button>
+        <button id="shareGeneratedImageBtn" class="embossed-button" disabled>Share</button>
+        <button id="closeImagePreviewBtn" class="embossed-button" style="background-color: #777;">Close</button>
+      </div>
     </div>
   </div>
 
-  <audio id="https://quotesn.github.io/app/assets/chime-gen-quote.mp3" preload="auto"></audio>
-  <audio id="favSound" src="https://quotesn.github.io/app/assets/ui-save-fav.mp3" preload="auto"></audio>
+  <audio id="magicSound" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa0e4c.mp3" preload="auto"></audio>
+  <audio id="favSound" src="https://cdn.pixabay.com/audio/2021/08/04/audio_5991281a7a.mp3" preload="auto"></audio>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
-    // Script to hide loading message after content loads
     window.addEventListener('load', function() {
       setTimeout(function() {
-        const loadingWisdom = document.getElementById('loading-wisdom');
-        if (loadingWisdom) {
-            loadingWisdom.classList.add('hide');
-            // After hiding, remove it from DOM or set display:none to prevent interference
-            setTimeout(() => { if(loadingWisdom) loadingWisdom.style.display = 'none'; }, 400);
-        }
-      }, 350); // Small delay to allow content to render a bit
-      
-      // Set current year in footer
-      const currentYearSpan = document.getElementById('currentYear');
-      if(currentYearSpan) currentYearSpan.textContent = new Date().getFullYear();
+        document.getElementById('loading-wisdom').classList.add('hide');
+      }, 350);
     });
   </script>
   <script src="app.js" defer></script>
   <script>
-    // Service Worker registration (ensure sw.js is in the root directory of your site)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('/sw.js') 
-          .then(reg => console.log('Service Worker: Registered successfully. Scope:', reg.scope))
-          .catch(err => console.error('Service Worker: Registration Failed:', err));
+          .register('/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.error('SW registration failed:', err));
       });
     }
   </script>
