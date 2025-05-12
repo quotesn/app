@@ -39,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     favSound = document.getElementById('favSound');
 
   // DOM references for Image Generation Modal
-  const qText = document.getElementById("quoteText");
   const imageQuoteText = document.getElementById('imageQuoteText');
   const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');
   const imageWatermark = document.getElementById('imageWatermark'); // Get watermark element
