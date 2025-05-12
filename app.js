@@ -1038,7 +1038,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function recordCategoryUse(cat) {
     if (!cat) return;
-    let usage = JSON.parse(lo    calStorage.getItem('catUsage') || '{}');
+    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     usage[cat] = (usage[cat] || 0) + 1;
     localStorage.setItem('catUsage', JSON.stringify(usage));
   }
@@ -1053,134 +1053,129 @@ document.addEventListener("DOMContentLoaded", () => {
   function sendDailyQuoteNotification() { /* console.log("Placeholder: Send Daily Quote Notification"); */ }
   function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); */ }
 
-// --- Image Generation Feature Logic ---
-if (generateImageShareOption) {
-  generateImageShareOption.addEventListener('click', () => {
-    if (!lastQuote || !lastQuote.text) {
-      alert("Please generate a quote first!");
-      return;
-    }
 
-    // 1) set text & author
-    imageQuoteText.textContent = lastQuote.text;
-    if (lastQuote.author) {
-      imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
-      imageQuoteAuthor.style.display = 'block';
-    } else {
-      imageQuoteAuthor.textContent = '';
-      imageQuoteAuthor.style.display = 'none';
-    }
-
-    // 2) show modal
-    const modal = document.getElementById('quoteImagePreviewContainer');
-    modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    // …
-
-
-    // 3) dynamic font-sizing loop
-    // start large and shrink until it fits
-    let fs = 48;
-    const minFs = 16;
-    const contentH = quoteImageContent.clientHeight;
-    const authorH = imageQuoteAuthor.offsetHeight;
-    const watermarkH = imageWatermark.offsetHeight;
-    // available height for the quote block:
-    const availH = contentH - authorH - watermarkH - 40; // 40px total gap/padding buffer
-    imageQuoteText.style.fontSize = fs + 'px';
-    // shrink to fit
-    while (fs > minFs && imageQuoteText.scrollHeight > availH) {
-      fs -= 1;
-      imageQuoteText.style.fontSize = fs + 'px';
-    }
-    // or grow if tiny
-    while (fs < 64 && imageQuoteText.scrollHeight < (availH * 0.4)) {
-      fs += 1;
-      imageQuoteText.style.fontSize = fs + 'px';
-      if (imageQuoteText.scrollHeight > availH) {
-        fs -= 1;
-        imageQuoteText.style.fontSize = fs + 'px';
-        break;
+  // --- Image Generation Feature Logic ---
+  if (generateImageShareOption) {
+    generateImageShareOption.addEventListener('click', () => {
+      if (!lastQuote || !lastQuote.text) {
+        alert("Please generate a quote first!"); 
+        return;
       }
-    }
 
-    // 4) disable until canvas
-    downloadImageBtn.disabled = true;
-    shareGeneratedImageBtn.disabled = true;
-
-    // 5) render
-    setTimeout(() => {
-      html2canvas(quoteImageContent, {
-        allowTaint: true,
-        useCORS: true,
-        backgroundColor: getComputedStyle(quoteImageContent).backgroundColor,
-        scale: 2,
-        logging: false
-      })
-        .then(canvas => {
-          currentCanvas = canvas;
-          downloadImageBtn.disabled = false;
-          shareGeneratedImageBtn.disabled = false;
-        })
-        .catch(err => {
-          console.error("html2canvas error:", err);
-          alert("Couldn't generate the image. Please try again.");
-          closeImagePreview();
-        });
-    }, 100);
-  });
-}
-
-// close helper
-function closeImagePreview() {
-  const modal = document.getElementById('quoteImagePreviewContainer');
-  modal.classList.remove('open');
-  document.body.style.overflow = '';
-  currentCanvas = null;
-}
-closeImagePreviewBtn?.addEventListener('click', closeImagePreview);
-
-// download
-downloadImageBtn?.addEventListener('click', () => {
-  if (!currentCanvas) return alert("Image not ready.");
-  const url = currentCanvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = url;
-  const auth = lastQuote.author?.replace(/[^a-z0-9]/gi,'_').toLowerCase()||'unk';
-  const start = lastQuote.text.slice(0,15).replace(/[^a-z0-9]/gi,'_').toLowerCase();
-  a.download = `WOW_${start}_${auth}.png`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-});
-
-// share
-shareGeneratedImageBtn?.addEventListener('click', async () => {
-  if (!currentCanvas) return alert("Image not ready.");
-  if (navigator.share && navigator.canShare) {
-    currentCanvas.toBlob(async blob => {
-      if (!blob) return alert("Blob error.");
-      const authName = lastQuote.author || 'Unknown';
-      const file = new File([blob], `WOW_${authName}.png`, { type:'image/png' });
-      const data = {
-        files: [file],
-        title: `Quote by ${authName}`,
-        text: `"${lastQuote.text}" — ${authName}\nvia wordsofwisdom.in`
-      };
-      try {
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share(data);
-        } else {
-          await navigator.share({ title: data.title, text: data.text, url: window.location.href });
-        }
-      } catch (e) {
-        if (e.name !== 'AbortError') alert("Share failed – try downloading.");
+      imageQuoteText.textContent = lastQuote.text;
+      if (lastQuote.author) {
+        imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
+        imageQuoteAuthor.style.display = 'block';
+      } else {
+        imageQuoteAuthor.textContent = '';
+        imageQuoteAuthor.style.display = 'none';
       }
-    }, 'image/png');
-  } else {
-    alert("Your browser doesn’t support direct image sharing. Please download to share.");
+
+      if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; 
+
+      downloadImageBtn.disabled = true;
+      shareGeneratedImageBtn.disabled = true;
+
+      setTimeout(() => {
+          html2canvas(quoteImageContent, { 
+              allowTaint: true,
+              useCORS: true,
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, 
+              scale: 2, // Increase scale for better resolution, e.g., if #quoteImageContent is 500x500, output is 1000x1000
+              logging: false 
+          }).then(canvas => {
+              currentCanvas = canvas; 
+
+              downloadImageBtn.disabled = false;
+              shareGeneratedImageBtn.disabled = false;
+
+          }).catch(err => {
+              console.error("Error generating image with html2canvas:", err);
+              alert("Sorry, couldn't generate the image. Please try again.");
+              closeImagePreview(); 
+          });
+      }, 100); 
+    });
   }
-});
+
+  function closeImagePreview() {
+    if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
+    document.body.style.overflow = ''; 
+    currentCanvas = null; 
+  }
+
+  if (closeImagePreviewBtn) {
+    closeImagePreviewBtn.addEventListener('click', closeImagePreview);
+  }
+
+  if (downloadImageBtn) {
+    downloadImageBtn.addEventListener('click', () => {
+      if (!currentCanvas) {
+          alert("Image not generated yet.");
+          return;
+      }
+      const imageURL = currentCanvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = imageURL;
+      const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'Unknown';
+      const quoteStartForFile = lastQuote.text.substring(0,15).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  }
+
+  if (shareGeneratedImageBtn) {
+    shareGeneratedImageBtn.addEventListener('click', async () => {
+      if (!currentCanvas) {
+          alert("Image not generated yet.");
+          return;
+      }
+
+      if (navigator.share && navigator.canShare) { 
+        currentCanvas.toBlob(async (blob) => { 
+          if (!blob) {
+              alert("Error creating image blob for sharing.");
+              return;
+          }
+          const authorName = lastQuote.author || 'Unknown';
+          const filesArray = [
+            new File([blob], `WOW_Quote_${authorName}.png`, { 
+              type: 'image/png',
+              lastModified: new Date().getTime()
+            })
+          ];
+          const shareData = {
+            files: filesArray,
+            title: `Quote by ${authorName} - Words of Wisdom`,
+            text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
+          };
+          try {
+            if (navigator.canShare({ files: filesArray })) {
+                await navigator.share(shareData);
+                console.log('Image shared successfully');
+            } else {
+                await navigator.share({
+                    title: `Quote by ${authorName} - Words of Wisdom`,
+                    text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
+                    url: window.location.href 
+                });
+                console.log('Shared text content and URL as fallback.');
+            }
+          } catch (err) {
+            if (err.name !== 'AbortError') { 
+                console.error('Error sharing image:', err);
+                alert('Sharing failed. You can try downloading the image instead.');
+            }
+          }
+        }, 'image/png'); 
+      } else {
+        alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
+      }
+    });
+  }
 
   (async function initApp(){
     if(qText) qText.textContent = "✨ Loading Wisdom..."; 
