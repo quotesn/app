@@ -103,39 +103,88 @@ function splitTextToLines(ctx, text, maxWidth) {
  * Generates a 1:1 square canvas with the quote text, auto-sizing and centering.
  */
 function generateQuoteImage() {
-  const quoteText = qText.textContent;
-  const size = 1024;
-  const padding = size * 0.10;
-  const maxWidth = size - 2 * padding;
-  const maxHeight = size - 2 * padding;
+  const quoteText = lastQuote && lastQuote.text ? lastQuote.text : (qText ? qText.textContent : "");
+  const author = lastQuote && lastQuote.author ? lastQuote.author : (qAuth ? qAuth.textContent : "Unknown");
+  const watermark = "wordsofwisdom.in";
 
+  // Canvas setup
+  const size = 1024;
+  const padding = size * 0.08;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
 
-  // Fill background
-  ctx.fillStyle = '#fff';
+  // Background
+  ctx.fillStyle = "#f5f5f7";
   ctx.fillRect(0, 0, size, size);
 
-  // Calculate font size and lines
-  let fontSize = calculateFontSize(ctx, quoteText, maxWidth, maxHeight);
-  ctx.font = `${fontSize}px Arial`;
-  ctx.fillStyle = '#222';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  // Quote text
+  ctx.fillStyle = "#222";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
 
-  // Split text to lines
-  const lines = splitTextToLines(ctx, quoteText, maxWidth);
-  const lineHeight = fontSize * 1.2;
-  const totalTextHeight = lines.length * lineHeight;
-  let y = size / 2 - totalTextHeight / 2 + lineHeight / 2;
+  // Dynamic font sizing and wrapping
+  let fontSize = 64;
+  ctx.font = `bold ${fontSize}px 'Georgia', serif`;
+  let lines = [];
+  const maxWidth = size - 2 * padding;
 
-  // Draw each line
+  // Helper: wrap text
+  function wrapText(text, font) {
+    ctx.font = font;
+    const words = text.split(' ');
+    let lines = [];
+    let line = '';
+    for (let i = 0; i < words.length; i++) {
+      let testLine = line + words[i] + ' ';
+      let metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && i > 0) {
+        lines.push(line.trim());
+        line = words[i] + ' ';
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line.trim());
+    return lines;
+  }
+
+  // Reduce font size if needed for long quotes
+  do {
+    ctx.font = `bold ${fontSize}px 'Georgia', serif`;
+    lines = wrapText(quoteText, ctx.font);
+    fontSize -= 2;
+  } while (
+    (lines.length * fontSize * 1.2 > size * 0.55 || lines.some(line => ctx.measureText(line).width > maxWidth))
+    && fontSize > 28
+  );
+
+  // Center vertically with author
+  const quoteBlockHeight = lines.length * fontSize * 1.2;
+  let y = padding + (size * 0.25 - quoteBlockHeight) / 2;
+
+  // Draw quote lines
+  ctx.font = `bold ${fontSize}px 'Georgia', serif`;
   lines.forEach(line => {
     ctx.fillText(line, size / 2, y);
-    y += lineHeight;
+    y += fontSize * 1.2;
   });
+
+  // Author (italic, below quote)
+  ctx.font = `italic ${Math.round(fontSize * 0.7)}px 'Georgia', serif`;
+  ctx.fillStyle = "#666";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  y += fontSize * 0.7;
+  ctx.fillText(`- ${author}`, size / 2, y);
+
+  // Watermark (bottom right)
+  ctx.font = "28px Arial";
+  ctx.fillStyle = "#aaa";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "bottom";
+  ctx.fillText(watermark, size - padding, size - padding/2);
 
   currentCanvas = canvas;
 }
