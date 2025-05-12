@@ -38,17 +38,17 @@ document.addEventListener("DOMContentLoaded", () => {
     magicSound = document.getElementById('magicSound'),
     favSound = document.getElementById('favSound');
 
-  // DOM references for Image Generation Modal (as per your HTML)
-  const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer'); // The main modal overlay
-  const quoteImageWrapper = document.getElementById('quoteImageWrapper'); // Wrapper for content and buttons
-  const quoteImageContent = document.getElementById('quoteImageContent'); // The div to capture (fixed size)
-  const imageQuoteText = document.getElementById('imageQuoteText');     // Text element for quote in image
-  const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');   // Text element for author in image
-  const imageWatermark = document.getElementById('imageWatermark');     // Text element for watermark
+  // DOM references for Image Generation Modal
+  const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer');
+  const quoteImageWrapper = document.getElementById('quoteImageWrapper');
+  const quoteImageContent = document.getElementById('quoteImageContent');
+  const imageQuoteText = document.getElementById('imageQuoteText');
+  const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');
+  const imageWatermark = document.getElementById('imageWatermark');
   const downloadImageBtn = document.getElementById('downloadImageBtn');
   const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
-  const generateImageShareOption = document.getElementById('generateImageShareOption'); // Button in share menu
+  const generateImageShareOption = document.getElementById('generateImageShareOption');
 
   // Global variables from your original code
   let categories = [];
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
-  let currentCanvas = null; // To store the generated canvas for download/share
+  let currentCanvas = null;
 
   // Banner themes and styles (from your original code)
   const bannerThemes = [
@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function showRotatingBanner() {
     const today = new Date();
-    const startDate = new Date("2025-05-05"); // Ensure this date is in the past or current
+    const startDate = new Date("2025-05-05"); 
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
     const theme = bannerThemes[idx];
@@ -188,7 +188,6 @@ function showRotatingBanner() {
     selectedCat = theme.cat;
     authorMode = false;
     if(currentCategory) currentCategory.textContent = capitalize(theme.cat);
-    // console.log(`Banner set category to: ${selectedCat}`); // Keep for debugging if needed
     localStorage.setItem("wowBannerDate", todayStr);
     localStorage.setItem("lastAutoSelectedCategory", theme.cat);
   }
@@ -233,7 +232,6 @@ function showRotatingBanner() {
                     console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
                     return false;
                 } catch (err) {
-                    // console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed.`); // Keep for debugging
                     return false;
                 }
             };
@@ -699,7 +697,6 @@ function showRotatingBanner() {
 
 
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
-    // Skip the image generation button here, it has its own handler
     if (btn.id === 'generateImageShareOption') return;
 
     btn.addEventListener('click', function() {
@@ -1025,10 +1022,10 @@ function showRotatingBanner() {
 
   document.addEventListener('keydown', function(e) {
     if (e.key === "Escape") {
-      const openModals = document.querySelectorAll('.modal.open, .image-modal'); // Include .image-modal
+      const openModals = document.querySelectorAll('.modal.open, .image-modal');
       openModals.forEach(modal => {
         if (modal.id === 'quoteImagePreviewContainer') {
-            closeImagePreview(); // Use specific close function for image modal
+            closeImagePreview(); 
         } else {
             modal.classList.remove("open");
         }
@@ -1054,32 +1051,32 @@ function showRotatingBanner() {
     return sortedUsage[0][0];
   }
 
-  function requestNotificationPermission() { /* console.log("Placeholder: Request Notification Permission"); */ }
-  function sendDailyQuoteNotification() { /* console.log("Placeholder: Send Daily Quote Notification"); */ }
-  function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); */ }
+  function requestNotificationPermission() { /* Placeholder */ }
+  function sendDailyQuoteNotification() { /* Placeholder */ }
+  function scheduleDailyNotification() { /* Placeholder */ }
 
 
-  // --- ADJUST TEXT TO FIT FUNCTION (Updated for larger text) ---
+  // --- ADJUST TEXT TO FIT FUNCTION (Using the enhanced version for larger text) ---
   /**
    * Adjusts the font size of the text element to fit within the container.
    * @param {object} options - Configuration options.
    * @param {HTMLElement} options.textElement - The HTML element containing the text.
    * @param {HTMLElement} options.containerElement - The HTML element the text should fit within.
    * @param {HTMLElement} [options.authorElement] - Optional: The HTML element for the author.
-   * @param {number} [options.initialFontSize=48] - Starting font size in pixels. Increased for larger text.
-   * @param {number} [options.minFontSize=16] - Minimum font size in pixels. Increased.
-   * @param {number} [options.maxFontSize=68] - Maximum font size for short quotes. Increased significantly.
+   * @param {number} [options.initialFontSize=48] - Starting font size in pixels.
+   * @param {number} [options.minFontSize=16] - Minimum font size in pixels.
+   * @param {number} [options.maxFontSize=68] - Maximum font size for short quotes.
    */
   function adjustTextToFit({
       textElement,
       containerElement,
       authorElement,
-      initialFontSize = 48, // INCREASED: Start with a larger font
-      minFontSize = 16,     // INCREASED: Smallest allowed font
-      maxFontSize = 68      // INCREASED: Max for very short quotes
+      initialFontSize = 48, 
+      minFontSize = 16,     
+      maxFontSize = 68      
   }) {
       textElement.style.fontSize = initialFontSize + 'px';
-      textElement.style.lineHeight = '1.4';
+      textElement.style.lineHeight = '1.4'; // Good for readability
 
       const containerStyle = getComputedStyle(containerElement);
       const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
@@ -1106,46 +1103,53 @@ function showRotatingBanner() {
 
       let currentFontSize = initialFontSize;
 
+      // Helper to check overflow
       const checkOverflow = () => {
-          textElement.style.fontSize = currentFontSize + 'px';
+          textElement.style.fontSize = currentFontSize + 'px'; // Apply current size for measurement
           const isOverflownY = textElement.scrollHeight > targetHeight;
           const isOverflownX = textElement.scrollWidth > targetWidth;
           return isOverflownY || isOverflownX;
       };
-
+      
+      // Decrease font size if overflowing
       while (checkOverflow() && currentFontSize > minFontSize) {
           currentFontSize--;
+          // textElement.style.fontSize = currentFontSize + 'px'; // Moved into checkOverflow for efficiency
       }
-      textElement.style.fontSize = currentFontSize + 'px';
+      textElement.style.fontSize = currentFontSize + 'px'; // Set final shrunk size
 
+      // If still overflowing at minFontSize, log a warning
       if (currentFontSize === minFontSize && checkOverflow()) {
           console.warn(`Text might be cut off. Min font size: ${minFontSize}px. Content: "${textElement.textContent.substring(0, 50)}..."`);
       }
 
+      // Try to increase font size for short quotes if there's space, up to maxFontSize
       const quoteLength = textElement.textContent.length;
       // Adjusted threshold for "short" quote to better utilize maxFontSize
-      if (quoteLength < 70 && currentFontSize < maxFontSize) { // Try to make shorter quotes even larger
+      if (quoteLength < 70 && currentFontSize < maxFontSize) { 
           let testSize = currentFontSize;
           while (testSize < maxFontSize) {
               testSize++;
               textElement.style.fontSize = testSize + 'px';
               if (textElement.scrollHeight > targetHeight || textElement.scrollWidth > targetWidth) {
-                  testSize--;
+                  testSize--; // Revert if overflow
                   textElement.style.fontSize = testSize + 'px';
                   break;
               }
           }
-          currentFontSize = testSize;
+          currentFontSize = testSize; // Update currentFontSize with the potentially larger size
       }
-      textElement.style.fontSize = currentFontSize + 'px';
+      textElement.style.fontSize = currentFontSize + 'px'; // Ensure final (potentially increased) size is set
   }
 
 
-  // --- Image Generation Feature Logic (Updated) ---
+  // --- Image Generation Feature Logic (Using the enhanced adjustTextToFit) ---
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
       if (!lastQuote || !lastQuote.text) {
-        alert("Please generate a quote first!");
+        // Using a more modern notification than alert, if available, or a custom modal.
+        // For simplicity, keeping alert as per original structure if no custom modal is ready.
+        alert("Please generate a quote first!"); 
         if(shareMenu) shareMenu.classList.remove("open");
         return;
       }
@@ -1160,11 +1164,12 @@ function showRotatingBanner() {
         imageQuoteAuthor.style.display = 'none';
       }
 
+      // Call the text fitting function
       adjustTextToFit({
           textElement: imageQuoteText,
-          containerElement: quoteImageContent,
+          containerElement: quoteImageContent, // This is the div with padding
           authorElement: imageQuoteAuthor,
-          initialFontSize: 48, // Corresponds to the updated function defaults
+          initialFontSize: 48, // Using the enhanced defaults
           minFontSize: 16,
           maxFontSize: 68
       });
@@ -1175,13 +1180,14 @@ function showRotatingBanner() {
       downloadImageBtn.disabled = true;
       shareGeneratedImageBtn.disabled = true;
 
+      // Delay for rendering before canvas capture
       setTimeout(() => {
           html2canvas(quoteImageContent, {
               allowTaint: true,
               useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor,
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Ensure dynamic background
               scale: 2, // For "Retina" quality
-              logging: false
+              logging: false // Disable html2canvas logging unless debugging
           }).then(canvas => {
               currentCanvas = canvas;
               downloadImageBtn.disabled = false;
@@ -1191,14 +1197,14 @@ function showRotatingBanner() {
               alert("Sorry, couldn't generate the image. Please try again.");
               closeImagePreview();
           });
-      }, 150);
+      }, 150); // Small delay for DOM updates
     });
   }
 
   function closeImagePreview() {
     if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
     document.body.style.overflow = '';
-    currentCanvas = null;
+    currentCanvas = null; // Clear the stored canvas
   }
 
   if (closeImagePreviewBtn) {
@@ -1214,6 +1220,7 @@ function showRotatingBanner() {
       const imageURL = currentCanvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = imageURL;
+      // Sanitize file name
       const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'Unknown';
       const quoteStartForFile = lastQuote.text.substring(0,20).replace(/[^a-z0-9]/gi, '_').toLowerCase();
       a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
@@ -1251,17 +1258,16 @@ function showRotatingBanner() {
           try {
             if (navigator.canShare && navigator.canShare({ files: filesArray })) {
                 await navigator.share(shareData);
-                // console.log('Image shared successfully'); // Keep for debugging
             } else {
+                // Fallback to sharing text and URL if files aren't supported by the target
                 await navigator.share({
                     title: `Quote by ${authorName}`,
                     text: `"${lastQuote.text}" — ${lastQuote.author || ''}\nShared via wordsofwisdom.in`,
-                    url: window.location.href
+                    url: window.location.href // Optional: share the app's URL too
                 });
-                // console.log('Shared text content and URL as fallback.'); // Keep for debugging
             }
           } catch (err) {
-            if (err.name !== 'AbortError') {
+            if (err.name !== 'AbortError') { // Don't show error if user simply cancelled sharing
                 console.error('Error sharing image:', err);
                 alert('Sharing failed. You can try downloading the image instead.');
             }
@@ -1301,11 +1307,14 @@ function showRotatingBanner() {
     selectedCat = initialCategory;
     if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
 
-    showRotatingBanner();
+    showRotatingBanner(); // This might change selectedCat
 
+    // Display a quote based on the potentially updated selectedCat from banner
+    // or initial logic if banner didn't override.
     if (!lastQuote || !lastQuote.text || (lastQuote && lastQuote.category !== selectedCat && selectedCat !== bannerThemes.find(b => b.text === bannerText.textContent)?.cat) ) {
         displayQuote();
     }
+
 
     if ((!lastQuote || !lastQuote.text) && qText && qText.textContent.includes("Loading Wisdom")) {
         qText.textContent = "Sorry, we couldn't load any quotes right now. Please try again later.";
@@ -1318,6 +1327,5 @@ function showRotatingBanner() {
 
     requestNotificationPermission();
     scheduleDailyNotification();
-    // console.log("App initialization complete."); // Keep for debugging
   })();
 });
