@@ -203,10 +203,7 @@
     </div>
   </footer>
 
-<!-- Image Preview Modal -->
-<div id="quoteImagePreviewContainer" class="image-modal">
-  <div id="quoteImageWrapper">
-    <div id="quoteImageContent">
+<div id="quoteImagePreviewContainer" class="image-modal"> <div id="quoteImageWrapper"> <div id="quoteImageContent">
       <p id="imageQuoteText"></p>
       <p id="imageQuoteAuthor"></p>
       <p id="imageWatermark">wordsofwisdom.in</p>
@@ -242,7 +239,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('/sw.js')
+          .register('/sw.js') // Ensure sw.js is in the root directory if served from root
           .then(reg => console.log('SW registered:', reg.scope))
           .catch(err => console.error('SW registration failed:', err));
       });
