@@ -1521,7 +1521,6 @@ shareGeneratedImageBtn.addEventListener('dblclick', async () => {
         displayQuote();
     }
 
-
     // Final check if still loading after everything
     if ((!lastQuote || !lastQuote.text) && qText && qText.textContent.includes("Loading Wisdom")) {
         qText.textContent = "Sorry, we couldn't load any quotes right now. Please try again later.";
