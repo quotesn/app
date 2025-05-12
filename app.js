@@ -696,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
-    if (btn.id === 'generateImageShareOption') return;
+    if (btn.id === 'generateImageShareOption') return; // Skip image gen option here
 
     btn.addEventListener('click', function() {
       const quoteContent = qText ? qText.textContent || "" : "";
@@ -1054,55 +1054,168 @@ document.addEventListener("DOMContentLoaded", () => {
   function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); */ }
 
 
-  // --- Image Generation Feature Logic ---
+  // --- MODIFIED SECTION: Image Generation Feature Logic ---
+  
+  /**
+   * Adjusts the font size of the quote and author text elements to fit within the container.
+   * @param {HTMLElement} textElement - The element displaying the quote text.
+   * @param {HTMLElement} authorElement - The element displaying the author text.
+   * @param {HTMLElement} containerElement - The container for the image content.
+   */
+  function adjustFontSizeForImage(textElement, authorElement, containerElement) {
+    // --- Configuration for Font Sizing ---
+    const MAX_FONT_SIZE_QUOTE = 40; // Max font size for short quotes (px)
+    const MIN_FONT_SIZE_QUOTE = 16; // Min font size for long quotes (px)
+    const INITIAL_FONT_SIZE_QUOTE = 30; // Starting font size for quote (px)
+
+    const MAX_FONT_SIZE_AUTHOR = 22; // Max font size for author (px)
+    const MIN_FONT_SIZE_AUTHOR = 14; // Min font size for author (px)
+    const INITIAL_FONT_SIZE_AUTHOR = 18; // Starting font size for author (px)
+
+    const LINE_HEIGHT_QUOTE = 1.4; // Line height for quote text
+
+    // Reset styles that might affect calculations
+    textElement.style.fontSize = INITIAL_FONT_SIZE_QUOTE + 'px';
+    textElement.style.lineHeight = LINE_HEIGHT_QUOTE;
+    if (authorElement) {
+        authorElement.style.fontSize = INITIAL_FONT_SIZE_AUTHOR + 'px';
+        authorElement.style.lineHeight = '1.3';
+    }
+
+    // Calculate available space within the container, accounting for padding and watermark
+    const containerStyle = getComputedStyle(containerElement);
+    const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
+    const containerPaddingBottom = parseFloat(containerStyle.paddingBottom) || 0;
+    const containerPaddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
+    const containerPaddingRight = parseFloat(containerStyle.paddingRight) || 0;
+    
+    const watermarkApproxHeight = 30; // Approximate height for watermark and bottom buffer
+    const authorApproxHeight = authorElement && authorElement.textContent ? (authorElement.offsetHeight + 15) : 0; // Author height + margin
+
+    const availableWidth = containerElement.clientWidth - containerPaddingLeft - containerPaddingRight;
+    let availableHeight = containerElement.clientHeight - containerPaddingTop - containerPaddingBottom - authorApproxHeight - watermarkApproxHeight;
+    
+    // --- Adjust Quote Font Size ---
+    let currentFontSizeQuote = INITIAL_FONT_SIZE_QUOTE;
+    textElement.style.fontSize = currentFontSizeQuote + 'px';
+
+    // Iteratively DECREASE font size if text overflows
+    while (
+        (textElement.scrollHeight > availableHeight || textElement.scrollWidth > availableWidth) &&
+        currentFontSizeQuote > MIN_FONT_SIZE_QUOTE
+    ) {
+        currentFontSizeQuote--;
+        textElement.style.fontSize = currentFontSizeQuote + 'px';
+    }
+
+    // Iteratively INCREASE font size if text is short and there's space
+    // Only increase if it's significantly smaller to avoid minor adjustments that look off
+    if (textElement.scrollHeight < availableHeight * 0.7 && textElement.scrollWidth < availableWidth * 0.7) {
+        while (
+            textElement.scrollHeight < availableHeight &&
+            textElement.scrollWidth < availableWidth &&
+            currentFontSizeQuote < MAX_FONT_SIZE_QUOTE
+        ) {
+            let nextFontSize = currentFontSizeQuote + 1;
+            textElement.style.fontSize = nextFontSize + 'px';
+            // If increasing caused overflow, revert and stop
+            if (textElement.scrollHeight > availableHeight || textElement.scrollWidth > availableWidth) {
+                textElement.style.fontSize = currentFontSizeQuote + 'px'; // Revert
+                break;
+            }
+            currentFontSizeQuote = nextFontSize; // Commit new size
+        }
+    }
+    // Final check to ensure it's not below min after trying to increase
+     if (currentFontSizeQuote < MIN_FONT_SIZE_QUOTE) {
+        textElement.style.fontSize = MIN_FONT_SIZE_QUOTE + 'px';
+    }
+
+
+    // --- Adjust Author Font Size (if author exists) ---
+    if (authorElement && authorElement.textContent) {
+        let currentFontSizeAuthor = INITIAL_FONT_SIZE_AUTHOR;
+        authorElement.style.fontSize = currentFontSizeAuthor + 'px';
+
+        // Decrease if author overflows width
+        while (authorElement.scrollWidth > availableWidth * 0.9 && currentFontSizeAuthor > MIN_FONT_SIZE_AUTHOR) { // Use 90% of width for author
+            currentFontSizeAuthor--;
+            authorElement.style.fontSize = currentFontSizeAuthor + 'px';
+        }
+        // Ensure author font size is not too large
+        if (currentFontSizeAuthor > MAX_FONT_SIZE_AUTHOR) {
+            authorElement.style.fontSize = MAX_FONT_SIZE_AUTHOR + 'px';
+        }
+         // Ensure it's not below min
+        if (currentFontSizeAuthor < MIN_FONT_SIZE_AUTHOR) {
+            authorElement.style.fontSize = MIN_FONT_SIZE_AUTHOR + 'px';
+        }
+    }
+  }
+
+
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
       if (!lastQuote || !lastQuote.text) {
+        // Use a more user-friendly notification if possible, instead of alert
         alert("Please generate a quote first!"); 
         return;
       }
 
+      // Populate text for the image
       imageQuoteText.textContent = lastQuote.text;
       if (lastQuote.author) {
         imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
-        imageQuoteAuthor.style.display = 'block';
+        imageQuoteAuthor.style.display = 'block'; // Or 'flex' if it's a flex item
       } else {
         imageQuoteAuthor.textContent = '';
         imageQuoteAuthor.style.display = 'none';
       }
 
+      // Show the preview container
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden'; 
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
+      // Disable buttons until image is ready
       downloadImageBtn.disabled = true;
       shareGeneratedImageBtn.disabled = true;
 
+      // Use a short timeout to allow the DOM to update with the new text
+      // and for CSS to apply before calculating font sizes and generating the canvas.
       setTimeout(() => {
-          html2canvas(quoteImageContent, { 
-              allowTaint: true,
-              useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, 
-              scale: 2, // Increase scale for better resolution, e.g., if #quoteImageContent is 500x500, output is 1000x1000
-              logging: false 
-          }).then(canvas => {
-              currentCanvas = canvas; 
+          // Adjust font sizes dynamically
+          adjustFontSizeForImage(imageQuoteText, imageQuoteAuthor, quoteImageContent);
 
+          // Generate the canvas using html2canvas
+          html2canvas(quoteImageContent, { 
+              allowTaint: true, // Allows cross-origin images if any (though not used here for text)
+              useCORS: true,    // Necessary for tainted canvases with cross-origin content
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Use actual background
+              scale: 2,         // Increase scale for better resolution (e.g., 2x)
+              logging: false    // Disable html2canvas console logging
+          }).then(canvas => {
+              currentCanvas = canvas; // Store the generated canvas
+
+              // Enable buttons now that the canvas is ready
               downloadImageBtn.disabled = false;
               shareGeneratedImageBtn.disabled = false;
 
           }).catch(err => {
               console.error("Error generating image with html2canvas:", err);
               alert("Sorry, couldn't generate the image. Please try again.");
-              closeImagePreview(); 
+              closeImagePreview(); // Close preview on error
           });
-      }, 100); 
+      }, 150); // Increased timeout slightly to ensure rendering, adjust if needed
     });
   }
 
   function closeImagePreview() {
     if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
-    document.body.style.overflow = ''; 
-    currentCanvas = null; 
+    document.body.style.overflow = ''; // Restore background scrolling
+    currentCanvas = null; // Clear stored canvas
+    // Reset font sizes if they were changed directly on elements, or rely on CSS to reset on next open
+    imageQuoteText.style.fontSize = ''; 
+    imageQuoteAuthor.style.fontSize = '';
   }
 
   if (closeImagePreviewBtn) {
@@ -1112,14 +1225,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (downloadImageBtn) {
     downloadImageBtn.addEventListener('click', () => {
       if (!currentCanvas) {
-          alert("Image not generated yet.");
+          alert("Image not generated yet or an error occurred.");
           return;
       }
       const imageURL = currentCanvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = imageURL;
-      const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'Unknown';
-      const quoteStartForFile = lastQuote.text.substring(0,15).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      // Sanitize author and quote text for filename
+      const authorNameForFile = (lastQuote.author || 'Unknown').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const quoteStartForFile = lastQuote.text.substring(0,20).replace(/[^a-z0-9]/gi, '_').toLowerCase();
       a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
       document.body.appendChild(a);
       a.click();
@@ -1130,10 +1244,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (shareGeneratedImageBtn) {
     shareGeneratedImageBtn.addEventListener('click', async () => {
       if (!currentCanvas) {
-          alert("Image not generated yet.");
+          alert("Image not generated yet or an error occurred.");
           return;
       }
 
+      // Try to use Web Share API if available (for files)
       if (navigator.share && navigator.canShare) { 
         currentCanvas.toBlob(async (blob) => { 
           if (!blob) {
@@ -1142,7 +1257,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           const authorName = lastQuote.author || 'Unknown';
           const filesArray = [
-            new File([blob], `WOW_Quote_${authorName}.png`, { 
+            new File([blob], `WOW_Quote_${authorName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`, { 
               type: 'image/png',
               lastModified: new Date().getTime()
             })
@@ -1150,32 +1265,39 @@ document.addEventListener("DOMContentLoaded", () => {
           const shareData = {
             files: filesArray,
             title: `Quote by ${authorName} - Words of Wisdom`,
-            text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
+            text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`, // Optional text
           };
           try {
+            // Check if sharing files is possible
             if (navigator.canShare({ files: filesArray })) {
                 await navigator.share(shareData);
                 console.log('Image shared successfully');
             } else {
+                // Fallback: Share text and URL if files cannot be shared
                 await navigator.share({
                     title: `Quote by ${authorName} - Words of Wisdom`,
                     text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
                     url: window.location.href 
                 });
-                console.log('Shared text content and URL as fallback.');
+                console.log('Shared text content and URL as fallback because files could not be shared.');
             }
           } catch (err) {
+            // Handle AbortError (user cancelled share) silently
             if (err.name !== 'AbortError') { 
                 console.error('Error sharing image:', err);
+                // Fallback for browsers that claim to support share but fail (e.g. some desktop browsers)
                 alert('Sharing failed. You can try downloading the image instead.');
             }
           }
-        }, 'image/png'); 
+        }, 'image/png'); // Specify blob type
       } else {
-        alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
+        // Fallback for browsers not supporting Web Share API or file sharing
+        alert('Sharing images directly is not supported on your browser. Please download the image to share it.');
       }
     });
   }
+  // --- END OF MODIFIED SECTION ---
+
 
   (async function initApp(){
     if(qText) qText.textContent = "✨ Loading Wisdom..."; 
