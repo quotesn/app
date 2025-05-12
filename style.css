@@ -1041,50 +1041,6 @@ footer .author-link:focus-visible {
   transition: background .4s, color .4s, box-shadow .4s;
 }
 
-body.dark #imageWatermark {
-  color: var(--light); 
-  opacity: 0.4; 
-}
-
-/* Container for buttons BELOW the image preview (NOT part of the image) */
-.image-preview-actions {
-  display: flex;
-  flex-wrap: wrap; 
-  justify-content: center;
-  align-items: center; 
-  gap: 10px; 
-  width: 100%;
-  max-width: 500px; 
-}
-.image-preview-actions .embossed-button {
-    min-width: 50px; 
-    width: auto; 
-    padding: 0.7rem; 
-    font-size: 1rem; 
-}
-.image-preview-actions .embossed-button i {
-    font-size: 1.3rem; 
-    margin: 0; 
-}
-
-.image-preview-actions .close-image-preview-style {
-    background-color: var(--danger-red); 
-    color: white;
-}
-.image-preview-actions .close-image-preview-style:hover,
-.image-preview-actions .close-image-preview-style:focus-visible {
-    background-color: #c82333; 
-}
-body.dark .image-preview-actions .close-image-preview-style {
-    background-color: var(--danger-red); 
-    color: var(--text); 
-}
-body.dark .image-preview-actions .close-image-preview-style:hover,
-body.dark .image-preview-actions .close-image-preview-style:focus-visible {
-    background-color: #e03c3f; 
-}
-
-
 /* Responsive Adjustments */
 @media (max-width: 600px) {
   header { padding: 0 0.8rem; }
