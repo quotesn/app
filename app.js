@@ -50,6 +50,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
   const generateImageShareOption = document.getElementById('generateImageShareOption');
 
+  // NEW: DOM references for Color Pickers
+  const imageColorControls = document.getElementById('imageColorControls');
+  const imageBgColorPicker = document.getElementById('imageBgColorPicker');
+  const imageTextColorPicker = document.getElementById('imageTextColorPicker');
+
+
   // Global variables from your original code
   let categories = [];
   let quotes = {};
@@ -63,6 +69,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let authorQuoteIndex = 0;
   let debounceTimer = null;
   let currentCanvas = null;
+
+  // Default colors for the image in light theme (from CSS variables)
+  const defaultLightImageBg = getComputedStyle(document.documentElement).getPropertyValue('--default-image-bg-picker').trim();
+  const defaultLightImageText = getComputedStyle(document.documentElement).getPropertyValue('--default-image-text-picker').trim();
+
 
   // Banner themes and styles (from your original code)
   const bannerThemes = [
@@ -126,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     perseverance:   { color: "#6d4c41", icon: "🚀" }
   };
 
-  // --- Helper Functions (capitalize, fetchJSON, etc. from your original code) ---
+  // --- Helper Functions ---
   function capitalize(str) {
     if (!str) return "";
     return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -810,18 +821,22 @@ function showRotatingBanner() {
 
 
   if(themeSw) {
-    const savedTheme = localStorage.getItem("wowDark");
-    if (savedTheme === "true") {
-        themeSw.checked = true;
-        document.body.classList.add("dark");
-    } else {
-        document.body.classList.remove("dark");
-    }
     themeSw.addEventListener("change", () => {
         const isDark = themeSw.checked;
         document.body.classList.toggle("dark", isDark);
         localStorage.setItem("wowDark", isDark);
+        // NEW: Update color picker visibility when theme changes
+        if (imageColorControls) {
+            imageColorControls.style.display = isDark ? 'none' : 'flex';
+        }
     });
+    // Initial check
+    const isDark = localStorage.getItem("wowDark") === "true";
+    document.body.classList.toggle("dark", isDark);
+    themeSw.checked = isDark;
+    if (imageColorControls) { // Ensure it exists before trying to style
+        imageColorControls.style.display = isDark ? 'none' : 'flex';
+    }
   }
 
 
@@ -1057,26 +1072,16 @@ function showRotatingBanner() {
 
 
   // --- ADJUST TEXT TO FIT FUNCTION (Further Enhanced for larger quote text) ---
-  /**
-   * Adjusts the font size of the text element to fit within the container.
-   * @param {object} options - Configuration options.
-   * @param {HTMLElement} options.textElement - The HTML element containing the text.
-   * @param {HTMLElement} options.containerElement - The HTML element the text should fit within.
-   * @param {HTMLElement} [options.authorElement] - Optional: The HTML element for the author.
-   * @param {number} [options.initialFontSize=64] - Starting font size in pixels. INCREASED MORE
-   * @param {number} [options.minQuoteFontSize=28] - Minimum font size for the quote. INCREASED MORE
-   * @param {number} [options.maxFontSize=90] - Maximum font size for short quotes. INCREASED MORE
-   */
   function adjustTextToFit({
       textElement,
       containerElement,
       authorElement,
-      initialFontSize = 64, // INCREASED MORE: Start with an even larger font for quotes
-      minQuoteFontSize = 28,  // INCREASED MORE: Ensure quote is significantly larger than author
-      maxFontSize = 90      // INCREASED MORE: Max for very short quotes
+      initialFontSize = 64, 
+      minQuoteFontSize = 28,  
+      maxFontSize = 90      
   }) {
       textElement.style.fontSize = initialFontSize + 'px';
-      textElement.style.lineHeight = '1.3'; // Slightly adjusted for better visual with large fonts
+      textElement.style.lineHeight = '1.3'; 
 
       const containerStyle = getComputedStyle(containerElement);
       const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
@@ -1087,7 +1092,7 @@ function showRotatingBanner() {
       const targetWidth = containerElement.clientWidth - containerPaddingLeft - containerPaddingRight;
 
       let authorActualHeight = 0;
-      let authorFontSize = 18; // Default author font size from CSS
+      let authorFontSize = 18; 
       if (authorElement && getComputedStyle(authorElement).display !== 'none') {
           const authorStyle = getComputedStyle(authorElement);
           authorActualHeight = authorElement.offsetHeight +
@@ -1096,8 +1101,7 @@ function showRotatingBanner() {
           authorFontSize = parseFloat(authorStyle.fontSize) || 18;
       }
       
-      // Ensure minQuoteFontSize is always greater than authorFontSize by a good margin
-      const effectiveMinQuoteFontSize = Math.max(minQuoteFontSize, authorFontSize + 6); // At least 6px larger
+      const effectiveMinQuoteFontSize = Math.max(minQuoteFontSize, authorFontSize + 6); 
 
       const textMarginBottom = parseFloat(getComputedStyle(textElement).marginBottom) || 0;
       const targetHeight = containerElement.clientHeight -
@@ -1115,39 +1119,34 @@ function showRotatingBanner() {
           return isOverflownY || isOverflownX;
       };
 
-      // Decrease font size if overflowing, down to the effective minimum
       while (checkOverflow() && currentFontSize > effectiveMinQuoteFontSize) {
           currentFontSize--;
       }
       textElement.style.fontSize = currentFontSize + 'px';
 
-      // Log if text is still overflowing at the minimum size
       if (currentFontSize === effectiveMinQuoteFontSize && checkOverflow()) {
           console.warn(`Text might be cut off. Min font size enforced: ${effectiveMinQuoteFontSize}px. Content: "${textElement.textContent.substring(0, 50)}..."`);
       }
 
       const quoteLength = textElement.textContent.length;
-      // Try to make short quotes even larger, up to maxFontSize
-      // Ensure it doesn't shrink below effectiveMinQuoteFontSize during this expansion attempt.
-      if (quoteLength < 120 && currentFontSize < maxFontSize) { // Increased length threshold for "short"
+      if (quoteLength < 120 && currentFontSize < maxFontSize) { 
           let testSize = currentFontSize;
           while (testSize < maxFontSize) {
               testSize++;
               textElement.style.fontSize = testSize + 'px';
               if (textElement.scrollHeight > targetHeight || textElement.scrollWidth > targetWidth) {
-                  testSize--; // Revert if overflow
+                  testSize--; 
                   textElement.style.fontSize = testSize + 'px';
                   break;
               }
           }
-          // Ensure the final size is not smaller than the effective minimum
           currentFontSize = Math.max(testSize, effectiveMinQuoteFontSize); 
       }
-      textElement.style.fontSize = currentFontSize + 'px'; // Set final size
+      textElement.style.fontSize = currentFontSize + 'px'; 
   }
 
 
-  // --- Image Generation Feature Logic (Using the further enhanced adjustTextToFit) ---
+  // --- Image Generation Feature Logic ---
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
       if (!lastQuote || !lastQuote.text) {
@@ -1157,6 +1156,7 @@ function showRotatingBanner() {
       }
       if(shareMenu) shareMenu.classList.remove("open");
 
+      // Set initial text content
       imageQuoteText.textContent = lastQuote.text;
       if (lastQuote.author) {
         imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
@@ -1166,12 +1166,36 @@ function showRotatingBanner() {
         imageQuoteAuthor.style.display = 'none';
       }
 
-      // Call the text fitting function with new, more aggressive defaults
+      // Manage visibility of color controls based on theme
+      const isDarkTheme = document.body.classList.contains('dark');
+      if (imageColorControls) { // Check if element exists
+          imageColorControls.style.display = isDarkTheme ? 'none' : 'flex';
+      }
+      
+      // Set initial colors for preview and pickers (if light theme)
+      if (!isDarkTheme) {
+          quoteImageContent.style.backgroundColor = defaultLightImageBg;
+          imageQuoteText.style.color = defaultLightImageText;
+          // Also set author and watermark to their light theme defaults explicitly
+          imageQuoteAuthor.style.color = getComputedStyle(document.documentElement).getPropertyValue('--image-author-light').trim();
+          imageWatermark.style.color = getComputedStyle(document.documentElement).getPropertyValue('--image-author-light').trim();
+
+
+          if (imageBgColorPicker) imageBgColorPicker.value = defaultLightImageBg;
+          if (imageTextColorPicker) imageTextColorPicker.value = defaultLightImageText;
+      } else {
+          // Ensure dark theme styles are applied from CSS if controls are hidden
+          quoteImageContent.style.backgroundColor = ''; // Revert to CSS
+          imageQuoteText.style.color = ''; // Revert to CSS
+          imageQuoteAuthor.style.color = ''; // Revert to CSS
+          imageWatermark.style.color = ''; // Revert to CSS
+      }
+
+
       adjustTextToFit({
           textElement: imageQuoteText,
           containerElement: quoteImageContent, 
           authorElement: imageQuoteAuthor
-          // initialFontSize, minQuoteFontSize, maxFontSize will use the new defaults from the function definition
       });
 
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
@@ -1184,7 +1208,8 @@ function showRotatingBanner() {
           html2canvas(quoteImageContent, {
               allowTaint: true,
               useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, 
+              // Ensure html2canvas uses the dynamically set background, not just the initial CSS one
+              backgroundColor: quoteImageContent.style.backgroundColor || getComputedStyle(quoteImageContent).backgroundColor, 
               scale: 2, 
               logging: false 
           }).then(canvas => {
@@ -1200,10 +1225,73 @@ function showRotatingBanner() {
     });
   }
 
+  // NEW: Event listeners for color pickers
+  if (imageBgColorPicker) {
+    imageBgColorPicker.addEventListener('input', (event) => {
+        if (!document.body.classList.contains('dark')) { // Only apply if light theme
+            quoteImageContent.style.backgroundColor = event.target.value;
+            // Regenerate canvas preview immediately
+            if (currentCanvas) generateImagePreviewOnly();
+        }
+    });
+  }
+
+  if (imageTextColorPicker) {
+    imageTextColorPicker.addEventListener('input', (event) => {
+        if (!document.body.classList.contains('dark')) { // Only apply if light theme
+            imageQuoteText.style.color = event.target.value;
+            // Note: You might want to also change author/watermark if they should match
+            // imageQuoteAuthor.style.color = event.target.value; 
+            // imageWatermark.style.color = event.target.value; 
+            // Regenerate canvas preview immediately
+            if (currentCanvas) generateImagePreviewOnly();
+        }
+    });
+  }
+  
+  // NEW: Function to regenerate only the canvas preview without full modal setup
+  function generateImagePreviewOnly() {
+    if (!quoteImageContent || !html2canvas) return;
+    
+    downloadImageBtn.disabled = true;
+    shareGeneratedImageBtn.disabled = true;
+
+    // Adjust text fit again in case colors changed how it might render (though unlikely for just color)
+     adjustTextToFit({
+        textElement: imageQuoteText,
+        containerElement: quoteImageContent,
+        authorElement: imageQuoteAuthor
+    });
+
+    setTimeout(() => { // Ensure DOM updates before capture
+        html2canvas(quoteImageContent, {
+            allowTaint: true,
+            useCORS: true,
+            backgroundColor: quoteImageContent.style.backgroundColor || getComputedStyle(quoteImageContent).backgroundColor,
+            scale: 2,
+            logging: false
+        }).then(canvas => {
+            currentCanvas = canvas; // Update the global canvas object
+            downloadImageBtn.disabled = false;
+            shareGeneratedImageBtn.disabled = false;
+        }).catch(err => {
+            console.error("Error re-generating image preview:", err);
+            // Optionally notify user
+        });
+    }, 50); // Shorter delay for quick updates
+  }
+
+
   function closeImagePreview() {
     if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
     document.body.style.overflow = '';
     currentCanvas = null; 
+
+    // Reset styles applied directly by JS to allow CSS to take over again
+    quoteImageContent.style.backgroundColor = ''; 
+    imageQuoteText.style.color = '';
+    imageQuoteAuthor.style.color = '';
+    imageWatermark.style.color = '';
   }
 
   if (closeImagePreviewBtn) {
