@@ -943,135 +943,104 @@ footer .author-link:focus {
 
 /* Styles for Image Preview Modal */
 #quoteImagePreviewContainer {
-  display: none; 
+  display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7); 
+  inset: 0;                   /* shorthand for top/right/bottom/left: 0 */
+  background: rgba(0,0,0,0.7);
+  padding: 1rem;
   justify-content: center;
   align-items: center;
-  z-index: 3000; 
-  padding: 1rem; 
-  overflow-y: auto; 
+  z-index: 3000;
+  overflow-y: auto;
+}
+
+#quoteImagePreviewContainer.open {
+  display: flex;
 }
 
 #quoteImageWrapper {
-  background: var(--card); 
-  color: var(--text);     
-  padding: 20px; 
-  border-radius: 12px;   
+  background: var(--card);
+  color: var(--text);
+  padding: 20px;
+  border-radius: 12px;
   text-align: center;
-  width: auto;
   min-width: calc(var(--image-square-size) + 40px);
-  position: relative;     
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
-  font-family: 'Poppins', sans-serif; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #quoteImageContent {
   background: var(--card);
   color: var(--text);
-
-  /* perfect 1:1 */
   width: var(--image-square-size);
   height: var(--image-square-size);
-
-  /* keep your padding for breathing room */
   padding: 25px;
-
-  /* rounded corners */
   border-radius: 10px;
-
-  /* flex-center everything */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
-  /* center text */
   text-align: center;
   position: relative;
-
-  /*
-    CHANGE: allow the dynamic JS loop to measure overflow
-    (we don't want hidden here during sizing checks)
-  */
-  overflow: visible;
+  overflow: visible;          /* allows JS to shrink/expand text */
 }
 
 body.dark #quoteImageWrapper {
   box-shadow: 0 8px 25px rgba(0,0,0,0.4);
 }
 
-body.dark #quoteImageContent {
-  /*
-    These two are fine;
-    you already inherit var(--card) & var(--text) from :root
-  */
-  background: var(--card);
-  color: var(--text);
-}
-
 #imageQuoteText {
-  font-family: 'Playfair Display', serif; 
-  font-size: 28px; 
-  color: var(--text); 
-  margin-bottom: 20px; 
-  word-wrap: break-word; 
-  line-height: 1.4; 
-  text-align: center; 
-  max-height: 60%; 
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  line-height: 1.4;
+  margin-bottom: 20px;
+  max-height: 60%;
   overflow-y: auto;
+  word-wrap: break-word;
   padding: 0 10px;
   max-width: 90%;
 }
 
 #imageQuoteAuthor {
-  font-family: 'Poppins', sans-serif; 
-  font-size: 20px; 
-  color: var(--light); 
-  margin-top: auto; 
-  padding-top: 15px; 
-  margin-bottom: 30px; 
-  font-style: italic; 
-  text-align: center; 
+  font-family: 'Poppins', sans-serif;
+  font-size: 20px;
+  color: var(--light);
+  margin-top: auto;
+  padding: 15px 10px 30px;
+  font-style: italic;
+  text-align: center;
   width: 100%;
-  padding: 0 10px;
 }
 
 #imageWatermark {
-  font-family: 'Poppins', sans-serif; 
-  font-size: 14px; 
-  color: var(--light); 
-  opacity: 0.7; 
-  position: absolute; 
-  bottom: 15px; 
-  right: 20px; 
-  text-align: right; 
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: var(--light);
+  opacity: 0.7;
+  position: absolute;
+  bottom: 15px;
+  right: 20px;
+  text-align: right;
 }
 
 body.dark #imageWatermark {
-  color: var(--light); 
-  opacity: 0.5; 
+  opacity: 0.5;
 }
 
 .image-buttons-container {
-  margin-top: 20px; 
+  margin-top: 20px;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  width: 100%; 
+  width: 100%;
 }
 
+/* If you prefer icon-only buttons, swap .embossed-button for .icon-btn */
 #quoteImageWrapper .embossed-button {
-  padding: 0.6rem 1rem; 
-  font-size: 0.9rem;    
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
 }
 
 /* High contrast mode */
