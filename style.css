@@ -26,6 +26,10 @@
   --toggle-knob: #fff;
   --toggle-shadow: 0 2px 8px rgba(124,93,240,0.08);
   --success-green: #28a745; /* Green for success messages */
+  --primary-hover: #6a46e0; /* Darker primary for hover */
+  --primary-active: #5e3cc0; /* Even darker primary for active */
+  --primary-hover-dark: #c7aefb; /* Lighter primary for dark mode hover */
+  --primary-active-dark: #d0bcfc; /* Even lighter primary for dark mode active */
 }
 
 body.dark {
@@ -44,6 +48,8 @@ body.dark {
   --toggle-knob: #232336;
   --toggle-shadow: 0 2px 8px rgba(255,215,0,0.13);
   --success-green: #34c759; /* Lighter green for dark mode */
+  --primary-hover-dark: #c7aefb; /* Lighter primary for dark mode hover */
+  --primary-active-dark: #d0bcfc; /* Even lighter primary for dark mode active */
 }
 
 body {
@@ -90,7 +96,7 @@ header h1 {
 }
 
 .streak-badge {
-  color: var(--orange);
+  color: var(--orange); /* Note: orange is not defined in :root, using primary or gold might be better */
   font-weight: bold;
   font-size: 0.9rem; /* Adjusted size */
   letter-spacing: 0.01em;
@@ -391,11 +397,11 @@ main {
 }
 .action-buttons .icon-btn.undo-btn:hover,
 .action-buttons .icon-btn.undo-btn:focus {
-  color: #43b581;
+  color: var(--green-accent); /* Changed to green-accent */
   transform: scale(1.2) rotate(-20deg);
 }
 .action-buttons .icon-btn.undo-btn:active {
-  color: #ffd700;
+  color: var(--gold); /* Changed to gold */
   transform: scale(1.1) rotate(-30deg);
 }
 
@@ -561,9 +567,13 @@ body.dark .magic-wand-icon.animated {
 .generate-btn .ripple {
   position: absolute; border-radius: 50%; transform: scale(0);
   animation: waterRipple .8s cubic-bezier(.22,.68,.54,1.01);
-  background: radial-gradient(circle, #fff 0%, #7c5df0 80%, transparent 100%);
+  background: radial-gradient(circle, #fff 0%, var(--primary) 80%, transparent 100%); /* Use var(--primary) */
   pointer-events: none; z-index: 10;
 }
+body.dark .generate-btn .ripple {
+   background: radial-gradient(circle, #fff 0%, var(--gold) 80%, transparent 100%); /* Use var(--gold) for dark mode */
+}
+
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
 
 /* Responsive */
@@ -696,58 +706,58 @@ body.dark .magic-wand-icon.animated {
   background: var(--primary);
   color: #fff;
   font-size: 1.08rem;
-  font-weight: 600; 
+  font-weight: 600;
   border: none;
   border-radius: 2rem;
   padding: 0.8rem 1.2rem; /* Adjusted padding for better button shape */
   box-shadow:
-    inset 2px 2px 5px rgba(255, 255, 255, 0.3), 
-    inset -2px -2px 5px rgba(0, 0, 0, 0.2),    
-    4px 4px 8px var(--sh-dark),               
-    -4px -4px 8px var(--sh-light);            
+    inset 2px 2px 5px rgba(255, 255, 255, 0.3),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.2),
+    4px 4px 8px var(--sh-dark),
+    -4px -4px 8px var(--sh-light);
   cursor: pointer;
   transition: background .2s, color .2s, box-shadow .2s, transform 0.1s;
   outline: none;
   position: relative;
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.2); 
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
   min-width: 100px; /* Ensure buttons have a decent tap/click target size */
 }
 
 .embossed-button:hover,
 .embossed-button:focus {
-  background: var(--primary-hover, #6a46e0); 
+  background: var(--primary-hover);
   color: #fff;
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.4),
     inset -1px -1px 3px rgba(0, 0, 0, 0.3),
     2px 2px 5px var(--sh-dark),
     -2px -2px 5px var(--sh-light);
-  transform: translateY(1px); 
+  transform: translateY(1px);
 }
 
 .embossed-button:active {
-  background: var(--primary-active, #5e3cc0); 
+  background: var(--primary-active);
   box-shadow:
-    inset 2px 2px 5px rgba(0, 0, 0, 0.3),    
-    inset -2px -2px 5px rgba(255, 255, 255, 0.2); 
-  transform: translateY(2px); 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.2);
+  transform: translateY(2px);
 }
 
 
 body.dark .embossed-button {
-  background: var(--primary); 
-  color: var(--text); 
+  background: var(--primary);
+  color: var(--text);
   box-shadow:
-    inset 2px 2px 5px rgba(255, 255, 255, 0.1),  
-    inset -2px -2px 5px rgba(0, 0, 0, 0.4),     
-    4px 4px 10px rgba(0,0,0,0.5),                
-    -4px -4px 10px rgba(255,255,255,0.05);       
+    inset 2px 2px 5px rgba(255, 255, 255, 0.1),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.4),
+    4px 4px 10px rgba(0,0,0,0.5),
+    -4px -4px 10px rgba(255,255,255,0.05);
   text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
 }
 
 body.dark .embossed-button:hover,
 body.dark .embossed-button:focus {
-  background: var(--primary-hover-dark, #c7aefb); 
+  background: var(--primary-hover-dark);
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.15),
     inset -1px -1px 3px rgba(0, 0, 0, 0.5),
@@ -755,7 +765,7 @@ body.dark .embossed-button:focus {
     -2px -2px 6px rgba(255,255,255,0.07);
 }
 body.dark .embossed-button:active {
-  background: var(--primary-active-dark, #d0bcfc);
+  background: var(--primary-active-dark);
   box-shadow:
     inset 2px 2px 5px rgba(0, 0, 0, 0.5),
     inset -2px -2px 5px rgba(255, 255, 255, 0.1);
@@ -801,12 +811,12 @@ body.dark #submitQuoteModal input,
 body.dark #submitQuoteModal label,
 body.dark #submitQuoteModal h2
 {
-  color: var(--text) !important; 
-  background-color: var(--card) !important; 
-  border-color: var(--primary) !important; 
+  color: var(--text) !important;
+  background-color: var(--card) !important;
+  border-color: var(--primary) !important;
 }
 body.dark #submitQuoteModal input::placeholder {
-  color: var(--light); 
+  color: var(--light);
 }
 
 
@@ -854,9 +864,13 @@ body.dark #submitQuoteModal input::placeholder {
   background: var(--card);
   color: var(--text);
 }
-.feedback-submit-btn { 
+#feedbackTextarea:focus {
+  border: 2px solid var(--primary);
+  outline: none;
+}
+.feedback-submit-btn {
   width: 80%;
-  margin-bottom: 1rem; 
+  margin-bottom: 1rem;
 }
 
 .feedback-links {
@@ -916,32 +930,32 @@ footer .author-link:focus {
 
 /* Styles for Image Preview Modal */
 #quoteImagePreviewContainer {
-  display: none; 
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.7); 
+  background: rgba(0,0,0,0.7);
   justify-content: center;
   align-items: center;
-  z-index: 3000; 
-  padding: 1rem; 
-  overflow-y: auto; 
+  z-index: 3000;
+  padding: 1rem;
+  overflow-y: auto;
 }
 
 /* This is the outer container for the image modal's content, including the capturable area and buttons */
 #quoteImageWrapper {
-  background: var(--card); 
-  color: var(--text);     
+  background: var(--card);
+  color: var(--text);
   padding: 20px; /* Reduced padding slightly to give more space to quoteImageContent */
-  border-radius: 12px;   
+  border-radius: 12px;
   text-align: center;
-  max-width: 500px;       
-  width: 90%;             
-  position: relative;     
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
-  font-family: 'Poppins', sans-serif; 
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  font-family: 'Poppins', sans-serif;
   display: flex; /* Added flex to manage children */
   flex-direction: column; /* Stack content and buttons vertically */
   align-items: center; /* Center children */
@@ -951,17 +965,22 @@ footer .author-link:focus {
 #quoteImageContent {
   background: var(--card); /* Match background for canvas consistency */
   color: var(--text);
-  padding: 30px 25px; /* Padding for the actual content to be imaged */
+  padding: 40px; /* Increased padding for better spacing inside the square */
   border-radius: 10px; /* Optional: if you want rounded corners on the image itself */
   text-align: center; /* Explicitly center text */
   width: 100%; /* Take full width of its parent for calculation */
   position: relative; /* For watermark positioning within this content */
-  /* margin-bottom: 20px; /* Space between content and buttons, if buttons were inside */
+  display: flex; /* Use flexbox for centering text content */
+  flex-direction: column; /* Stack quote and author vertically */
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  aspect-ratio: 1 / 1; /* Enforce 1:1 aspect ratio */
+  overflow: hidden; /* Hide overflow during font size adjustment */
 }
 
 
 body.dark #quoteImageWrapper {
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4); 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
 }
 body.dark #quoteImageContent {
   background: var(--card); /* Ensure dark mode background for canvas */
@@ -970,38 +989,45 @@ body.dark #quoteImageContent {
 
 
 #imageQuoteText {
-  font-family: 'Playfair Display', serif; 
-  font-size: 28px; 
-  color: var(--text); 
-  margin-bottom: 20px; 
-  word-wrap: break-word; 
-  line-height: 1.5; 
+  font-family: 'Playfair Display', serif;
+  /* Initial font size, will be adjusted by JS */
+  font-size: 32px;
+  color: var(--text);
+  margin-bottom: 10px; /* Reduced margin */
+  word-wrap: break-word;
+  line-height: 1.4; /* Adjusted line height */
   text-align: center; /* Ensure text is centered */
+  flex-shrink: 0; /* Prevent shrinking */
+  width: 100%; /* Allow text to take full width */
 }
 
 #imageQuoteAuthor {
-  font-family: 'Poppins', sans-serif; 
-  font-size: 20px; 
-  color: var(--light); 
-  margin-bottom: 30px; 
-  font-style: italic; 
+  font-family: 'Poppins', sans-serif;
+  /* Initial font size, will be adjusted by JS */
+  font-size: 20px;
+  color: var(--light);
+  margin-bottom: 0; /* Removed margin */
+  font-style: italic;
   text-align: center; /* Ensure text is centered */
+  flex-shrink: 0; /* Prevent shrinking */
+  width: 100%; /* Allow text to take full width */
 }
 
 #imageWatermark {
-  font-family: 'Poppins', sans-serif; 
-  font-size: 14px; 
-  color: var(--light); 
-  opacity: 0.7; 
-  position: absolute; 
-  bottom: 15px; 
-  right: 20px; 
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: var(--light);
+  opacity: 0.7;
+  position: absolute;
+  bottom: 15px;
+  right: 20px;
   text-align: right; /* Align watermark to the right */
+  z-index: 10; /* Ensure watermark is above text if needed */
 }
 
 body.dark #imageWatermark {
-  color: var(--light); 
-  opacity: 0.5; 
+  color: var(--light);
+  opacity: 0.5;
 }
 
 /* Container for the buttons below the image content */
@@ -1016,8 +1042,8 @@ body.dark #imageWatermark {
 
 /* Styling for buttons within the preview modal (using the .embossed-button class) */
 #quoteImageWrapper .embossed-button {
-    padding: 0.6rem 1rem; 
-    font-size: 0.9rem;    
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
     /* min-width: 100px; /* Already handled by embossed-button */
     /* margin: 5px;  /* Handled by gap in flex container */
 }
@@ -1030,4 +1056,36 @@ body.dark #imageWatermark {
   /* Add more high-contrast styles as needed */
   #quoteImageContent, #quoteImageWrapper { background: #111; color: #fff; }
   #imageQuoteText, #imageQuoteAuthor, #imageWatermark { color: #fff; }
+}
+
+/* Ripple effect base style */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: waterRipple .6s ease-out; /* Adjusted duration and easing */
+  background: rgba(255, 255, 255, 0.4); /* Default ripple color */
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Specific ripple colors for different buttons if needed */
+.icon-btn .ripple { background: rgba(124, 93, 240, 0.3); } /* Primary color ripple */
+body.dark .icon-btn .ripple { background: rgba(179, 157, 219, 0.3); } /* Primary dark color ripple */
+
+.generate-btn .ripple {
+    /* Overridden in JS for gradient */
+}
+
+.category-btn .ripple { background: rgba(124, 93, 240, 0.2); } /* Primary color ripple */
+body.dark .category-btn .ripple { background: rgba(179, 157, 219, 0.2); } /* Primary dark color ripple */
+
+.embossed-button .ripple { background: rgba(255, 255, 255, 0.3); } /* White ripple for embossed buttons */
+body.dark .embossed-button .ripple { background: rgba(255, 255, 255, 0.15); } /* Less visible white ripple in dark mode */
+
+@keyframes waterRipple {
+  to {
+    transform: scale(3.5); /* Increased scale */
+    opacity: 0;
+  }
 }
