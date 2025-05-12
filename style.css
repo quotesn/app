@@ -974,26 +974,46 @@ footer .author-link:focus {
 }
 
 #quoteImageContent {
-  background: var(--card); 
+  background: var(--card);
   color: var(--text);
-  width: var(--image-square-size); 
-  height: var(--image-square-size); 
-  padding: 25px; 
-  border-radius: 10px; 
-  text-align: center; 
-  position: relative; 
+
+  /* perfect 1:1 */
+  width: var(--image-square-size);
+  height: var(--image-square-size);
+
+  /* keep your padding for breathing room */
+  padding: 25px;
+
+  /* rounded corners */
+  border-radius: 10px;
+
+  /* flex-center everything */
   display: flex;
   flex-direction: column;
-  justify-content: center; 
-  align-items: center; 
-  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+
+  /* center text */
+  text-align: center;
+  position: relative;
+
+  /*
+    CHANGE: allow the dynamic JS loop to measure overflow
+    (we don't want hidden here during sizing checks)
+  */
+  overflow: visible;
 }
 
 body.dark #quoteImageWrapper {
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4); 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
 }
+
 body.dark #quoteImageContent {
-  background: var(--card); 
+  /*
+    These two are fine;
+    you already inherit var(--card) & var(--text) from :root
+  */
+  background: var(--card);
   color: var(--text);
 }
 
