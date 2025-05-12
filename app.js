@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // DOM references
+  // DOM references from your original code
   const qText = document.getElementById("quoteText"),
     qAuth = document.getElementById("quoteAuthor"),
     quoteBox = document.getElementById("quoteBox"),
@@ -38,30 +38,33 @@ document.addEventListener("DOMContentLoaded", () => {
     magicSound = document.getElementById('magicSound'),
     favSound = document.getElementById('favSound');
 
-  // DOM references for Image Generation Modal
-  const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer');
-  const quoteImageContent = document.getElementById('quoteImageContent'); // The div to capture
-  const imageQuoteText = document.getElementById('imageQuoteText');
-  const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');
+  // DOM references for Image Generation Modal (as per your HTML)
+  const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer'); // The main modal overlay
+  const quoteImageWrapper = document.getElementById('quoteImageWrapper'); // Wrapper for content and buttons
+  const quoteImageContent = document.getElementById('quoteImageContent'); // The div to capture (fixed size)
+  const imageQuoteText = document.getElementById('imageQuoteText');     // Text element for quote in image
+  const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');   // Text element for author in image
+  const imageWatermark = document.getElementById('imageWatermark');     // Text element for watermark
   const downloadImageBtn = document.getElementById('downloadImageBtn');
   const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
-  const generateImageShareOption = document.getElementById('generateImageShareOption'); 
+  const generateImageShareOption = document.getElementById('generateImageShareOption'); // Button in share menu
 
+  // Global variables from your original code
   let categories = [];
   let quotes = {};
   let authors = {};
-  let selectedCat = "inspiration"; // Default category
-  let lastQuote = null; 
+  let selectedCat = "inspiration";
+  let lastQuote = null;
   let quoteHistory = [];
   let authorMode = false;
   let authorQuotes = [];
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
-  let currentCanvas = null; 
+  let currentCanvas = null; // To store the generated canvas for download/share
 
-  // --- Banner themes and styles ---
+  // Banner themes and styles (from your original code)
   const bannerThemes = [
     {cat: "inspiration",    text: "Ignite fresh ideas to fuel your week."},
     {cat: "motivation",     text: "Power up your ambition and take the lead."},
@@ -123,14 +126,35 @@ document.addEventListener("DOMContentLoaded", () => {
     perseverance:   { color: "#6d4c41", icon: "🚀" }
   };
 
+  // --- Helper Functions (capitalize, fetchJSON, etc. from your original code) ---
   function capitalize(str) {
     if (!str) return "";
     return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
 
-  function showRotatingBanner() {
+  async function fetchJSON(url, cacheKey) {
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status} for ${url}`);
+      }
+      const data = await res.json();
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      return data;
+    } catch (e) {
+      console.error(`Failed to fetch or parse ${url}:`, e.message);
+      throw e;
+    }
+  }
+  // ... (Keep other helper functions like showRotatingBanner, loadCategoriesAndQuotes, buildAuthorIndex, renderMenu, etc. from your app.js)
+
+function showRotatingBanner() {
     const today = new Date();
-    const startDate = new Date("2025-05-05"); 
+    const startDate = new Date("2025-05-05");
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
     const theme = bannerThemes[idx];
@@ -170,25 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("lastAutoSelectedCategory", theme.cat);
   }
 
-  async function fetchJSON(url, cacheKey) {
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        return JSON.parse(cached);
-      }
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status} for ${url}`);
-      }
-      const data = await res.json();
-      localStorage.setItem(cacheKey, JSON.stringify(data));
-      return data;
-    } catch (e) {
-      console.error(`Failed to fetch or parse ${url}:`, e.message);
-      throw e; 
-    }
-  }
-
   async function loadCategoriesAndQuotes() {
     try {
       try {
@@ -215,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let pathAttempt1 = originalPath;
             let pathAttempt2 = null;
             if (originalPath && originalPath.startsWith('data/')) {
-                pathAttempt2 = originalPath.substring(5); 
+                pathAttempt2 = originalPath.substring(5);
             }
 
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
@@ -224,13 +229,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (Array.isArray(data)) {
                         quotes[cat.id] = data;
                         buildAuthorIndex(data, cat.id);
-                        return true; 
+                        return true;
                     }
                     console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
-                    return false; 
+                    return false;
                 } catch (err) {
                     console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed.`);
-                    return false; 
+                    return false;
                 }
             };
             quotePromises.push(
@@ -238,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!success && pathAttempt2) {
                         return fetchAndProcessQuoteFile(pathAttempt2, 'wowQuotesRoot_');
                     }
-                    return success; 
+                    return success;
                 })
             );
           }
@@ -248,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (localStorage.getItem('userQuotes')) {
         const userQuotesData = JSON.parse(localStorage.getItem('userQuotes'));
-        quotes['user'] = userQuotesData; 
+        quotes['user'] = userQuotesData;
         buildAuthorIndex(userQuotesData, 'user');
       }
       await Promise.all(quotePromises);
@@ -273,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!authors[authorKey]) authors[authorKey] = [];
         authors[authorKey].push({
           text: quote.text || quote.quote || quote.message,
-          author: by, 
+          author: by,
           category: categoryId
         });
       }
@@ -282,10 +287,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderMenu() {
     if (!categoryMenu) return;
-    categoryMenu.innerHTML = ""; 
+    categoryMenu.innerHTML = "";
     function renderCategoryList(catArray, parentUl) {
       catArray.forEach(cat => {
-        if (cat.isSearch) { 
+        if (cat.isSearch) {
           const sec = document.createElement("div");
           sec.className = "section search-section";
           sec.innerHTML = `<button class="section-btn" aria-expanded="false" aria-controls="authorSearchWrapper-${cat.id || 'search'}"><i class="fa-solid fa-user section-icon"></i>Search by Author <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
@@ -293,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <input id="authorSearch" type="text" placeholder="Type author name…" autocomplete="off" aria-label="Search by author name" />
               <ul id="authorList" class="suggestions-list" role="listbox"></ul>
             </div>`;
-          categoryMenu.appendChild(sec); 
+          categoryMenu.appendChild(sec);
           sec.querySelector('.section-btn').addEventListener('click', function() {
             const wrapper = sec.querySelector('.author-search-wrapper');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
@@ -344,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           categoryMenu.appendChild(submitSec);
 
-        } else { 
+        } else {
           const sec = document.createElement("div");
           sec.className = "section";
           const sectionId = `section-list-${cat.id || Math.random().toString(36).substring(2,9)}`;
@@ -358,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (cat.children) {
             cat.children.forEach(child => {
               const li = document.createElement("li");
-              if (child.children) { 
+              if (child.children) {
                 li.className = "has-children";
                 const subSectionId = `subsection-list-${child.id || Math.random().toString(36).substring(2,9)}`;
                 li.innerHTML = `<span role="button" tabindex="0" aria-expanded="false" aria-controls="${subSectionId}">
@@ -375,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   </a>`;
                   subul.appendChild(subli);
                 });
-              } else { 
+              } else {
                 li.innerHTML = `<a href="#" data-cat="${child.id}">
                   ${child.icon ? `<i class="fa-solid ${child.icon}" aria-hidden="true"></i>` : ""}
                   ${child.name}
@@ -384,13 +389,13 @@ document.addEventListener("DOMContentLoaded", () => {
               ul.appendChild(li);
             });
           }
-          categoryMenu.appendChild(sec); 
+          categoryMenu.appendChild(sec);
           sec.querySelector('.section-btn').addEventListener('click', function() {
             const list = sec.querySelector('.section-list');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
             list.style.display = isExpanded ? 'none' : 'block';
-            const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up'); 
+            const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up');
             if(icon){
                 icon.classList.toggle('fa-chevron-down');
                 icon.classList.toggle('fa-chevron-up');
@@ -399,22 +404,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
-    renderCategoryList(categories, categoryMenu); 
+    renderCategoryList(categories, categoryMenu);
 
     categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
       span.addEventListener('click', function(e) {
-        e.stopPropagation(); 
+        e.stopPropagation();
         const nestedList = this.nextElementSibling;
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', !isExpanded);
         nestedList.style.display = isExpanded ? 'none' : 'block';
-        const icon = this.querySelector('.fa-caret-right, .fa-caret-down'); 
+        const icon = this.querySelector('.fa-caret-right, .fa-caret-down');
         if (icon) {
             icon.classList.toggle('fa-caret-right');
             icon.classList.toggle('fa-caret-down');
         }
       });
-      span.addEventListener('keydown', function(e) { 
+      span.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           this.click();
@@ -426,7 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
         selectedCat = link.dataset.cat;
-        authorMode = false; 
+        authorMode = false;
         if(currentCategory) currentCategory.textContent = capitalize(link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim());
         closeMenu();
         displayQuote();
@@ -441,49 +446,48 @@ document.addEventListener("DOMContentLoaded", () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           const query = authorInput.value.toLowerCase().trim();
-          authorListUL.innerHTML = ""; 
-          if (!query) return; 
+          authorListUL.innerHTML = "";
+          if (!query) return;
           Object.keys(authors)
-            .filter(name => name.includes(query)) 
-            .sort() 
-            .slice(0, 10) 
+            .filter(name => name.includes(query))
+            .sort()
+            .slice(0, 10)
             .forEach(nameKey => {
               const li = document.createElement("li");
               li.setAttribute('role', 'option');
-              li.textContent = authors[nameKey][0].author; 
-              li.tabIndex = -1; 
+              li.textContent = authors[nameKey][0].author;
+              li.tabIndex = -1;
               li.addEventListener("click", () => {
                 authorMode = true;
-                authorName = nameKey; 
-                authorQuotes = [...authors[nameKey]]; 
-                authorQuoteIndex = 0; 
+                authorName = nameKey;
+                authorQuotes = [...authors[nameKey]];
+                authorQuoteIndex = 0;
                 if(currentCategory) currentCategory.textContent = "Author: " + authors[nameKey][0].author;
                 closeMenu();
-                showAuthorQuote(); 
+                showAuthorQuote();
               });
               authorListUL.appendChild(li);
             });
-        }, 300); 
+        }, 300);
       });
     }
   }
 
-
   function openMenu() {
-    renderMenu(); 
+    renderMenu();
     if(categoryModal) categoryModal.classList.add("open");
-    document.body.style.overflow = "hidden"; 
-    if(closeMenuBtn) closeMenuBtn.focus(); 
+    document.body.style.overflow = "hidden";
+    if(closeMenuBtn) closeMenuBtn.focus();
   }
   function closeMenu() {
     if(categoryModal) categoryModal.classList.remove("open");
-    document.body.style.overflow = ""; 
-    if(openMenuBtn) openMenuBtn.focus(); 
+    document.body.style.overflow = "";
+    if(openMenuBtn) openMenuBtn.focus();
   }
   if(openMenuBtn) openMenuBtn.addEventListener("click", openMenu);
   if(closeMenuBtn) closeMenuBtn.addEventListener("click", closeMenu);
   if(categoryModal) categoryModal.addEventListener("click", function(e) {
-    if (e.target === categoryModal) closeMenu(); 
+    if (e.target === categoryModal) closeMenu();
   });
 
   if(closeSubmitQuoteModal) closeSubmitQuoteModal.addEventListener('click', () => {
@@ -502,7 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
         if(quoteFormSuccess) {
-            quoteFormSuccess.textContent = "Thank you! Your quote was submitted."; 
+            quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
             quoteFormSuccess.style.display = 'block';
         }
 
@@ -529,28 +533,28 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    if (!fromUndo && lastQuote) { 
+    if (!fromUndo && lastQuote) {
       quoteHistory.unshift(lastQuote);
-      if (quoteHistory.length > 5) quoteHistory.length = 5; 
+      if (quoteHistory.length > 5) quoteHistory.length = 5;
     }
     if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
 
     if(qText) qText.classList.add('fade-out');
     if(qAuth) qAuth.classList.add('fade-out');
 
-    setTimeout(() => { 
+    setTimeout(() => {
       const txt = item.text || item.quote || item.message || "Quote text missing.";
       let by = (item.author || item.by || "").trim();
 
       if(qText) qText.textContent = txt;
       if(qAuth) {
         if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
-          qAuth.textContent = ""; 
+          qAuth.textContent = "";
         } else {
           qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
         }
       }
-      if(quoteMark) { 
+      if(quoteMark) {
         quoteMark.textContent = "“";
         quoteMark.style.opacity = 0.18;
       }
@@ -558,10 +562,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if(qText) qText.classList.remove('fade-out');
       if(qAuth) qAuth.classList.remove('fade-out');
 
-      lastQuote = { text: txt, author: by, category: cat }; 
-      updateStreak(); 
-      updateFavoriteButtonState(); 
-    }, 300); 
+      lastQuote = { text: txt, author: by, category: cat };
+      updateStreak();
+      updateFavoriteButtonState();
+    }, 300);
   }
 
   function showAuthorQuote() {
@@ -602,7 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (!pool || pool.length === 0) {
-        const allQuotesRaw = Object.values(quotes).flat(); 
+        const allQuotesRaw = Object.values(quotes).flat();
         pool = allQuotesRaw.filter(isValidQuote);
         if (pool.length > 0 && currentCategory && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
             if(currentCategory) currentCategory.textContent = "All Quotes";
@@ -619,51 +623,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const randomIndex = Math.floor(Math.random() * pool.length);
-    showQuote(pool[randomIndex], selectedCat || "all_fallback"); 
+    showQuote(pool[randomIndex], selectedCat || "all_fallback");
   }
 
 
   if(undoBtn) undoBtn.addEventListener("click", () => {
     if (quoteHistory.length > 0) {
-      const prev = quoteHistory.shift(); 
-      showQuote(prev, prev.category, true); 
+      const prev = quoteHistory.shift();
+      showQuote(prev, prev.category, true);
     }
-    undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none"; 
+    undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
   });
 
   function triggerGenerateEffects() {
     if (magicSound) {
-      magicSound.currentTime = 0; 
+      magicSound.currentTime = 0;
       magicSound.play().catch(e => console.warn("Audio play failed:", e));
     }
-    if(quoteBox) quoteBox.classList.add('glow'); 
+    if(quoteBox) quoteBox.classList.add('glow');
     setTimeout(() => { if(quoteBox) quoteBox.classList.remove('glow'); }, 400);
 
     const wand = genBtn ? genBtn.querySelector('.magic-wand-icon') : null;
-    if (wand) { 
+    if (wand) {
       wand.classList.add('animated');
       setTimeout(() => wand.classList.remove('animated'), 700);
     }
-    if(genBtn) genBtn.classList.add('touched'); 
+    if(genBtn) genBtn.classList.add('touched');
     setTimeout(() => {if(genBtn) genBtn.classList.remove('touched');}, 400);
 
     const ripple = document.createElement('span');
     ripple.className = 'ripple';
-    ripple.style.left = "50%"; 
+    ripple.style.left = "50%";
     ripple.style.top = "50%";
     if(genBtn) genBtn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 700); 
+    setTimeout(() => ripple.remove(), 700);
   }
 
   if(genBtn) {
     genBtn.addEventListener("click", e => {
         triggerGenerateEffects();
-        displayQuote(); 
+        displayQuote();
     });
   }
 
   document.querySelectorAll('.icon-btn, .feedback-btn, .home-btn').forEach(btn => {
-    btn.style.webkitTapHighlightColor = "transparent"; 
+    btn.style.webkitTapHighlightColor = "transparent";
     btn.addEventListener('click', function(e) {
       const rect = btn.getBoundingClientRect();
       const ripple = document.createElement('span');
@@ -677,10 +681,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(shareBtn) shareBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     if(shareMenu) shareMenu.classList.toggle("open");
     if (shareMenu && shareMenu.classList.contains("open")) {
-      setTimeout(() => { 
+      setTimeout(() => {
         document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
       }, 0);
     }
@@ -696,7 +700,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
-    if (btn.id === 'generateImageShareOption') return; // Skip image gen option here
+    // Skip the image generation button here, it has its own handler
+    if (btn.id === 'generateImageShareOption') return;
 
     btn.addEventListener('click', function() {
       const quoteContent = qText ? qText.textContent || "" : "";
@@ -720,7 +725,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
       if (shareUrl) window.open(shareUrl, "_blank", "noopener,noreferrer");
-      if(shareMenu) shareMenu.classList.remove("open"); 
+      if(shareMenu) shareMenu.classList.remove("open");
     });
   });
 
@@ -733,20 +738,20 @@ document.addEventListener("DOMContentLoaded", () => {
     navigator.clipboard.writeText(textToCopy).then(() => {
       const iconElement = copyBtn.querySelector("i");
       const originalIcon = iconElement ? iconElement.className : "";
-      if(iconElement) iconElement.className = "fa-solid fa-check"; 
+      if(iconElement) iconElement.className = "fa-solid fa-check";
       copyBtn.classList.add('copied-feedback');
       const tooltip = copyBtn.querySelector('.btn-tooltip');
       const originalTooltipText = tooltip ? tooltip.textContent : '';
       if(tooltip) tooltip.textContent = "Copied!";
 
-      setTimeout(() => { 
+      setTimeout(() => {
         if(iconElement) iconElement.className = originalIcon;
         copyBtn.classList.remove('copied-feedback');
         if(tooltip) tooltip.textContent = originalTooltipText;
       }, 1500);
     }).catch(err => {
       console.error('Failed to copy text: ', err);
-      const tooltip = copyBtn.querySelector('.btn-tooltip'); 
+      const tooltip = copyBtn.querySelector('.btn-tooltip');
       if(tooltip) {
           const originalTooltipText = tooltip.textContent;
           tooltip.textContent = "Copy failed!";
@@ -756,28 +761,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if(favBtn) favBtn.addEventListener('click', () => {
-    if (!lastQuote || !lastQuote.text) return; 
+    if (!lastQuote || !lastQuote.text) return;
 
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     const currentQuoteText = lastQuote.text;
-    const currentAuthorText = lastQuote.author; 
+    const currentAuthorText = lastQuote.author;
 
     const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
     const isFavorited = favIndex !== -1;
 
     const savedPopup = favBtn.querySelector('.saved-popup');
 
-    if (isFavorited) { 
+    if (isFavorited) {
       favs.splice(favIndex, 1);
       if(savedPopup) savedPopup.textContent = "Unsaved";
-    } else { 
+    } else {
       favs.push({ text: currentQuoteText, author: currentAuthorText });
       if(favSound) favSound.play().catch(e => console.warn("Fav sound play failed", e));
       if(savedPopup) savedPopup.textContent = "Saved!";
     }
 
-    localStorage.setItem('favQuotes', JSON.stringify(favs)); 
-    updateFavoriteButtonState(); 
+    localStorage.setItem('favQuotes', JSON.stringify(favs));
+    updateFavoriteButtonState();
 
     if(favBtn) favBtn.classList.add('show-saved-popup');
     setTimeout(() => {
@@ -789,7 +794,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!favBtn || !lastQuote || !lastQuote.text) {
         const favIcon = favBtn ? favBtn.querySelector("i") : null;
         if (favIcon) {
-            favIcon.className = "fa-regular fa-heart"; 
+            favIcon.className = "fa-regular fa-heart";
         }
         return;
     }
@@ -801,25 +806,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const isFavorited = favs.some(q => q.text === lastQuote.text && q.author === lastQuote.author);
 
     if (isFavorited) {
-        favIcon.className = "fa-solid fa-heart"; 
+        favIcon.className = "fa-solid fa-heart";
     } else {
-        favIcon.className = "fa-regular fa-heart"; 
+        favIcon.className = "fa-regular fa-heart";
     }
   }
 
 
   if(themeSw) {
     const savedTheme = localStorage.getItem("wowDark");
-    if (savedTheme === "true") { 
+    if (savedTheme === "true") {
         themeSw.checked = true;
         document.body.classList.add("dark");
     } else {
         document.body.classList.remove("dark");
     }
-    themeSw.addEventListener("change", () => { 
+    themeSw.addEventListener("change", () => {
         const isDark = themeSw.checked;
         document.body.classList.toggle("dark", isDark);
-        localStorage.setItem("wowDark", isDark); 
+        localStorage.setItem("wowDark", isDark);
     });
   }
 
@@ -827,16 +832,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateStreak() {
     const today = new Date().toISOString().slice(0,10);
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
-    if (streak.last !== today) { 
-      if (streak.last === getYesterday()) { 
+    if (streak.last !== today) {
+      if (streak.last === getYesterday()) {
         streak.count++;
-      } else { 
+      } else {
         streak.count = 1;
       }
-      streak.last = today; 
+      streak.last = today;
       localStorage.setItem('wowStreak', JSON.stringify(streak));
     }
-    showStreak(streak.count); 
+    showStreak(streak.count);
   }
   function getYesterday() {
     const d = new Date();
@@ -874,7 +879,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 feedbackSuccess.textContent = "Thank you for your feedback!";
                 feedbackSuccess.style.display = 'block';
             }
-            if(feedbackTextarea) feedbackTextarea.value = ''; 
+            if(feedbackTextarea) feedbackTextarea.value = '';
 
             if(submitBtnText) submitBtnText.style.display = 'inline';
             if(spinner) spinner.style.display = 'none';
@@ -891,8 +896,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if(feedbackBtn) feedbackBtn.addEventListener('click', () => {
     if(feedbackModal) feedbackModal.classList.add('open');
     document.body.style.overflow = "hidden";
-    if(feedbackTextarea) feedbackTextarea.value = ''; 
-    if(feedbackSuccess) { 
+    if(feedbackTextarea) feedbackTextarea.value = '';
+    if(feedbackSuccess) {
         feedbackSuccess.style.display = 'none';
         feedbackSuccess.textContent = "Thank you for your feedback!";
     }
@@ -911,15 +916,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function openFavoritesModal() {
     if(favModal) favModal.classList.add('open');
     document.body.style.overflow = "hidden";
-    showFavorites(); 
+    showFavorites();
     const firstFocusable = favModal ? favModal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
-    if (firstFocusable) firstFocusable.focus(); 
+    if (firstFocusable) firstFocusable.focus();
   }
   if(closeFavModal) closeFavModal.addEventListener('click', () => {
     if(favModal) favModal.classList.remove('open');
     document.body.style.overflow = "";
   });
-  if (closeFavModalLarge) { 
+  if (closeFavModalLarge) {
     closeFavModalLarge.addEventListener('click', () => {
         if(favModal) favModal.classList.remove('open');
         document.body.style.overflow = "";
@@ -959,7 +964,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (favoriteQuoteObject) {
                 copyFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author, this);
-            } else { 
+            } else {
                  const displayedText = quoteDiv.querySelector('p:first-child').textContent;
                  const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
                  copyFavorite(displayedText, displayedAuthor, this);
@@ -976,7 +981,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (favoriteQuoteObject) {
                 shareFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author);
-            } else { 
+            } else {
                  const displayedText = quoteDiv.querySelector('p:first-child').textContent;
                  const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
                  shareFavorite(displayedText, displayedAuthor);
@@ -985,18 +990,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  window.removeFavorite = function(idx) { 
+  window.removeFavorite = function(idx) {
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    showFavorites(); 
-    updateFavoriteButtonState(); 
+    showFavorites();
+    updateFavoriteButtonState();
   };
 
   window.copyFavorite = function(text, cleanAuthor, buttonElement) {
     const textToCopy = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
-        if(buttonElement){ 
+        if(buttonElement){
             const originalIconHTML = buttonElement.innerHTML;
             buttonElement.innerHTML = '<i class="fa-solid fa-check" style="color: var(--green-accent);"></i>';
             setTimeout(() => { buttonElement.innerHTML = originalIconHTML; }, 1200);
@@ -1006,14 +1011,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.shareFavorite = function(text, cleanAuthor) {
     const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
-    if (navigator.share) { 
+    if (navigator.share) {
       navigator.share({ title: `Quote by ${cleanAuthor || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
         .catch(err => {
-            if (err.name !== 'AbortError') { 
+            if (err.name !== 'AbortError') {
                 console.error("Sharing favorite failed:", err);
             }
         });
-    } else { 
+    } else {
       navigator.clipboard.writeText(shareText).then(() => alert("Quote copied! You can now paste it to share."))
                          .catch(() => alert("Could not copy quote. Please share manually."));
     }
@@ -1021,14 +1026,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener('keydown', function(e) {
     if (e.key === "Escape") {
-      const openModals = document.querySelectorAll('.modal.open');
+      const openModals = document.querySelectorAll('.modal.open, .image-modal'); // Include .image-modal
       openModals.forEach(modal => {
-        modal.classList.remove("open");
+        if (modal.id === 'quoteImagePreviewContainer') {
+            closeImagePreview(); // Use specific close function for image modal
+        } else {
+            modal.classList.remove("open");
+        }
       });
-      if (quoteImagePreviewContainer && quoteImagePreviewContainer.style.display === 'flex') {
-        closeImagePreview();
-      }
-      document.body.style.overflow = ""; 
+      document.body.style.overflow = "";
 
       if (shareMenu && shareMenu.classList.contains("open")) {
           shareMenu.classList.remove("open");
@@ -1046,7 +1052,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
     if (Object.keys(usage).length === 0) return null;
     const sortedUsage = Object.entries(usage).sort(([,a],[,b]) => b-a);
-    return sortedUsage[0][0]; 
+    return sortedUsage[0][0];
   }
 
   function requestNotificationPermission() { /* console.log("Placeholder: Request Notification Permission"); */ }
@@ -1054,168 +1060,162 @@ document.addEventListener("DOMContentLoaded", () => {
   function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); */ }
 
 
-  // --- MODIFIED SECTION: Image Generation Feature Logic ---
-  
+  // --- ADJUST TEXT TO FIT FUNCTION ---
   /**
-   * Adjusts the font size of the quote and author text elements to fit within the container.
-   * @param {HTMLElement} textElement - The element displaying the quote text.
-   * @param {HTMLElement} authorElement - The element displaying the author text.
-   * @param {HTMLElement} containerElement - The container for the image content.
+   * Adjusts the font size of the text element to fit within the container.
+   * @param {object} options - Configuration options.
+   * @param {HTMLElement} options.textElement - The HTML element containing the text (e.g., imageQuoteText).
+   * @param {HTMLElement} options.containerElement - The HTML element the text should fit within (e.g., quoteImageContent).
+   * @param {HTMLElement} [options.authorElement] - Optional: The HTML element for the author.
+   * @param {number} [options.initialFontSize=32] - Starting font size in pixels.
+   * @param {number} [options.minFontSize=12] - Minimum font size in pixels.
+   * @param {number} [options.maxFontSize=50] - Maximum font size for short quotes.
    */
-  function adjustFontSizeForImage(textElement, authorElement, containerElement) {
-    // --- Configuration for Font Sizing ---
-    const MAX_FONT_SIZE_QUOTE = 40; // Max font size for short quotes (px)
-    const MIN_FONT_SIZE_QUOTE = 16; // Min font size for long quotes (px)
-    const INITIAL_FONT_SIZE_QUOTE = 30; // Starting font size for quote (px)
+  function adjustTextToFit({
+      textElement,
+      containerElement,
+      authorElement,
+      initialFontSize = 36, // Adjusted for Playfair Display and typical quote lengths
+      minFontSize = 14,
+      maxFontSize = 52 // Allow slightly larger for very short, impactful quotes
+  }) {
+      textElement.style.fontSize = initialFontSize + 'px';
+      textElement.style.lineHeight = '1.4'; // Consistent line height
 
-    const MAX_FONT_SIZE_AUTHOR = 22; // Max font size for author (px)
-    const MIN_FONT_SIZE_AUTHOR = 14; // Min font size for author (px)
-    const INITIAL_FONT_SIZE_AUTHOR = 18; // Starting font size for author (px)
+      const containerStyle = getComputedStyle(containerElement);
+      const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
+      const containerPaddingBottom = parseFloat(containerStyle.paddingBottom) || 0;
+      const containerPaddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
+      const containerPaddingRight = parseFloat(containerStyle.paddingRight) || 0;
 
-    const LINE_HEIGHT_QUOTE = 1.4; // Line height for quote text
+      const targetWidth = containerElement.clientWidth - containerPaddingLeft - containerPaddingRight;
 
-    // Reset styles that might affect calculations
-    textElement.style.fontSize = INITIAL_FONT_SIZE_QUOTE + 'px';
-    textElement.style.lineHeight = LINE_HEIGHT_QUOTE;
-    if (authorElement) {
-        authorElement.style.fontSize = INITIAL_FONT_SIZE_AUTHOR + 'px';
-        authorElement.style.lineHeight = '1.3';
-    }
+      let authorActualHeight = 0;
+      if (authorElement && getComputedStyle(authorElement).display !== 'none') {
+          const authorStyle = getComputedStyle(authorElement);
+          authorActualHeight = authorElement.offsetHeight +
+                               parseFloat(authorStyle.marginTop) +
+                               parseFloat(authorStyle.marginBottom);
+      }
 
-    // Calculate available space within the container, accounting for padding and watermark
-    const containerStyle = getComputedStyle(containerElement);
-    const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
-    const containerPaddingBottom = parseFloat(containerStyle.paddingBottom) || 0;
-    const containerPaddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
-    const containerPaddingRight = parseFloat(containerStyle.paddingRight) || 0;
-    
-    const watermarkApproxHeight = 30; // Approximate height for watermark and bottom buffer
-    const authorApproxHeight = authorElement && authorElement.textContent ? (authorElement.offsetHeight + 15) : 0; // Author height + margin
+      const textMarginBottom = parseFloat(getComputedStyle(textElement).marginBottom) || 0;
+      // Available height for the quote text itself
+      const targetHeight = containerElement.clientHeight -
+                           containerPaddingTop -
+                           containerPaddingBottom -
+                           authorActualHeight -
+                           textMarginBottom; // Account for quote text's own bottom margin
 
-    const availableWidth = containerElement.clientWidth - containerPaddingLeft - containerPaddingRight;
-    let availableHeight = containerElement.clientHeight - containerPaddingTop - containerPaddingBottom - authorApproxHeight - watermarkApproxHeight;
-    
-    // --- Adjust Quote Font Size ---
-    let currentFontSizeQuote = INITIAL_FONT_SIZE_QUOTE;
-    textElement.style.fontSize = currentFontSizeQuote + 'px';
+      let currentFontSize = initialFontSize;
 
-    // Iteratively DECREASE font size if text overflows
-    while (
-        (textElement.scrollHeight > availableHeight || textElement.scrollWidth > availableWidth) &&
-        currentFontSizeQuote > MIN_FONT_SIZE_QUOTE
-    ) {
-        currentFontSizeQuote--;
-        textElement.style.fontSize = currentFontSizeQuote + 'px';
-    }
+      const checkOverflow = () => {
+          textElement.style.fontSize = currentFontSize + 'px';
+          // Check if content (scrollHeight/scrollWidth) exceeds available space (targetHeight/targetWidth)
+          const isOverflownY = textElement.scrollHeight > targetHeight;
+          const isOverflownX = textElement.scrollWidth > targetWidth;
+          return isOverflownY || isOverflownX;
+      };
 
-    // Iteratively INCREASE font size if text is short and there's space
-    // Only increase if it's significantly smaller to avoid minor adjustments that look off
-    if (textElement.scrollHeight < availableHeight * 0.7 && textElement.scrollWidth < availableWidth * 0.7) {
-        while (
-            textElement.scrollHeight < availableHeight &&
-            textElement.scrollWidth < availableWidth &&
-            currentFontSizeQuote < MAX_FONT_SIZE_QUOTE
-        ) {
-            let nextFontSize = currentFontSizeQuote + 1;
-            textElement.style.fontSize = nextFontSize + 'px';
-            // If increasing caused overflow, revert and stop
-            if (textElement.scrollHeight > availableHeight || textElement.scrollWidth > availableWidth) {
-                textElement.style.fontSize = currentFontSizeQuote + 'px'; // Revert
-                break;
-            }
-            currentFontSizeQuote = nextFontSize; // Commit new size
-        }
-    }
-    // Final check to ensure it's not below min after trying to increase
-     if (currentFontSizeQuote < MIN_FONT_SIZE_QUOTE) {
-        textElement.style.fontSize = MIN_FONT_SIZE_QUOTE + 'px';
-    }
+      // Decrease font size until it fits
+      while (checkOverflow() && currentFontSize > minFontSize) {
+          currentFontSize--;
+      }
+      textElement.style.fontSize = currentFontSize + 'px'; // Apply the fitting size or minFontSize
 
+      // If still overflowing at minFontSize, log a warning
+      if (currentFontSize === minFontSize && checkOverflow()) {
+          console.warn(`Text might be cut off as it exceeds container even at minimum font size (${minFontSize}px). Content: "${textElement.textContent.substring(0, 50)}..."`);
+      }
 
-    // --- Adjust Author Font Size (if author exists) ---
-    if (authorElement && authorElement.textContent) {
-        let currentFontSizeAuthor = INITIAL_FONT_SIZE_AUTHOR;
-        authorElement.style.fontSize = currentFontSizeAuthor + 'px';
-
-        // Decrease if author overflows width
-        while (authorElement.scrollWidth > availableWidth * 0.9 && currentFontSizeAuthor > MIN_FONT_SIZE_AUTHOR) { // Use 90% of width for author
-            currentFontSizeAuthor--;
-            authorElement.style.fontSize = currentFontSizeAuthor + 'px';
-        }
-        // Ensure author font size is not too large
-        if (currentFontSizeAuthor > MAX_FONT_SIZE_AUTHOR) {
-            authorElement.style.fontSize = MAX_FONT_SIZE_AUTHOR + 'px';
-        }
-         // Ensure it's not below min
-        if (currentFontSizeAuthor < MIN_FONT_SIZE_AUTHOR) {
-            authorElement.style.fontSize = MIN_FONT_SIZE_AUTHOR + 'px';
-        }
-    }
+      // Attempt to increase font size for very short quotes to fill space better
+      const quoteLength = textElement.textContent.length;
+      // Adjust threshold based on typical "short" quote length for your content
+      if (quoteLength < 80 && currentFontSize < maxFontSize) {
+          let testSize = currentFontSize;
+          while (testSize < maxFontSize) {
+              testSize++;
+              textElement.style.fontSize = testSize + 'px';
+              if (textElement.scrollHeight > targetHeight || textElement.scrollWidth > targetWidth) {
+                  testSize--; // Revert if it overflowed
+                  textElement.style.fontSize = testSize + 'px';
+                  break; // Stop increasing
+              }
+          }
+          currentFontSize = testSize; // Update with the new optimal size
+      }
+      // Ensure the final determined font size is applied
+      textElement.style.fontSize = currentFontSize + 'px';
   }
 
 
+  // --- Image Generation Feature Logic (Updated) ---
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
       if (!lastQuote || !lastQuote.text) {
-        // Use a more user-friendly notification if possible, instead of alert
-        alert("Please generate a quote first!"); 
+        alert("Please generate a quote first!");
+        if(shareMenu) shareMenu.classList.remove("open"); // Close share menu
         return;
       }
+      if(shareMenu) shareMenu.classList.remove("open"); // Close share menu
 
-      // Populate text for the image
+      // Populate image elements
       imageQuoteText.textContent = lastQuote.text;
       if (lastQuote.author) {
         imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
-        imageQuoteAuthor.style.display = 'block'; // Or 'flex' if it's a flex item
+        imageQuoteAuthor.style.display = 'block'; // Ensure it's displayed for height calculation
       } else {
         imageQuoteAuthor.textContent = '';
-        imageQuoteAuthor.style.display = 'none';
+        imageQuoteAuthor.style.display = 'none'; // Hide if no author
       }
 
-      // Show the preview container
+      // Call adjustTextToFit BEFORE showing the modal or generating the image
+      // This ensures the text is sized correctly within the #quoteImageContent div
+      adjustTextToFit({
+          textElement: imageQuoteText,
+          containerElement: quoteImageContent, // This is the 480x480 div
+          authorElement: imageQuoteAuthor,
+          initialFontSize: 38, // Start a bit larger for Playfair Display
+          minFontSize: 12,     // Absolute minimum
+          maxFontSize: 55      // Max for short quotes
+      });
+
+      // Now show the modal
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      document.body.style.overflow = 'hidden';
 
       // Disable buttons until image is ready
       downloadImageBtn.disabled = true;
       shareGeneratedImageBtn.disabled = true;
 
-      // Use a short timeout to allow the DOM to update with the new text
-      // and for CSS to apply before calculating font sizes and generating the canvas.
+      // Use a small timeout to ensure DOM updates (text content, font size) are rendered
+      // before html2canvas captures the element.
       setTimeout(() => {
-          // Adjust font sizes dynamically
-          adjustFontSizeForImage(imageQuoteText, imageQuoteAuthor, quoteImageContent);
-
-          // Generate the canvas using html2canvas
-          html2canvas(quoteImageContent, { 
-              allowTaint: true, // Allows cross-origin images if any (though not used here for text)
-              useCORS: true,    // Necessary for tainted canvases with cross-origin content
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Use actual background
-              scale: 2,         // Increase scale for better resolution (e.g., 2x)
-              logging: false    // Disable html2canvas console logging
+          html2canvas(quoteImageContent, { // Target the #quoteImageContent div
+              allowTaint: true,
+              useCORS: true,
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Get actual background
+              scale: 2, // For higher resolution (e.g., 960x960 if base is 480x480)
+              logging: false // Set to true for debugging html2canvas issues
           }).then(canvas => {
-              currentCanvas = canvas; // Store the generated canvas
-
-              // Enable buttons now that the canvas is ready
+              currentCanvas = canvas; // Store for download/share
               downloadImageBtn.disabled = false;
               shareGeneratedImageBtn.disabled = false;
-
           }).catch(err => {
               console.error("Error generating image with html2canvas:", err);
               alert("Sorry, couldn't generate the image. Please try again.");
-              closeImagePreview(); // Close preview on error
+              closeImagePreview(); // Close modal on error
           });
-      }, 150); // Increased timeout slightly to ensure rendering, adjust if needed
+      }, 150); // 100-150ms should be sufficient for rendering
     });
   }
 
   function closeImagePreview() {
     if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
-    document.body.style.overflow = ''; // Restore background scrolling
+    document.body.style.overflow = '';
     currentCanvas = null; // Clear stored canvas
-    // Reset font sizes if they were changed directly on elements, or rely on CSS to reset on next open
-    imageQuoteText.style.fontSize = ''; 
-    imageQuoteAuthor.style.fontSize = '';
+    // Optionally reset text elements if they were changed directly for preview
+    // imageQuoteText.textContent = '';
+    // imageQuoteAuthor.textContent = '';
   }
 
   if (closeImagePreviewBtn) {
@@ -1225,15 +1225,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (downloadImageBtn) {
     downloadImageBtn.addEventListener('click', () => {
       if (!currentCanvas) {
-          alert("Image not generated yet or an error occurred.");
+          alert("Image not generated yet.");
           return;
       }
       const imageURL = currentCanvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = imageURL;
-      // Sanitize author and quote text for filename
-      const authorNameForFile = (lastQuote.author || 'Unknown').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const quoteStartForFile = lastQuote.text.substring(0,20).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'Unknown';
+      const quoteStartForFile = lastQuote.text.substring(0,20).replace(/[^a-z0-9]/gi, '_').toLowerCase(); // Increased length
       a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
       document.body.appendChild(a);
       a.click();
@@ -1244,97 +1243,95 @@ document.addEventListener("DOMContentLoaded", () => {
   if (shareGeneratedImageBtn) {
     shareGeneratedImageBtn.addEventListener('click', async () => {
       if (!currentCanvas) {
-          alert("Image not generated yet or an error occurred.");
+          alert("Image not generated yet.");
           return;
       }
 
-      // Try to use Web Share API if available (for files)
-      if (navigator.share && navigator.canShare) { 
-        currentCanvas.toBlob(async (blob) => { 
+      if (navigator.share && navigator.canShare) {
+        currentCanvas.toBlob(async (blob) => {
           if (!blob) {
               alert("Error creating image blob for sharing.");
               return;
           }
-          const authorName = lastQuote.author || 'Unknown';
+          const authorName = lastQuote.author || 'Words of Wisdom'; // Fallback for title
           const filesArray = [
-            new File([blob], `WOW_Quote_${authorName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`, { 
+            new File([blob], `WOW_Quote_${(lastQuote.author || 'Unknown').replace(/[^a-z0-9]/gi, '_')}.png`, {
               type: 'image/png',
               lastModified: new Date().getTime()
             })
           ];
           const shareData = {
             files: filesArray,
-            title: `Quote by ${authorName} - Words of Wisdom`,
-            text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`, // Optional text
+            title: `Quote by ${authorName}`,
+            text: `"${lastQuote.text}" — ${lastQuote.author || ''}\nShared via wordsofwisdom.in`,
           };
           try {
-            // Check if sharing files is possible
-            if (navigator.canShare({ files: filesArray })) {
+            // Check if files can be shared, otherwise fall back to text/URL
+            if (navigator.canShare && navigator.canShare({ files: filesArray })) {
                 await navigator.share(shareData);
                 console.log('Image shared successfully');
             } else {
-                // Fallback: Share text and URL if files cannot be shared
+                // Fallback for platforms that might not support file sharing well (e.g. some desktop browsers)
                 await navigator.share({
-                    title: `Quote by ${authorName} - Words of Wisdom`,
-                    text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
-                    url: window.location.href 
+                    title: `Quote by ${authorName}`,
+                    text: `"${lastQuote.text}" — ${lastQuote.author || ''}\nShared via wordsofwisdom.in`,
+                    url: window.location.href // Optional: include app URL
                 });
-                console.log('Shared text content and URL as fallback because files could not be shared.');
+                console.log('Shared text content and URL as fallback.');
             }
           } catch (err) {
-            // Handle AbortError (user cancelled share) silently
-            if (err.name !== 'AbortError') { 
+            if (err.name !== 'AbortError') { // AbortError means user cancelled share
                 console.error('Error sharing image:', err);
-                // Fallback for browsers that claim to support share but fail (e.g. some desktop browsers)
                 alert('Sharing failed. You can try downloading the image instead.');
             }
           }
-        }, 'image/png'); // Specify blob type
+        }, 'image/png');
       } else {
-        // Fallback for browsers not supporting Web Share API or file sharing
-        alert('Sharing images directly is not supported on your browser. Please download the image to share it.');
+        alert('Sharing images this way is not supported on your browser/device. Please download the image to share it.');
       }
     });
   }
-  // --- END OF MODIFIED SECTION ---
 
-
+  // --- App Initialization ---
   (async function initApp(){
-    if(qText) qText.textContent = "✨ Loading Wisdom..."; 
+    if(qText) qText.textContent = "✨ Loading Wisdom...";
     if(qAuth) qAuth.textContent = "";
     if(quoteMark) {
         quoteMark.textContent = "“";
         quoteMark.style.opacity = 0.18;
     }
 
-    await loadCategoriesAndQuotes(); 
-    renderMenu(); 
+    await loadCategoriesAndQuotes();
+    renderMenu();
 
-    let initialCategory = "inspiration"; 
+    let initialCategory = "inspiration";
     const lastAutoCat = localStorage.getItem("lastAutoSelectedCategory");
     const todayStrInit = new Date().toISOString().slice(0,10);
     const lastBannerDateInit = localStorage.getItem("wowBannerDate");
 
     if (lastBannerDateInit === todayStrInit && lastAutoCat) {
         initialCategory = lastAutoCat;
-        console.log(`Initial category from today's banner: ${initialCategory}`);
+        // console.log(`Initial category from today's banner: ${initialCategory}`);
     } else {
         const mostUsed = getMostUsedCategory();
         if (mostUsed) {
             initialCategory = mostUsed;
-            console.log(`Initial category from most used: ${initialCategory}`);
+            // console.log(`Initial category from most used: ${initialCategory}`);
         } else {
-            console.log(`Initial category set to default: ${initialCategory}`);
+            // console.log(`Initial category set to default: ${initialCategory}`);
         }
     }
     selectedCat = initialCategory;
     if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
 
 
-    showRotatingBanner(); 
+    showRotatingBanner(); // This might change selectedCat and display a quote
 
-    if (!lastQuote || !lastQuote.text) {
-        console.log(`Banner didn't set a quote, or using stored category. Displaying quote for: ${selectedCat}`);
+    // If banner didn't load a quote (e.g. if it was already dismissed for the day)
+    // or if the quote displayed by banner is not the one for the current selectedCat,
+    // ensure a quote for the determined initialCategory is shown.
+    if (!lastQuote || !lastQuote.text || (lastQuote && lastQuote.category !== selectedCat && selectedCat !== bannerThemes.find(b => b.text === bannerText.textContent)?.cat) ) {
+        // console.log(`Banner didn't set a quote, or using stored/most used category. Displaying quote for: ${selectedCat}`);
         displayQuote();
     }
 
@@ -1346,7 +1343,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     showStreak(streak.count);
-    updateFavoriteButtonState(); 
+    updateFavoriteButtonState();
 
     requestNotificationPermission();
     scheduleDailyNotification();
