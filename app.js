@@ -1056,27 +1056,27 @@ function showRotatingBanner() {
   function scheduleDailyNotification() { /* Placeholder */ }
 
 
-  // --- ADJUST TEXT TO FIT FUNCTION (Enhanced for larger text and readability) ---
+  // --- ADJUST TEXT TO FIT FUNCTION (Further Enhanced for larger quote text) ---
   /**
    * Adjusts the font size of the text element to fit within the container.
    * @param {object} options - Configuration options.
    * @param {HTMLElement} options.textElement - The HTML element containing the text.
    * @param {HTMLElement} options.containerElement - The HTML element the text should fit within.
    * @param {HTMLElement} [options.authorElement] - Optional: The HTML element for the author.
-   * @param {number} [options.initialFontSize=56] - Starting font size in pixels. INCREASED
-   * @param {number} [options.minQuoteFontSize=22] - Minimum font size for the quote. INCREASED & RENAMED
-   * @param {number} [options.maxFontSize=80] - Maximum font size for short quotes. INCREASED
+   * @param {number} [options.initialFontSize=64] - Starting font size in pixels. INCREASED MORE
+   * @param {number} [options.minQuoteFontSize=28] - Minimum font size for the quote. INCREASED MORE
+   * @param {number} [options.maxFontSize=90] - Maximum font size for short quotes. INCREASED MORE
    */
   function adjustTextToFit({
       textElement,
       containerElement,
       authorElement,
-      initialFontSize = 56, // INCREASED: Start with a larger font for quotes
-      minQuoteFontSize = 22,  // INCREASED & RENAMED: Ensure quote is larger than author
-      maxFontSize = 80      // INCREASED: Max for very short quotes
+      initialFontSize = 64, // INCREASED MORE: Start with an even larger font for quotes
+      minQuoteFontSize = 28,  // INCREASED MORE: Ensure quote is significantly larger than author
+      maxFontSize = 90      // INCREASED MORE: Max for very short quotes
   }) {
       textElement.style.fontSize = initialFontSize + 'px';
-      textElement.style.lineHeight = '1.35'; // Adjusted for potentially larger fonts
+      textElement.style.lineHeight = '1.3'; // Slightly adjusted for better visual with large fonts
 
       const containerStyle = getComputedStyle(containerElement);
       const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
@@ -1096,8 +1096,8 @@ function showRotatingBanner() {
           authorFontSize = parseFloat(authorStyle.fontSize) || 18;
       }
       
-      // Ensure minQuoteFontSize is always greater than authorFontSize
-      const effectiveMinQuoteFontSize = Math.max(minQuoteFontSize, authorFontSize + 4); // At least 4px larger
+      // Ensure minQuoteFontSize is always greater than authorFontSize by a good margin
+      const effectiveMinQuoteFontSize = Math.max(minQuoteFontSize, authorFontSize + 6); // At least 6px larger
 
       const textMarginBottom = parseFloat(getComputedStyle(textElement).marginBottom) || 0;
       const targetHeight = containerElement.clientHeight -
@@ -1115,36 +1115,39 @@ function showRotatingBanner() {
           return isOverflownY || isOverflownX;
       };
 
+      // Decrease font size if overflowing, down to the effective minimum
       while (checkOverflow() && currentFontSize > effectiveMinQuoteFontSize) {
           currentFontSize--;
       }
       textElement.style.fontSize = currentFontSize + 'px';
 
+      // Log if text is still overflowing at the minimum size
       if (currentFontSize === effectiveMinQuoteFontSize && checkOverflow()) {
           console.warn(`Text might be cut off. Min font size enforced: ${effectiveMinQuoteFontSize}px. Content: "${textElement.textContent.substring(0, 50)}..."`);
       }
 
       const quoteLength = textElement.textContent.length;
-      // Adjusted threshold for "short" quote to better utilize maxFontSize
-      // Also ensure we don't shrink below effectiveMinQuoteFontSize here.
-      if (quoteLength < 100 && currentFontSize < maxFontSize) { 
+      // Try to make short quotes even larger, up to maxFontSize
+      // Ensure it doesn't shrink below effectiveMinQuoteFontSize during this expansion attempt.
+      if (quoteLength < 120 && currentFontSize < maxFontSize) { // Increased length threshold for "short"
           let testSize = currentFontSize;
           while (testSize < maxFontSize) {
               testSize++;
               textElement.style.fontSize = testSize + 'px';
               if (textElement.scrollHeight > targetHeight || textElement.scrollWidth > targetWidth) {
-                  testSize--;
+                  testSize--; // Revert if overflow
                   textElement.style.fontSize = testSize + 'px';
                   break;
               }
           }
-          currentFontSize = Math.max(testSize, effectiveMinQuoteFontSize); // Ensure it doesn't go below min
+          // Ensure the final size is not smaller than the effective minimum
+          currentFontSize = Math.max(testSize, effectiveMinQuoteFontSize); 
       }
-      textElement.style.fontSize = currentFontSize + 'px';
+      textElement.style.fontSize = currentFontSize + 'px'; // Set final size
   }
 
 
-  // --- Image Generation Feature Logic (Using the enhanced adjustTextToFit) ---
+  // --- Image Generation Feature Logic (Using the further enhanced adjustTextToFit) ---
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
       if (!lastQuote || !lastQuote.text) {
@@ -1163,14 +1166,12 @@ function showRotatingBanner() {
         imageQuoteAuthor.style.display = 'none';
       }
 
+      // Call the text fitting function with new, more aggressive defaults
       adjustTextToFit({
           textElement: imageQuoteText,
           containerElement: quoteImageContent, 
-          authorElement: imageQuoteAuthor,
-          // Parameters will use the new defaults in the enhanced function
-          // initialFontSize: 56, 
-          // minQuoteFontSize: 22, // This will be dynamically adjusted if author font is larger
-          // maxFontSize: 80
+          authorElement: imageQuoteAuthor
+          // initialFontSize, minQuoteFontSize, maxFontSize will use the new defaults from the function definition
       });
 
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
