@@ -130,7 +130,6 @@ function generateQuoteImage() {
   let lines = [];
   const maxWidth = size - 2 * padding;
 
-  // Helper: wrap text
   function wrapText(text, font) {
     ctx.font = font;
     const words = text.split(' ');
@@ -187,9 +186,80 @@ function generateQuoteImage() {
   ctx.fillText(watermark, size - padding, size - padding/2);
 
   currentCanvas = canvas;
+  // Set preview image src
+  document.getElementById('quoteImagePreview').src = canvas.toDataURL('image/png');
 }
-
 // --- END IMAGE GENERATION LOGIC ---
+
+  // Show preview modal when "Share as Image" is clicked
+shareGeneratedImageBtn.addEventListener('click', () => {
+  generateQuoteImage();
+  quoteImagePreviewContainer.style.display = 'flex';
+  setTimeout(() => {
+    quoteImagePreviewContainer.classList.add('visible');
+  }, 10);
+});
+
+// Close modal
+closeImagePreviewBtn.addEventListener('click', () => {
+  quoteImagePreviewContainer.classList.remove('visible');
+  setTimeout(() => {
+    quoteImagePreviewContainer.style.display = 'none';
+    document.getElementById('quoteImagePreview').src = '';
+  }, 300);
+});
+
+// Download image
+downloadImageBtn.addEventListener('click', () => {
+  if (!currentCanvas) return;
+  const link = document.createElement('a');
+  link.download = 'quote.png';
+  link.href = currentCanvas.toDataURL();
+  link.click();
+});
+
+// Share image (Web Share API)
+shareGeneratedImageBtn.addEventListener('dblclick', async () => {
+  if (!currentCanvas) return;
+  if (navigator.share && navigator.canShare) {
+    currentCanvas.toBlob(async (blob) => {
+      if (!blob) {
+        alert("Error creating image blob for sharing.");
+        return;
+      }
+      const authorName = lastQuote && lastQuote.author ? lastQuote.author : 'Unknown';
+      const quoteText = lastQuote && lastQuote.text ? lastQuote.text : '';
+      const filesArray = [
+        new File([blob], `WOW_Quote_${authorName}.png`, {
+          type: 'image/png',
+          lastModified: new Date().getTime()
+        })
+      ];
+      const shareData = {
+        files: filesArray,
+        title: `Quote by ${authorName} - Words of Wisdom`,
+        text: `"${quoteText}" - ${authorName}\nShared via wordsofwisdom.in`,
+      };
+      try {
+        if (navigator.canShare({ files: filesArray })) {
+          await navigator.share(shareData);
+        } else {
+          await navigator.share({
+            title: `Quote by ${authorName} - Words of Wisdom`,
+            text: `"${quoteText}" - ${authorName}\nShared via wordsofwisdom.in`,
+            url: window.location.href
+          });
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          alert('Sharing failed. You can try downloading the image instead.');
+        }
+      }
+    }, 'image/png');
+  } else {
+    alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
+  }
+});
 
   // --- Banner themes and styles ---
   const bannerThemes = [
