@@ -600,20 +600,11 @@ body.dark .magic-wand-icon.animated {
   :root {
     --image-square-size: 90vw; /* Make square size responsive for smaller screens */
   }
-  #quoteImageContent {
-    max-width: var(--image-square-size);
-    max-height: var(--image-square-size);
+  #quoteImageContent { /* This will be handled by the variable */
+    /* max-width: var(--image-square-size); */ /* Not needed if width/height use var */
+    /* max-height: var(--image-square-size); */ /* Not needed if width/height use var */
   }
-  #imageQuoteText {
-    font-size: 22px; /* Adjust font size for smaller square */
-  }
-  #imageQuoteAuthor {
-    font-size: 16px; /* Adjust font size for smaller square */
-  }
-  #imageWatermark {
-    font-size: 12px; /* Adjust font size for smaller square */
-  }
-
+  /* Font sizes for image text will be handled by JS, but can set responsive base if needed */
 }
 @media (max-width: 380px) { 
     header h1 {
@@ -638,14 +629,9 @@ body.dark .magic-wand-icon.animated {
     .toggle-wrap .theme-toggle input:checked + .slider:before {
         transform: translateX(18px);
     }
-    #imageQuoteText {
-      font-size: 18px; 
-    }
-    #imageQuoteAuthor {
-      font-size: 14px; 
-    }
+    /* Watermark might need slight adjustment on very small screens */
     #imageWatermark {
-      font-size: 10px;
+      font-size: 10px; /* Adjust font size for smaller square */
       bottom: 10px;
       right: 10px;
     }
@@ -941,107 +927,113 @@ footer .author-link:focus {
   text-decoration: underline;
 }
 
-/* Styles for Image Preview Modal */
+/* --- MODIFIED SECTION: Styles for Image Preview Modal --- */
 #quoteImagePreviewContainer {
-  display: none;
+  display: none; /* Hidden by default, shown by JS */
   position: fixed;
-  inset: 0;                   /* shorthand for top/right/bottom/left: 0 */
-  background: rgba(0,0,0,0.7);
+  inset: 0; /* top, right, bottom, left: 0 */
+  background: rgba(0,0,0,0.75); /* Darker overlay */
   padding: 1rem;
   justify-content: center;
   align-items: center;
-  z-index: 3000;
-  overflow-y: auto;
+  z-index: 3000; /* High z-index to be on top */
+  overflow-y: auto; /* Allow scrolling if content is too tall on small screens */
 }
 
-#quoteImagePreviewContainer.open {
+#quoteImagePreviewContainer.open { /* Class to show the modal */
   display: flex;
 }
 
 #quoteImageWrapper {
-  background: var(--card);
-  color: var(--text);
-  padding: 20px;
+  background: var(--card); /* Use theme variable for background */
+  color: var(--text);    /* Use theme variable for text */
+  padding: 20px;         /* Padding around the image content itself */
   border-radius: 12px;
   text-align: center;
-  min-width: calc(var(--image-square-size) + 40px);
+  /* min-width: calc(var(--image-square-size) + 40px); /* Ensure wrapper is slightly larger than content */
   box-shadow: 0 8px 25px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-#quoteImageContent {
-  background: var(--card);
-  color: var(--text);
-  width: var(--image-square-size);
-  height: var(--image-square-size);
-  padding: 25px;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  position: relative;
-  overflow: visible;          /* allows JS to shrink/expand text */
+  max-width: calc(var(--image-square-size) + 40px); /* Cap max width */
 }
 
 body.dark #quoteImageWrapper {
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* Darker shadow for dark mode */
+}
+
+#quoteImageContent {
+  background: var(--card); /* Match wrapper or can be different */
+  color: var(--text);
+  width: var(--image-square-size);  /* Fixed square size using CSS variable */
+  height: var(--image-square-size); /* Fixed square size using CSS variable */
+  padding: 35px 25px; /* Increased padding for better spacing, esp. top/bottom */
+  border-radius: 10px; /* Rounded corners for the image content area */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Vertically center content */
+  align-items: center;     /* Horizontally center content */
+  text-align: center;      /* Center text within elements */
+  position: relative;      /* For positioning watermark */
+  overflow: hidden;        /* Crucial: Prevents content from spilling out, JS will handle fit */
+  box-sizing: border-box;  /* Padding included in width/height */
 }
 
 #imageQuoteText {
   font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  line-height: 1.4;
-  margin-bottom: 20px;
-  max-height: 60%;
-  overflow-y: auto;
-  word-wrap: break-word;
-  padding: 0 10px;
-  max-width: 90%;
+  /* font-size is now set by JavaScript */
+  line-height: 1.4;    /* Consistent line height */
+  margin-bottom: 15px; /* Space between quote and author */
+  max-width: 95%;      /* Prevent text from touching horizontal edges */
+  max-height: 70%;     /* Max height for quote text, adjust as needed */
+  overflow: hidden;    /* Content that doesn't fit (due to JS error) will be hidden */
+  word-wrap: break-word; /* Allow long words to break */
 }
 
 #imageQuoteAuthor {
   font-family: 'Poppins', sans-serif;
-  font-size: 20px;
+  /* font-size is now set by JavaScript */
+  line-height: 1.3;
   color: var(--light);
-  margin-top: auto;
-  padding: 15px 10px 30px;
+  margin-top: auto; /* Pushes author down if quote is short, works with flex */
+  padding: 10px 5px 5px 5px; /* Padding around author text */
   font-style: italic;
   text-align: center;
   width: 100%;
+  max-width: 90%;      /* Prevent author text from touching horizontal edges */
+  flex-shrink: 0;      /* Prevent author from shrinking too much */
+  overflow: hidden;    /* Hide overflow for author */
+  white-space: nowrap; /* Prevent author name from wrapping by default */
+  text-overflow: ellipsis; /* Show ... if author name is too long */
 }
+#imageQuoteAuthor:empty { /* Hide if no author content */
+    display: none;
+}
+
 
 #imageWatermark {
   font-family: 'Poppins', sans-serif;
-  font-size: 14px;
+  font-size: 14px;     /* Fixed size for watermark, or make it relative */
   color: var(--light);
-  opacity: 0.7;
-  position: absolute;
+  opacity: 0.6;        /* Slightly less opaque */
+  position: absolute;  /* Position at bottom right of #quoteImageContent */
   bottom: 15px;
   right: 20px;
   text-align: right;
 }
 
 body.dark #imageWatermark {
-  opacity: 0.5;
+  opacity: 0.4; /* Even less opaque in dark mode for subtlety */
 }
 
 .image-buttons-container {
-  margin-top: 20px;
+  margin-top: 20px;    /* Space above the buttons */
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 15px;           /* Space between buttons */
   width: 100%;
 }
-
-/* If you prefer icon-only buttons, swap .embossed-button for .icon-btn */
-#quoteImageWrapper .embossed-button {
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-}
+/* --- END OF MODIFIED SECTION --- */
 
 /* High contrast mode */
 @media (prefers-contrast: more) {
