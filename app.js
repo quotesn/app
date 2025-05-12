@@ -40,28 +40,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // DOM references for Image Generation Modal
   const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer');
-  // const quoteImageWrapper = document.getElementById('quoteImageWrapper'); // Keep if needed for overall styling/modal structure
-  const quoteImageContent = document.getElementById('quoteImageContent'); // The new div to capture
+  const quoteImageContent = document.getElementById('quoteImageContent'); // The div to capture
   const imageQuoteText = document.getElementById('imageQuoteText');
   const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');
-  // const imageWatermark = document.getElementById('imageWatermark'); // Already in HTML, styled by CSS
   const downloadImageBtn = document.getElementById('downloadImageBtn');
   const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
-  const generateImageShareOption = document.getElementById('generateImageShareOption'); // Button in shareMenu
+  const generateImageShareOption = document.getElementById('generateImageShareOption'); 
 
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = "inspiration"; // Default category
-  let lastQuote = null; // Stores { text: "...", author: "...", category: "..." }
+  let lastQuote = null; 
   let quoteHistory = [];
   let authorMode = false;
   let authorQuotes = [];
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
-  let currentCanvas = null; // To store the generated canvas for image share/download
+  let currentCanvas = null; 
 
   // --- Banner themes and styles ---
   const bannerThemes = [
@@ -187,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return data;
     } catch (e) {
       console.error(`Failed to fetch or parse ${url}:`, e.message);
-      throw e; // Re-throw to be caught by caller
+      throw e; 
     }
   }
 
@@ -217,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let pathAttempt1 = originalPath;
             let pathAttempt2 = null;
             if (originalPath && originalPath.startsWith('data/')) {
-                pathAttempt2 = originalPath.substring(5); // e.g., "quotes_inspiration.json"
+                pathAttempt2 = originalPath.substring(5); 
             }
 
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
@@ -226,13 +224,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (Array.isArray(data)) {
                         quotes[cat.id] = data;
                         buildAuthorIndex(data, cat.id);
-                        return true; // Success
+                        return true; 
                     }
                     console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
-                    return false; // Failure due to structure
+                    return false; 
                 } catch (err) {
                     console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed.`);
-                    return false; // Failure due to fetch/parse
+                    return false; 
                 }
             };
             quotePromises.push(
@@ -1080,12 +1078,11 @@ document.addEventListener("DOMContentLoaded", () => {
       shareGeneratedImageBtn.disabled = true;
 
       setTimeout(() => {
-          // *** MODIFICATION: Target quoteImageContent instead of quoteImageWrapper ***
-          html2canvas(quoteImageContent, { // <<<< TARGET CHANGED HERE
+          html2canvas(quoteImageContent, { 
               allowTaint: true,
               useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Get background from the content div
-              scale: 2, 
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, 
+              scale: 2, // Increase scale for better resolution, e.g., if #quoteImageContent is 500x500, output is 1000x1000
               logging: false 
           }).then(canvas => {
               currentCanvas = canvas; 
