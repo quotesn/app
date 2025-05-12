@@ -1433,12 +1433,10 @@ document.addEventListener("DOMContentLoaded", () => {
     showRotatingBanner();
 
     // Display the initial quote after categories and quotes are loaded
-    // Check if banner already set a quote, otherwise display from selected category
-    // The previous check `if (!lastQuote || !lastQuote.text)` here was redundant
-    // and potentially causing issues if banner logic didn't always set lastQuote immediately.
-    // We should always attempt to display a quote after loading is complete.
+    // This ensures a quote is always attempted to be displayed after init.
     console.log(`Attempting to display initial quote for category: ${selectedCat}`);
     displayQuote(); // Always call displayQuote after init
+
 
     if ((!lastQuote || !lastQuote.text) && qText && qText.textContent.includes("Loading Wisdom")) {
         qText.textContent = "Sorry, we couldn't load any quotes right now. Please try again later.";
