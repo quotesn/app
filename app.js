@@ -33,33 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
     feedbackModal = document.getElementById('feedbackModal'),
     closeFeedbackModal = document.getElementById('closeFeedbackModal'),
     feedbackTextarea = document.getElementById('feedbackTextarea'),
-    submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
-    // feedbackSuccess = document.getElementById('feedbackSuccess'); // Already defined above
-
-  // DOM references for Image Generation Modal
-  const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer');
-  const quoteImageContent = document.getElementById('quoteImageContent'); // The div to capture
-  const imageQuoteText = document.getElementById('imageQuoteText');
-  const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');
-  const imageWatermark = document.getElementById('imageWatermark'); // Already in HTML, styled by CSS
-  const downloadImageBtn = document.getElementById('downloadImageBtn');
-  const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
-  const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
-  const generateImageShareOption = document.getElementById('generateImageShareOption'); // Button in shareMenu
-
-  // Audio Element References
-  const appLoadSound = document.getElementById('appLoadSound');
-  const generateSound = document.getElementById('generateSound');
-  const menuClickSound = document.getElementById('menuClickSound');
-  const shareCopySound = document.getElementById('shareCopySound');
-  const saveFavSound = document.getElementById('saveFavSound');
-  const downloadSound = document.getElementById('downloadSound');
-  const undoSound = document.getElementById('undoSound');
-  const themeToggleSound = document.getElementById('themeToggleSound');
-  const notificationSound = document.getElementById('notificationSound');
-  // Keeping original magicSound and favSound as they might be used elsewhere
-  const magicSound = document.getElementById('magicSound'); // Original magic sound
-  const favSound = document.getElementById('favSound'); // Original fav sound
+    submitFeedbackBtn = document.getElementById('submitFeedbackBtn'),
+    feedbackSuccess = document.getElementById('feedbackSuccess'),
+    magicSound = document.getElementById('magicSound'),
+    favSound = document.getElementById('favSound');
 
   let categories = [];
   let quotes = {};
@@ -72,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
-  let currentCanvas = null; // To store the generated canvas for image share/download
 
   // --- Banner themes and styles ---
   const bannerThemes = [
@@ -134,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     innerpeace:     { color: "#81d4fa", icon: "🌊" },
     spirituality:   { color: "#ba68c8", icon: "✨" },
     perseverance:   { color: "#6d4c41", icon: "🚀" }
-  ];
+  };
 
   function capitalize(str) {
     if (!str) return "";
@@ -163,28 +139,24 @@ document.addEventListener("DOMContentLoaded", () => {
     specialBanner.style.color = style.color && (style.color === "#ffd700" || style.color === "#aeea00") ? "#222" : "#fff";
 
     closeBannerBtn.onclick = () => {
-      // Play menu click sound on banner close
-      if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
       specialBanner.style.display = "none";
       localStorage.setItem("wowBannerDate", todayStr);
-      localStorage.removeItem("bannerForceShow");
+      localStorage.removeItem("bannerForceShow"); 
     };
     setTimeout(() => {
       if(specialBanner.style.display !== "none"){
-          // Play menu click sound on auto banner close
-          if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
           specialBanner.style.display = "none";
-          localStorage.setItem("wowBannerDate", todayStr);
+          localStorage.setItem("wowBannerDate", todayStr); 
           localStorage.removeItem("bannerForceShow");
       }
     }, 8000);
 
     selectedCat = theme.cat;
-    authorMode = false;
+    authorMode = false; 
     if(currentCategory) currentCategory.textContent = capitalize(theme.cat);
     console.log(`Banner set category to: ${selectedCat}`);
     localStorage.setItem("wowBannerDate", todayStr);
-    localStorage.setItem("lastAutoSelectedCategory", theme.cat);
+    localStorage.setItem("lastAutoSelectedCategory", theme.cat); 
   }
 
   async function fetchJSON(url, cacheKey) {
@@ -202,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return data;
     } catch (e) {
       console.error(`Failed to fetch or parse ${url}:`, e.message);
-      throw e; // Re-throw to be caught by caller
+      throw e;
     }
   }
 
@@ -232,22 +204,22 @@ document.addEventListener("DOMContentLoaded", () => {
             let pathAttempt1 = originalPath;
             let pathAttempt2 = null;
             if (originalPath && originalPath.startsWith('data/')) {
-                pathAttempt2 = originalPath.substring(5); // e.g., "quotes_inspiration.json"
+                pathAttempt2 = originalPath.substring(5);
             }
 
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
                 try {
                     const data = await fetchJSON(filePath, cacheKeyPrefix + cat.id);
-                    if (Array.isArray(data)) {
+                    if (Array.isArray(data)) { 
                         quotes[cat.id] = data;
                         buildAuthorIndex(data, cat.id);
-                        return true; // Success
+                        return true;
                     }
                     console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
-                    return false; // Failure due to structure
+                    return false;
                 } catch (err) {
                     console.error(`Attempt to fetch/process ${filePath} for category ${cat.id} failed.`);
-                    return false; // Failure due to fetch/parse
+                    return false;
                 }
             };
             quotePromises.push(
@@ -271,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await Promise.all(quotePromises);
 
       if (Object.keys(quotes).length === 0 && (!localStorage.getItem('userQuotes') || JSON.parse(localStorage.getItem('userQuotes')).length === 0)) {
-          if(qText) qText.textContent = "No quote data could be loaded. Please check your connection or try again later.";
+          if(qText) qText.textContent = "No quote data could be loaded.";
           if(qAuth) qAuth.textContent = "";
       }
     } catch (err) {
@@ -284,20 +256,20 @@ document.addEventListener("DOMContentLoaded", () => {
   function buildAuthorIndex(quoteList, categoryId) {
     if (!Array.isArray(quoteList)) return;
     quoteList.forEach(quote => {
-      const by = (quote.author || quote.by || "").trim();
+      const by = (quote.author || quote.by || "").trim(); // Ensure author is trimmed here
       if (by) {
-        const authorKey = by.toLowerCase();
+        const authorKey = by.toLowerCase(); // Already trimmed
         if (!authors[authorKey]) authors[authorKey] = [];
         authors[authorKey].push({
           text: quote.text || quote.quote || quote.message,
-          author: by,
+          author: by, // Store the trimmed, original case author
           category: categoryId
         });
       }
     });
   }
 
-  function renderMenu() {
+  function renderMenu() { 
     if (!categoryMenu) return;
     categoryMenu.innerHTML = "";
     function renderCategoryList(catArray, parentUl) {
@@ -312,8 +284,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
           categoryMenu.appendChild(sec);
           sec.querySelector('.section-btn').addEventListener('click', function() {
-            // Play menu click sound
-            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             const wrapper = sec.querySelector('.author-search-wrapper');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
@@ -325,8 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
           favSec.className = "section";
           favSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-heart section-icon" aria-hidden="true"></i>View Favorites</button>`;
           favSec.querySelector(".section-btn").addEventListener("click", () => {
-            // Play menu click sound
-            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             openFavoritesModal();
             closeMenu();
           });
@@ -336,8 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
           myFavCatSec.className = "section";
           myFavCatSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-star section-icon" aria-hidden="true"></i>Quotes from My Favorites</button>`;
           myFavCatSec.querySelector(".section-btn").addEventListener("click", () => {
-            // Play menu click sound
-            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             selectedCat = "myfavorites";
             authorMode = false;
             if(currentCategory) currentCategory.textContent = "My Favorites";
@@ -346,13 +312,10 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           categoryMenu.appendChild(myFavCatSec);
 
-
           const submitSec = document.createElement("div");
           submitSec.className = "section";
           submitSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-plus section-icon" aria-hidden="true"></i>Submit a Quote</button>`;
           submitSec.querySelector(".section-btn").addEventListener("click", () => {
-             // Play menu click sound
-            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             if(submitQuoteModal) submitQuoteModal.classList.add('open');
             document.body.style.overflow = "hidden";
             if(customQuoteForm) customQuoteForm.reset();
@@ -411,8 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           categoryMenu.appendChild(sec);
           sec.querySelector('.section-btn').addEventListener('click', function() {
-            // Play menu click sound
-            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             const list = sec.querySelector('.section-list');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
@@ -431,8 +392,6 @@ document.addEventListener("DOMContentLoaded", () => {
     categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
       span.addEventListener('click', function(e) {
         e.stopPropagation();
-        // Play menu click sound
-        if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
         const nestedList = this.nextElementSibling;
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', !isExpanded);
@@ -454,8 +413,6 @@ document.addEventListener("DOMContentLoaded", () => {
     categoryMenu.querySelectorAll('.section-list a, .nested-list a').forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
-        // Play menu click sound
-        if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
         selectedCat = link.dataset.cat;
         authorMode = false;
         if(currentCategory) currentCategory.textContent = capitalize(link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim());
@@ -481,14 +438,12 @@ document.addEventListener("DOMContentLoaded", () => {
             .forEach(nameKey => {
               const li = document.createElement("li");
               li.setAttribute('role', 'option');
-              li.textContent = authors[nameKey][0].author;
-              li.tabIndex = -1;
+              li.textContent = authors[nameKey][0].author; // Display original case
+              li.tabIndex = -1; 
               li.addEventListener("click", () => {
-                // Play menu click sound
-                if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
                 authorMode = true;
-                authorName = nameKey;
-                authorQuotes = [...authors[nameKey]];
+                authorName = nameKey; // Use lowercased key for consistency
+                authorQuotes = [...authors[nameKey]]; 
                 authorQuoteIndex = 0;
                 if(currentCategory) currentCategory.textContent = "Author: " + authors[nameKey][0].author;
                 closeMenu();
@@ -503,16 +458,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   function openMenu() {
-    // Play menu click sound
-    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
-    renderMenu();
+    renderMenu(); 
     if(categoryModal) categoryModal.classList.add("open");
     document.body.style.overflow = "hidden";
     if(closeMenuBtn) closeMenuBtn.focus();
   }
   function closeMenu() {
-    // Play menu click sound
-    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(categoryModal) categoryModal.classList.remove("open");
     document.body.style.overflow = "";
     if(openMenuBtn) openMenuBtn.focus();
@@ -524,16 +475,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if(closeSubmitQuoteModal) closeSubmitQuoteModal.addEventListener('click', () => {
-    // Play menu click sound
-    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(submitQuoteModal) submitQuoteModal.classList.remove('open');
     document.body.style.overflow = "";
   });
 
   if(customQuoteForm) customQuoteForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    // No specific sound for submit, default click sound might play if not prevented
-
     const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
     const spinner = submitCustomQuoteBtn.querySelector('.loader-spinner');
 
@@ -556,8 +503,6 @@ document.addEventListener("DOMContentLoaded", () => {
           if(quoteFormSuccess) quoteFormSuccess.style.display = 'none';
           if(submitQuoteModal) submitQuoteModal.classList.remove('open');
           document.body.style.overflow = "";
-           // Play notification sound on successful submission
-          if (notificationSound) { notificationSound.currentTime = 0; notificationSound.play().catch(e => console.warn("Audio play failed:", e)); }
         }, 2500);
     }, 1500);
   });
@@ -567,8 +512,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if(qText) qText.textContent = "No quote available. Try another category or inspire me again!";
         if(qAuth) qAuth.textContent = "";
         lastQuote = null;
-        if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
-        updateFavoriteButtonState();
+        if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none"; 
+        updateFavoriteButtonState(); 
         return;
     }
 
@@ -583,14 +528,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
       const txt = item.text || item.quote || item.message || "Quote text missing.";
-      let by = (item.author || item.by || "").trim();
+      // 'by' is the clean author name, already trimmed during buildAuthorIndex or from input
+      let by = (item.author || item.by || "").trim(); 
 
       if(qText) qText.textContent = txt;
       if(qAuth) {
         if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
           qAuth.textContent = "";
         } else {
-          qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
+          qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`; 
         }
       }
       if(quoteMark) {
@@ -601,9 +547,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if(qText) qText.classList.remove('fade-out');
       if(qAuth) qAuth.classList.remove('fade-out');
 
+      // Store the clean author name in lastQuote
       lastQuote = { text: txt, author: by, category: cat };
-      updateStreak();
-      updateFavoriteButtonState();
+      updateStreak(); 
     }, 300);
   }
 
@@ -648,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const allQuotesRaw = Object.values(quotes).flat();
         pool = allQuotesRaw.filter(isValidQuote);
         if (pool.length > 0 && currentCategory && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
-            if(currentCategory) currentCategory.textContent = "All Quotes";
+            if(currentCategory) currentCategory.textContent = "All Quotes"; 
         }
     }
 
@@ -667,21 +613,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(undoBtn) undoBtn.addEventListener("click", () => {
-    // Play undo sound
-    if (undoSound) { undoSound.currentTime = 0; undoSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if (quoteHistory.length > 0) {
       const prev = quoteHistory.shift();
-      showQuote(prev, prev.category, true);
+      showQuote(prev, prev.category, true); 
     }
     undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
   });
 
   function triggerGenerateEffects() {
-    // Play generate sound
-    if (generateSound) { generateSound.currentTime = 0; generateSound.play().catch(e => console.warn("Audio play failed:", e)); }
-    // Original magic sound effect (optional, can remove if generateSound replaces it)
-    // if (magicSound) { magicSound.currentTime = 0; magicSound.play().catch(e => console.warn("Audio play failed:", e)); }
-
+    if (magicSound) {
+      magicSound.currentTime = 0;
+      magicSound.play().catch(e => console.warn("Audio play failed:", e));
+    }
     if(quoteBox) quoteBox.classList.add('glow');
     setTimeout(() => { if(quoteBox) quoteBox.classList.remove('glow'); }, 400);
 
@@ -693,19 +636,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if(genBtn) genBtn.classList.add('touched');
     setTimeout(() => {if(genBtn) genBtn.classList.remove('touched');}, 400);
 
-    // Ripple effect for generate button
     const ripple = document.createElement('span');
     ripple.className = 'ripple';
-    // Position ripple at the center of the button
     ripple.style.left = "50%";
     ripple.style.top = "50%";
-    // Add gradient background for the ripple
-    ripple.style.background = 'radial-gradient(circle, #fff 0%, var(--primary) 80%, transparent 100%)';
-     // Add dark mode specific gradient if body has dark class
-    if (document.body.classList.contains('dark')) {
-       ripple.style.background = 'radial-gradient(circle, #fff 0%, var(--gold) 80%, transparent 100%)';
-    }
-
     if(genBtn) genBtn.appendChild(ripple);
     setTimeout(() => ripple.remove(), 700);
   }
@@ -717,134 +651,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Add default click sound to buttons that don't have specific sounds
-  document.querySelectorAll('.icon-btn:not(#shareBtn):not(#favBtn):not(#copyBtn):not(#undoBtn), .feedback-btn, .home-btn, .category-btn').forEach(btn => {
-    btn.style.webkitTapHighlightColor = "transparent";
-    btn.addEventListener('click', function(e) {
-      // Play default menu click sound for these buttons
-      if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
-
-      // Existing ripple effect logic
+  document.querySelectorAll('.icon-btn, .feedback-btn, .home-btn').forEach(btn => {
+    btn.style.webkitTapHighlightColor = "transparent"; 
+    btn.addEventListener('click', function(e) { 
       const rect = btn.getBoundingClientRect();
       const ripple = document.createElement('span');
-      ripple.className = 'ripple';
-      // Position ripple based on click coordinates within the button
+      ripple.className = 'ripple'; 
       ripple.style.left = (e.clientX - rect.left) + 'px';
       ripple.style.top = (e.clientY - rect.top) + 'px';
-
-      // Add specific ripple background if needed, otherwise default from CSS applies
-      // For generateBtn, the gradient is handled in triggerGenerateEffects
-
       btn.appendChild(ripple);
       setTimeout(() => ripple.remove(), 600);
     });
   });
 
-  // Add specific click sound for Share, Favorite, and Copy buttons
+
   if(shareBtn) shareBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    // Play share/copy sound
-    if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
+    e.stopPropagation(); 
     if(shareMenu) shareMenu.classList.toggle("open");
     if (shareMenu && shareMenu.classList.contains("open")) {
       setTimeout(() => {
         document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
       }, 0);
     }
-     // Ripple effect for share button
-     const rect = shareBtn.getBoundingClientRect();
-     const ripple = document.createElement('span');
-     ripple.className = 'ripple';
-     ripple.style.left = (e.clientX - rect.left) + 'px';
-     ripple.style.top = (e.clientY - rect.top) + 'px';
-     shareBtn.appendChild(ripple);
-     setTimeout(() => ripple.remove(), 600);
   });
-
-   if(favBtn) favBtn.addEventListener('click', (e) => {
-     // No sound here, sound is played inside the favBtn logic based on save/unsave
-     // Ripple effect for favorite button
-     const rect = favBtn.getBoundingClientRect();
-     const ripple = document.createElement('span');
-     ripple.className = 'ripple';
-     ripple.style.left = (e.clientX - rect.left) + 'px';
-     ripple.style.top = (e.clientY - rect.top) + 'px';
-     favBtn.appendChild(ripple);
-     setTimeout(() => ripple.remove(), 600);
-
-     // Existing favorite logic
-     if (!lastQuote || !lastQuote.text) return;
-
-     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
-     const currentQuoteText = lastQuote.text;
-     const currentAuthorText = lastQuote.author;
-
-     const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
-     const isFavorited = favIndex !== -1;
-
-     const savedPopup = favBtn.querySelector('.saved-popup');
-
-     if (isFavorited) {
-       favs.splice(favIndex, 1);
-       if(savedPopup) savedPopup.textContent = "Unsaved";
-     } else {
-       favs.push({ text: currentQuoteText, author: currentAuthorText });
-       // Play save favorite sound ONLY when saving
-       if(saveFavSound) { saveFavSound.currentTime = 0; saveFavSound.play().catch(e => console.warn("Audio play failed", e)); }
-       if(savedPopup) savedPopup.textContent = "Saved!";
-     }
-
-     localStorage.setItem('favQuotes', JSON.stringify(favs));
-     updateFavoriteButtonState();
-
-     if(favBtn) favBtn.classList.add('show-saved-popup');
-     setTimeout(() => {
-         if(favBtn) favBtn.classList.remove('show-saved-popup');
-     }, 1200);
-   });
-
-   if(copyBtn) copyBtn.addEventListener("click", (e) => {
-     // Play share/copy sound
-     if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
-      // Ripple effect for copy button
-     const rect = copyBtn.getBoundingClientRect();
-     const ripple = document.createElement('span');
-     ripple.className = 'ripple';
-     ripple.style.left = (e.clientX - rect.left) + 'px';
-     ripple.style.top = (e.clientY - rect.top) + 'px';
-     copyBtn.appendChild(ripple);
-     setTimeout(() => ripple.remove(), 600);
-
-     // Existing copy logic
-     const quoteContent = qText ? qText.textContent || "" : "";
-     const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
-     const textToCopy = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
-
-     navigator.clipboard.writeText(textToCopy).then(() => {
-       const iconElement = copyBtn.querySelector("i");
-       const originalIcon = iconElement ? iconElement.className : "";
-       if(iconElement) iconElement.className = "fa-solid fa-check";
-       copyBtn.classList.add('copied-feedback');
-       const tooltip = copyBtn.querySelector('.btn-tooltip');
-       const originalTooltipText = tooltip ? tooltip.textContent : '';
-       if(tooltip) tooltip.textContent = "Copied!";
-
-       setTimeout(() => {
-         if(iconElement) iconElement.className = originalIcon;
-         copyBtn.classList.remove('copied-feedback');
-         if(tooltip) tooltip.textContent = originalTooltipText;
-       }, 1500);
-     }).catch(err => {
-       console.error('Failed to copy text: ', err);
-       const tooltip = copyBtn.querySelector('.btn-tooltip');
-       if(tooltip) {
-           const originalTooltipText = tooltip.textContent;
-           tooltip.textContent = "Copy failed!";
-           setTimeout(() => { tooltip.textContent = originalTooltipText; }, 2000);
-       }
-     });
-   });
-
 
   function closeShareMenuOnClickOutside(event) {
     if (shareMenu && shareMenu.classList.contains("open") && !shareMenu.contains(event.target) && event.target !== shareBtn && (shareBtn && !shareBtn.contains(event.target))) {
@@ -856,18 +685,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
-    // Add share/copy sound to other share options
-    if (btn.id !== 'generateImageShareOption') {
-         btn.addEventListener('click', function() {
-              if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
-         });
-    }
-
-    if (btn.id === 'generateImageShareOption') return;
-
     btn.addEventListener('click', function() {
       const quoteContent = qText ? qText.textContent || "" : "";
-      const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
+      const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : ""; // Use clean author
       const textToShare = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
       const pageUrl = window.location.href;
       let shareUrl = '';
@@ -892,11 +712,74 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
+  if(copyBtn) copyBtn.addEventListener("click", () => {
+    const quoteContent = qText ? qText.textContent || "" : "";
+    // FIX: Use the clean author name from lastQuote
+    const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
+    const textToCopy = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      const iconElement = copyBtn.querySelector("i");
+      const originalIcon = iconElement ? iconElement.className : "";
+      if(iconElement) iconElement.className = "fa-solid fa-check";
+      copyBtn.classList.add('copied-feedback'); 
+      const tooltip = copyBtn.querySelector('.btn-tooltip');
+      const originalTooltipText = tooltip ? tooltip.textContent : '';
+      if(tooltip) tooltip.textContent = "Copied!";
+
+      setTimeout(() => {
+        if(iconElement) iconElement.className = originalIcon;
+        copyBtn.classList.remove('copied-feedback');
+        if(tooltip) tooltip.textContent = originalTooltipText;
+      }, 1500);
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      const tooltip = copyBtn.querySelector('.btn-tooltip');
+      if(tooltip) {
+          const originalTooltipText = tooltip.textContent;
+          tooltip.textContent = "Copy failed!";
+          setTimeout(() => { tooltip.textContent = originalTooltipText; }, 2000);
+      }
+    });
+  });
+
+  if(favBtn) favBtn.addEventListener('click', () => {
+    if (!lastQuote || !lastQuote.text) return; 
+
+    let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+    // Ensure we are using the clean author from lastQuote for consistency
+    const currentQuoteText = lastQuote.text;
+    const currentAuthorText = lastQuote.author; // This is already clean
+
+    const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
+    const isFavorited = favIndex !== -1;
+
+    const savedPopup = favBtn.querySelector('.saved-popup');
+
+    if (isFavorited) {
+      favs.splice(favIndex, 1);
+      if(savedPopup) savedPopup.textContent = "Unsaved";
+    } else {
+      // Add the clean version to favorites
+      favs.push({ text: currentQuoteText, author: currentAuthorText });
+      if(favSound) favSound.play().catch(e => console.warn("Fav sound play failed", e));
+      if(savedPopup) savedPopup.textContent = "Saved!";
+    }
+
+    localStorage.setItem('favQuotes', JSON.stringify(favs));
+    updateFavoriteButtonState(); 
+
+    if(favBtn) favBtn.classList.add('show-saved-popup');
+    setTimeout(() => {
+        if(favBtn) favBtn.classList.remove('show-saved-popup');
+    }, 1200);
+  });
+
   function updateFavoriteButtonState() {
-    if (!favBtn || !lastQuote || !lastQuote.text) {
+    if (!favBtn || !lastQuote || !lastQuote.text) { 
         const favIcon = favBtn ? favBtn.querySelector("i") : null;
         if (favIcon) {
-            favIcon.className = "fa-regular fa-heart";
+            favIcon.className = "fa-regular fa-heart"; 
         }
         return;
     }
@@ -905,12 +788,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!favIcon) return;
 
     const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
+    // Compare with the clean author from lastQuote
     const isFavorited = favs.some(q => q.text === lastQuote.text && q.author === lastQuote.author);
 
     if (isFavorited) {
-        favIcon.className = "fa-solid fa-heart";
+        favIcon.className = "fa-solid fa-heart"; 
     } else {
-        favIcon.className = "fa-regular fa-heart";
+        favIcon.className = "fa-regular fa-heart"; 
     }
   }
 
@@ -921,11 +805,9 @@ document.addEventListener("DOMContentLoaded", () => {
         themeSw.checked = true;
         document.body.classList.add("dark");
     } else {
-        document.body.classList.remove("dark");
+        document.body.classList.remove("dark"); 
     }
     themeSw.addEventListener("change", () => {
-        // Play theme toggle sound
-        if (themeToggleSound) { themeToggleSound.currentTime = 0; themeToggleSound.play().catch(e => console.warn("Audio play failed:", e)); }
         const isDark = themeSw.checked;
         document.body.classList.toggle("dark", isDark);
         localStorage.setItem("wowDark", isDark);
@@ -940,12 +822,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (streak.last === getYesterday()) {
         streak.count++;
       } else {
-        streak.count = 1;
+        streak.count = 1; 
       }
       streak.last = today;
       localStorage.setItem('wowStreak', JSON.stringify(streak));
     }
     showStreak(streak.count);
+    updateFavoriteButtonState(); 
   }
   function getYesterday() {
     const d = new Date();
@@ -956,9 +839,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!streakBadge) return;
     if (count > 1) {
         streakBadge.innerHTML = `🔥 <span class="streak-count">${count}</span> day streak!`;
-        streakBadge.style.display = 'inline-flex';
+        streakBadge.style.display = 'inline-flex'; 
     } else {
-        streakBadge.textContent = '';
+        streakBadge.textContent = ''; 
         streakBadge.style.display = 'none';
     }
   }
@@ -993,15 +876,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(feedbackSuccess) feedbackSuccess.style.display = 'none';
                 if(feedbackModal) feedbackModal.classList.remove('open');
                 document.body.style.overflow = "";
-                 // Play notification sound on successful submission
-                if (notificationSound) { notificationSound.currentTime = 0; notificationSound.play().catch(e => console.warn("Audio play failed:", e)); }
             }, 2500);
     }, 1500);
   });
 
   if(feedbackBtn) feedbackBtn.addEventListener('click', () => {
-    // Play menu click sound
-    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(feedbackModal) feedbackModal.classList.add('open');
     document.body.style.overflow = "hidden";
     if(feedbackTextarea) feedbackTextarea.value = '';
@@ -1017,15 +896,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if(feedbackTextarea) feedbackTextarea.focus();
   });
   if(closeFeedbackModal) closeFeedbackModal.addEventListener('click', () => {
-    // Play menu click sound
-    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(feedbackModal) feedbackModal.classList.remove('open');
     document.body.style.overflow = "";
   });
 
   function openFavoritesModal() {
-    // Play menu click sound
-    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(favModal) favModal.classList.add('open');
     document.body.style.overflow = "hidden";
     showFavorites();
@@ -1033,15 +908,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (firstFocusable) firstFocusable.focus();
   }
   if(closeFavModal) closeFavModal.addEventListener('click', () => {
-    // Play menu click sound
-    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
     if(favModal) favModal.classList.remove('open');
     document.body.style.overflow = "";
   });
   if (closeFavModalLarge) {
     closeFavModalLarge.addEventListener('click', () => {
-        // Play menu click sound
-        if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
         if(favModal) favModal.classList.remove('open');
         document.body.style.overflow = "";
     });
@@ -1054,7 +925,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? favs.map((q, idx) => `
         <div class="fav-quote" data-index="${idx}">
           <p>${q.text}</p>
-          <p class="author">${q.author ? `&#8213; ${q.author}` : ''}</p>
+          <p class="author">${q.author ? `&#8213; ${q.author}` : ''}</p> {/* q.author is clean here */}
           <div class="fav-actions">
             <button class="fav-action-btn remove-fav-btn" title="Remove from Favorites" aria-label="Remove quote by ${q.author || 'Unknown'} from favorites"><i class="fa-solid fa-trash"></i></button>
             <button class="fav-action-btn copy-fav-btn" title="Copy Quote" aria-label="Copy quote by ${q.author || 'Unknown'}"><i class="fa-solid fa-copy"></i></button>
@@ -1066,44 +937,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
       favQuotesList.querySelectorAll('.remove-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            // Play menu click sound (default for these actions)
-            if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
             const index = parseInt(this.closest('.fav-quote').dataset.index);
             removeFavorite(index);
         });
       });
 
+      // FIX for Copy from Favorites
       favQuotesList.querySelectorAll('.copy-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-             // Play share/copy sound
-            if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
             const quoteDiv = this.closest('.fav-quote');
             const index = parseInt(quoteDiv.dataset.index);
             const currentFavs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
             const favoriteQuoteObject = currentFavs[index];
 
             if (favoriteQuoteObject) {
-                copyFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author, this);
+                const text = favoriteQuoteObject.text; 
+                const cleanAuthor = favoriteQuoteObject.author; // Guaranteed clean from stored object
+                copyFavorite(text, cleanAuthor, this); // Pass clean author
             } else {
-                 const displayedText = quoteDiv.querySelector('p:first-child').textContent;
-                 const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
-                 copyFavorite(displayedText, displayedAuthor, this);
+                console.error("Could not find favorite quote object for copying at index:", index);
+                // Fallback or error message
+                const displayedText = quoteDiv.querySelector('p:first-child').textContent;
+                const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
+                copyFavorite(displayedText, displayedAuthor, this);
             }
         });
       });
 
       favQuotesList.querySelectorAll('.share-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            // Play share/copy sound
-            if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
             const quoteDiv = this.closest('.fav-quote');
             const index = parseInt(quoteDiv.dataset.index);
             const currentFavs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
             const favoriteQuoteObject = currentFavs[index];
 
             if (favoriteQuoteObject) {
-                shareFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author);
+                shareFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author); // Use clean author
             } else {
+                 console.error("Could not find favorite quote object for sharing at index:", index);
                  const displayedText = quoteDiv.querySelector('p:first-child').textContent;
                  const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
                  shareFavorite(displayedText, displayedAuthor);
@@ -1116,32 +987,33 @@ document.addEventListener("DOMContentLoaded", () => {
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    showFavorites();
-    updateFavoriteButtonState();
+    showFavorites(); 
+    updateFavoriteButtonState(); 
   };
 
+  // copyFavorite now expects a clean author name
   window.copyFavorite = function(text, cleanAuthor, buttonElement) {
     const textToCopy = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
         if(buttonElement){
-            const originalIconHTML = buttonElement.innerHTML;
+            const originalIconHTML = buttonElement.innerHTML; 
             buttonElement.innerHTML = '<i class="fa-solid fa-check" style="color: var(--green-accent);"></i>';
             setTimeout(() => { buttonElement.innerHTML = originalIconHTML; }, 1200);
         }
     }).catch(err => console.error("Copying favorite failed:", err));
   };
 
+  // shareFavorite now expects a clean author name
   window.shareFavorite = function(text, cleanAuthor) {
     const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     if (navigator.share) {
       navigator.share({ title: `Quote by ${cleanAuthor || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
         .catch(err => {
-            if (err.name !== 'AbortError') {
+            if (err.name !== 'AbortError') { 
                 console.error("Sharing favorite failed:", err);
             }
         });
-    } else {
-      // Fallback to copy if Web Share API is not available
+    } else { 
       navigator.clipboard.writeText(shareText).then(() => alert("Quote copied! You can now paste it to share."))
                          .catch(() => alert("Could not copy quote. Please share manually."));
     }
@@ -1153,11 +1025,7 @@ document.addEventListener("DOMContentLoaded", () => {
       openModals.forEach(modal => {
         modal.classList.remove("open");
       });
-      if (quoteImagePreviewContainer && quoteImagePreviewContainer.style.display === 'flex') {
-        closeImagePreview();
-      }
-      document.body.style.overflow = "";
-
+      document.body.style.overflow = ""; 
       if (shareMenu && shareMenu.classList.contains("open")) {
           shareMenu.classList.remove("open");
       }
@@ -1170,232 +1038,16 @@ document.addEventListener("DOMContentLoaded", () => {
     usage[cat] = (usage[cat] || 0) + 1;
     localStorage.setItem('catUsage', JSON.stringify(usage));
   }
-  function getMostUsedCategory() {
+  function getMostUsedCategory() { 
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
-    if (Object.keys(usage).length === 0) return null;
+    if (Object.keys(usage).length === 0) return null; 
     const sortedUsage = Object.entries(usage).sort(([,a],[,b]) => b-a);
     return sortedUsage[0][0];
   }
 
-  function requestNotificationPermission() { /* console.log("Placeholder: Request Notification Permission"); */ }
-  function sendDailyQuoteNotification() { /* console.log("Placeholder: Send Daily Quote Notification"); */ }
-  function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); }
-
-
-  // --- Image Generation Feature Logic ---
-
-  // Function to adjust font size to fit the container
-  function adjustFontSizeForImage() {
-      const container = quoteImageContent; // The square div
-      const textElement = imageQuoteText;
-      const authorElement = imageQuoteAuthor;
-      const watermarkElement = imageWatermark;
-
-      // Reset font sizes to a large value to start
-      textElement.style.fontSize = '40px'; // Start large
-      authorElement.style.fontSize = '24px'; // Start large
-
-      // Temporarily make elements visible for measurement if they are hidden
-      const originalContainerDisplay = container.style.display;
-      const originalTextDisplay = textElement.style.display;
-      const originalAuthorDisplay = authorElement.style.display;
-      const originalWatermarkDisplay = watermarkElement.style.display;
-
-      container.style.display = 'flex'; // Ensure container is flex for centering
-      textElement.style.display = 'block';
-      if (lastQuote && lastQuote.author) {
-          authorElement.style.display = 'block';
-      } else {
-          authorElement.style.display = 'none';
-      }
-      watermarkElement.style.display = 'block'; // Ensure watermark is visible for capture
-
-      // Use a loop to reduce font size until content fits
-      let textFontSize = parseInt(getComputedStyle(textElement).fontSize);
-      let authorFontSize = parseInt(getComputedStyle(authorElement).fontSize);
-      const minTextFontSize = 14; // Minimum readable size
-      const minAuthorFontSize = 10; // Minimum readable size
-      const containerHeight = container.clientHeight;
-      const padding = parseInt(getComputedStyle(container).paddingTop) + parseInt(getComputedStyle(container).paddingBottom);
-      const availableHeight = containerHeight - padding;
-
-      let isOverflowing = true;
-      let iterations = 0;
-      const maxIterations = 50; // Prevent infinite loops
-
-      while (isOverflowing && iterations < maxIterations) {
-          const contentHeight = textElement.scrollHeight + authorElement.scrollHeight; // Sum of scroll heights
-
-          if (contentHeight > availableHeight && (textFontSize > minTextFontSize || authorFontSize > minAuthorFontSize)) {
-              // Reduce font size
-              if (textFontSize > minTextFontSize) textFontSize -= 1;
-              if (authorFontSize > minAuthorFontSize) authorFontSize -= 1;
-
-              textElement.style.fontSize = textFontSize + 'px';
-              authorElement.style.fontSize = authorFontSize + 'px';
-
-              // Re-check height in the next iteration
-              isOverflowing = true;
-          } else {
-              isOverflowing = false; // Content fits or minimum size reached
-          }
-          iterations++;
-      }
-
-      // Restore original display properties if they were changed
-      // No need to restore display: 'none' if we always want them visible for html2canvas
-      // container.style.display = originalContainerDisplay;
-      // textElement.style.display = originalTextDisplay;
-      // authorElement.style.display = originalAuthorDisplay;
-      // watermarkElement.style.display = originalWatermarkDisplay;
-
-      console.log(`Font size adjusted: Text ${textFontSize}px, Author ${authorFontSize}px. Iterations: ${iterations}`);
-  }
-
-
-  if (generateImageShareOption) {
-    generateImageShareOption.addEventListener('click', () => {
-      // Play share/copy sound
-      if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
-
-      if (!lastQuote || !lastQuote.text) {
-        alert("Please generate a quote first!");
-        return;
-      }
-
-      // Set text content for the image preview
-      imageQuoteText.textContent = lastQuote.text;
-      if (lastQuote.author) {
-        imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
-        imageQuoteAuthor.style.display = 'block';
-      } else {
-        imageQuoteAuthor.textContent = '';
-        imageQuoteAuthor.style.display = 'none';
-      }
-
-      // Show the image preview container
-      if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden'; // Prevent scrolling
-
-      // Disable buttons while generating
-      downloadImageBtn.disabled = true;
-      shareGeneratedImageBtn.disabled = true;
-
-      // Wait a moment for DOM to update and styles to apply, then adjust font size and capture
-      setTimeout(() => {
-          adjustFontSizeForImage(); // Adjust font size before capturing
-
-          // Capture the quoteImageContent div
-          html2canvas(quoteImageContent, {
-              allowTaint: true,
-              useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Get background from the content div
-              scale: 2, // Increase scale for better resolution
-              logging: false
-          }).then(canvas => {
-              currentCanvas = canvas; // Store the generated canvas
-
-              // Enable buttons after generation
-              downloadImageBtn.disabled = false;
-              shareGeneratedImageBtn.disabled = false;
-
-          }).catch(err => {
-              console.error("Error generating image with html2canvas:", err);
-              alert("Sorry, couldn't generate the image. Please try again.");
-              closeImagePreview(); // Close on error
-          });
-      }, 100); // Small delay to ensure DOM is ready
-    });
-  }
-
-  function closeImagePreview() {
-    // Play menu click sound
-    if (menuClickSound) { menuClickSound.currentTime = 0; menuClickSound.play().catch(e => console.warn("Audio play failed:", e)); }
-    if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
-    document.body.style.overflow = ''; // Restore scrolling
-    currentCanvas = null; // Clear the stored canvas
-  }
-
-  if (closeImagePreviewBtn) {
-    closeImagePreviewBtn.addEventListener('click', closeImagePreview);
-  }
-
-  if (downloadImageBtn) {
-    downloadImageBtn.addEventListener('click', () => {
-      // Play download sound
-      if (downloadSound) { downloadSound.currentTime = 0; downloadSound.play().catch(e => console.warn("Audio play failed:", e)); }
-      if (!currentCanvas) {
-          alert("Image not generated yet.");
-          return;
-      }
-      const imageURL = currentCanvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = imageURL;
-      const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'Unknown';
-      const quoteStartForFile = lastQuote.text.substring(0,15).replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-  }
-
-  if (shareGeneratedImageBtn) {
-    shareGeneratedImageBtn.addEventListener('click', async () => {
-      // Play share/copy sound
-      if (shareCopySound) { shareCopySound.currentTime = 0; shareCopySound.play().catch(e => console.warn("Audio play failed:", e)); }
-      if (!currentCanvas) {
-          alert("Image not generated yet.");
-          return;
-      }
-
-      // Check if Web Share API supports files
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [] })) {
-        currentCanvas.toBlob(async (blob) => {
-          if (!blob) {
-              alert("Error creating image blob for sharing.");
-              return;
-          }
-          const authorName = lastQuote.author || 'Unknown';
-          const filesArray = [
-            new File([blob], `WOW_Quote_${authorName}.png`, {
-              type: 'image/png',
-              lastModified: new Date().getTime()
-            })
-          ];
-          const shareData = {
-            files: filesArray,
-            title: `Quote by ${authorName} - Words of Wisdom`,
-            text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
-          };
-          try {
-            // Check if sharing files is actually possible before calling share
-            if (navigator.canShare(shareData)) {
-                await navigator.share(shareData);
-                console.log('Image shared successfully');
-            } else {
-                 console.warn('Cannot share files, falling back to text/URL share.');
-                 // Fallback to sharing text and URL if file sharing is not supported
-                 await navigator.share({
-                     title: `Quote by ${authorName} - Words of Wisdom`,
-                     text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
-                     url: window.location.href
-                 });
-                 console.log('Shared text content and URL as fallback.');
-            }
-          } catch (err) {
-            if (err.name !== 'AbortError') { // Ignore user cancelling share
-                console.error('Error sharing image:', err);
-                alert('Sharing failed. You can try downloading the image instead.');
-            }
-          }
-        }, 'image/png');
-      } else {
-        // Fallback for browsers that don't support Web Share API with files
-        alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
-      }
-    });
-  }
+  function requestNotificationPermission() { /* Placeholder */ }
+  function sendDailyQuoteNotification() { /* Placeholder */ }
+  function scheduleDailyNotification() { /* Placeholder */ }
 
 
   (async function initApp(){
@@ -1407,14 +1059,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     await loadCategoriesAndQuotes();
-    renderMenu();
+    renderMenu(); 
 
-    let initialCategory = "inspiration";
+    let initialCategory = "inspiration"; 
     const lastAutoCat = localStorage.getItem("lastAutoSelectedCategory");
-    const todayStrInit = new Date().toISOString().slice(0,10);
-    const lastBannerDateInit = localStorage.getItem("wowBannerDate");
+    const todayStr = new Date().toISOString().slice(0,10);
+    const lastBannerDate = localStorage.getItem("wowBannerDate");
 
-    if (lastBannerDateInit === todayStrInit && lastAutoCat) {
+    if (lastBannerDate === todayStr && lastAutoCat) { 
         initialCategory = lastAutoCat;
         console.log(`Initial category from today's banner: ${initialCategory}`);
     } else {
@@ -1430,12 +1082,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
 
 
-    showRotatingBanner();
-
-    // Display the initial quote after categories and quotes are loaded
-    // This ensures a quote is always attempted to be displayed after init.
-    console.log(`Attempting to display initial quote for category: ${selectedCat}`);
-    displayQuote(); // Always call displayQuote after init
+    showRotatingBanner(); 
+    
+    if (!lastQuote || !lastQuote.text) { 
+        console.log(`Banner didn't set a quote, or using stored category. Displaying quote for: ${selectedCat}`);
+        displayQuote();
+    }
 
 
     if ((!lastQuote || !lastQuote.text) && qText && qText.textContent.includes("Loading Wisdom")) {
@@ -1444,17 +1096,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
-    showStreak(streak.count);
-    updateFavoriteButtonState();
+    showStreak(streak.count); 
+    updateFavoriteButtonState(); 
 
     requestNotificationPermission();
     scheduleDailyNotification();
     console.log("App initialization complete.");
-
-    // Play app load sound after everything is initialized and the first quote is displayed
-    // Add a small delay to ensure the user sees the initial quote first
-    setTimeout(() => {
-        if (appLoadSound) { appLoadSound.currentTime = 0; appLoadSound.play().catch(e => console.warn("Audio play failed:", e)); }
-    }, 500); // Adjust delay as needed
   })();
 });
