@@ -27,19 +27,19 @@
   --toggle-shadow: 0 2px 8px rgba(124,93,240,0.08);
   --success-green: #28a745;
   --image-square-size: 480px; /* Define a variable for the square size */
-  --image-bg-light: #7c5df0; /* Default background for image - light theme */
-  --image-text-light: #ffffff; /* Default text for image - light theme */
-  --image-author-light: #e0e0ff; /* Default author/watermark for image - light theme */
-  --image-bg-dark: #2c2c40; /* Default background for image - dark theme */
-  --image-text-dark: #f0f0f8; /* Default text for image - dark theme */
-  --image-author-dark: #b0b0c0; /* Default author/watermark for image - dark theme */
+  --image-bg-light: #7c5df0; 
+  --image-text-light: #ffffff; 
+  --image-author-light: #e0e0ff; 
+  --image-bg-dark: #2c2c40; 
+  --image-text-dark: #f0f0f8; 
+  --image-author-dark: #b0b0c0; 
 }
 
 body.dark {
   --bg: #181826;
   --card: #232336;
   --text: #f8f8fa;
-  --light: #fff; /* This seems to be general light text in dark mode, not image specific */
+  --light: #fff; 
   --primary: #b39ddb;
   --sh-light: rgba(60,60,60,0.3);
   --sh-dark: rgba(0,0,0,0.7);
@@ -97,7 +97,7 @@ header h1 {
 }
 
 .streak-badge {
-  color: var(--orange); /* Define --orange if not already or use a specific color */
+  color: var(--orange); 
   font-weight: bold;
   font-size: 0.9rem;
   letter-spacing: 0.01em;
@@ -362,7 +362,7 @@ main {
   color: var(--menu-text);
 }
 .suggestions-list li { padding: 0.5rem 1rem; cursor: pointer; color: var(--primary); transition: background 0.2s;}
-.suggestions-list li:hover { background: rgba(124,93,240,0.15); color: #fff;} /* This should be var(--menu-hover) or similar */
+.suggestions-list li:hover { background: rgba(124,93,240,0.15); color: #fff;} 
 
 /* Action buttons and round touch effect */
 .action-buttons {
@@ -381,7 +381,7 @@ main {
 .generate-btn:active,
 .feedback-btn:active,
 .home-btn:active {
-  background: rgba(124,93,240,0.13); /* Use a variable for this color if possible */
+  background: rgba(124,93,240,0.13); 
 }
 .action-buttons .icon-btn {
   margin: 0 2.7rem;
@@ -389,7 +389,7 @@ main {
 .action-buttons .icon-btn.undo-btn {
   margin: 0 1.1rem 0 0;
   font-size: 1.3rem;
-  color: #b39ddb; /* Consider using a variable */
+  color: #b39ddb; 
   transition: color .2s, transform .2s;
   cursor: pointer;
 }
@@ -443,12 +443,12 @@ main {
 .share-option:hover, .share-option:focus {
   background: var(--green-accent);
   color: #fff;
-  box-shadow: 0 0 0 2px var(--green-accent)aa; /* Check 'aa' for opacity */
+  box-shadow: 0 0 0 2px var(--green-accent)aa; 
 }
 body.dark .share-option:hover, body.dark .share-option:focus {
   background: var(--gold);
   color: #222;
-  box-shadow: 0 0 0 2px #ffd700aa; /* Check 'aa' for opacity */
+  box-shadow: 0 0 0 2px #ffd700aa; 
 }
 
 /* Icon buttons */
@@ -665,7 +665,7 @@ body.dark .magic-wand-icon.animated {
 
 .embossed-button:hover,
 .embossed-button:focus {
-  background: var(--primary-hover, #6a46e0); /* Define --primary-hover or use a specific color */
+  background: var(--primary-hover, #6a46e0); 
   color: #fff;
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.4),
@@ -676,7 +676,7 @@ body.dark .magic-wand-icon.animated {
 }
 
 .embossed-button:active {
-  background: var(--primary-active, #5e3cc0); /* Define --primary-active or use a specific color */
+  background: var(--primary-active, #5e3cc0); 
   box-shadow:
     inset 2px 2px 5px rgba(0, 0, 0, 0.3),
     inset -2px -2px 5px rgba(255, 255, 255, 0.2);
@@ -697,7 +697,7 @@ body.dark .embossed-button {
 
 body.dark .embossed-button:hover,
 body.dark .embossed-button:focus {
-  background: var(--primary-hover-dark, #c7aefb); /* Define or use specific color */
+  background: var(--primary-hover-dark, #c7aefb); 
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.15),
     inset -1px -1px 3px rgba(0, 0, 0, 0.5),
@@ -705,7 +705,7 @@ body.dark .embossed-button:focus {
     -2px -2px 6px rgba(255,255,255,0.07);
 }
 body.dark .embossed-button:active {
-  background: var(--primary-active-dark, #d0bcfc); /* Define or use specific color */
+  background: var(--primary-active-dark, #d0bcfc); 
   box-shadow:
     inset 2px 2px 5px rgba(0, 0, 0, 0.5),
     inset -2px -2px 5px rgba(255, 255, 255, 0.1);
@@ -755,7 +755,7 @@ body.dark #submitQuoteModal h2
   border-color: var(--primary) !important;
 }
 body.dark #submitQuoteModal input::placeholder {
-  color: var(--light); /* This is general light text, not image specific */
+  color: var(--light); 
 }
 
 
@@ -831,7 +831,7 @@ body.dark .feedback-modal-content
   border-color: var(--primary) !important;
 }
 body.dark #feedbackTextarea::placeholder {
-    color: var(--light); /* This is general light text, not image specific */
+    color: var(--light); 
 }
 
 
@@ -864,23 +864,22 @@ footer .author-link:focus {
 }
 
 /* Styles for Image Preview Modal (Container for the entire modal) */
-.image-modal { /* This is #quoteImagePreviewContainer in your HTML */
-  display: none; /* Initially hidden, shown by JS */
+.image-modal { 
+  display: none; 
   position: fixed;
-  inset: 0;                   /* shorthand for top/right/bottom/left: 0 */
-  background: rgba(0,0,0,0.75); /* Darker backdrop for better focus */
-  padding: 20px; /* Padding around the central content */
+  inset: 0;                   
+  background: rgba(0,0,0,0.75); 
+  padding: 20px; 
   justify-content: center;
   align-items: center;
-  z-index: 3000; /* High z-index */
-  overflow-y: auto; /* Allow scrolling if content is too tall for viewport */
+  z-index: 3000; 
+  overflow-y: auto; 
 }
 
 /* Wrapper inside the modal, around the image content and buttons */
-/* This is #quoteImageWrapper in your HTML */
 #quoteImageWrapper {
-  background: var(--card); /* Background of the modal's content box */
-  color: var(--text);      /* Text color for buttons etc. *inside* this wrapper, but not for the image itself */
+  background: var(--card); 
+  color: var(--text);      
   padding: 20px;
   border-radius: 12px;
   text-align: center;
@@ -888,10 +887,10 @@ footer .author-link:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: calc(var(--image-square-size) + 40px); /* image size + its own padding */
+  max-width: calc(var(--image-square-size) + 40px); 
 }
 body.dark #quoteImageWrapper {
-  background: var(--card); /* Dark theme background for the modal's content box */
+  background: var(--card); 
   color: var(--text);
   box-shadow: 0 8px 25px rgba(0,0,0,0.5);
 }
@@ -899,20 +898,20 @@ body.dark #quoteImageWrapper {
 
 /* The actual content to be captured by html2canvas */
 #quoteImageContent {
-  background: var(--image-bg-light); /* Specific background for the generated image */
-  color: var(--image-text-light);       /* Specific text color for the generated image */
+  background: var(--image-bg-light); 
+  color: var(--image-text-light);       
   width: var(--image-square-size);
   height: var(--image-square-size);
-  padding: 35px; /* Generous padding inside the image */
-  border-radius: 10px; /* Rounded corners for the image itself */
+  padding: 35px; 
+  border-radius: 10px; 
   display: flex;
   flex-direction: column;
   justify-content: center; /* Vertically center content blocks */
   align-items: center;     /* Horizontally center content blocks */
   text-align: center;
-  position: relative;      /* For absolute positioning of watermark */
-  box-sizing: border-box;  /* Ensures padding is included in width/height */
-  overflow: hidden;        /* Clip any content that might overflow due to unforeseen issues */
+  position: relative;      
+  box-sizing: border-box;  
+  overflow: hidden;        
 }
 body.dark #quoteImageContent {
   background: var(--image-bg-dark);
@@ -922,28 +921,29 @@ body.dark #quoteImageContent {
 /* Text of the quote in the image */
 #imageQuoteText {
   font-family: 'Playfair Display', serif;
-  /* font-size is set by JavaScript */
-  line-height: 1.4;
-  width: 100%; /* Take full width within #quoteImageContent's padding */
-  word-wrap: break-word; /* Allow long words to break and wrap */
-  overflow-wrap: break-word; /* Standard property for word wrapping */
+  /* font-size is set by JavaScript in adjustTextToFit */
+  line-height: 1.4; /* Good for readability */
+  width: 100%; 
+  word-wrap: break-word; 
+  overflow-wrap: break-word; 
   box-sizing: border-box;
   text-align: center;
   margin-bottom: 15px; /* Space between quote and author */
-  /* Fixed font-size, max-height, overflow-y, padding, max-width are REMOVED */
+  /* max-height, overflow-y, etc. are handled by JS logic */
 }
 
 /* Author text in the image */
 #imageQuoteAuthor {
   font-family: 'Poppins', sans-serif;
-  font-size: 18px; /* Base size, can be made dynamic if complex */
-  color: var(--image-author-light); /* Specific color for author in image */
-  margin-top: auto; /* Pushes author towards bottom if quote text is short */
+  font-size: 18px; 
+  color: var(--image-author-light); 
+  /* MODIFICATION: Changed margin-top for better flex centering */
+  margin-top: 15px; /* Was: margin-top: auto; */
   padding: 10px 5px 5px;
   font-style: italic;
   text-align: center;
   width: 100%;
-  flex-shrink: 0; /* Prevent author from shrinking if quote is very long */
+  flex-shrink: 0; 
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal; /* Allow author to wrap if very long */
@@ -956,11 +956,11 @@ body.dark #imageQuoteAuthor {
 #imageWatermark {
   font-family: 'Poppins', sans-serif;
   font-size: 14px;
-  color: var(--image-author-light); /* Use a subtle color, same as author or lighter */
+  color: var(--image-author-light); 
   opacity: 0.6;
   position: absolute;
-  bottom: 15px; /* Position from bottom of #quoteImageContent */
-  right: 20px;  /* Position from right of #quoteImageContent */
+  bottom: 15px; 
+  right: 20px;  
   text-align: right;
 }
 body.dark #imageWatermark {
@@ -980,10 +980,10 @@ body.dark #imageWatermark {
   font-size: 1.3rem;
   width: 2.8rem;
   height: 2.8rem;
-  color: var(--primary); /* Use main app's primary color for buttons */
+  color: var(--primary); 
 }
 .image-buttons-container .icon-btn:disabled {
-  color: var(--light); /* Muted color for disabled buttons */
+  color: var(--light); 
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -1022,14 +1022,13 @@ body.dark #imageWatermark {
 
   /* Adjust image square size for smaller screens */
   :root {
-    --image-square-size: 85vw; /* Make square size responsive for smaller screens */
+    --image-square-size: 85vw; 
   }
   #quoteImageContent {
-    padding: 25px; /* Slightly reduce padding for smaller image */
+    padding: 25px; 
   }
-  /* Base font sizes for image text might need slight reduction if initial JS sizes are too large */
   #imageQuoteAuthor {
-    font-size: 16px;
+    font-size: 16px; /* Slightly smaller author font on smaller image */
   }
   #imageWatermark {
     font-size: 12px;
@@ -1061,7 +1060,6 @@ body.dark #imageWatermark {
     .toggle-wrap .theme-toggle input:checked + .slider:before {
         transform: translateX(18px);
     }
-    /* Further reduce image square size for very small screens */
     :root {
       --image-square-size: 80vw;
     }
@@ -1078,11 +1076,11 @@ body.dark #imageWatermark {
     }
 }
 
-/* High contrast mode (basic example, might need more specific adjustments) */
+/* High contrast mode */
 @media (prefers-contrast: more) {
   body { background: #000; color: #fff; }
-  .quote-box, var(--card) { background: #111; } /* Adjust card variable directly or specific elements */
+  .quote-box, :root { --card: #111; } 
   #quoteImageContent { background: #000; color: #fff; border: 2px solid #fff; }
   #imageQuoteText, #imageQuoteAuthor, #imageWatermark { color: #fff; }
-  var(--primary) { color: #0FF; } /* Example: Bright cyan for primary actions */
+  :root { --primary: #0FF; } 
 }
