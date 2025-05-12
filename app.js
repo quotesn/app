@@ -50,13 +50,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
   const generateImageShareOption = document.getElementById('generateImageShareOption');
 
-  // NEW: DOM references for Color Pickers
+  // DOM references for Color Pickers
   const imageColorControls = document.getElementById('imageColorControls');
   const imageBgColorPicker = document.getElementById('imageBgColorPicker');
   const imageTextColorPicker = document.getElementById('imageTextColorPicker');
 
 
-  // Global variables from your original code
+  // Global variables
   let categories = [];
   let quotes = {};
   let authors = {};
@@ -71,8 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentCanvas = null;
 
   // Default colors for the image in light theme (from CSS variables)
+  // Ensure CSS is loaded before this script runs if not using DOMContentLoaded for this part
   const defaultLightImageBg = getComputedStyle(document.documentElement).getPropertyValue('--default-image-bg-picker').trim();
   const defaultLightImageText = getComputedStyle(document.documentElement).getPropertyValue('--default-image-text-picker').trim();
+  const defaultLightImageAuthor = getComputedStyle(document.documentElement).getPropertyValue('--image-author-light').trim();
 
 
   // Banner themes and styles (from your original code)
@@ -825,18 +827,13 @@ function showRotatingBanner() {
         const isDark = themeSw.checked;
         document.body.classList.toggle("dark", isDark);
         localStorage.setItem("wowDark", isDark);
-        // NEW: Update color picker visibility when theme changes
-        if (imageColorControls) {
-            imageColorControls.style.display = isDark ? 'none' : 'flex';
-        }
+        // Visibility of color controls is now handled by CSS via `body.dark`
     });
-    // Initial check
+    // Initial theme setup
     const isDark = localStorage.getItem("wowDark") === "true";
     document.body.classList.toggle("dark", isDark);
     themeSw.checked = isDark;
-    if (imageColorControls) { // Ensure it exists before trying to style
-        imageColorControls.style.display = isDark ? 'none' : 'flex';
-    }
+    // Visibility of color controls is handled by CSS via `body.dark`
   }
 
 
@@ -1156,7 +1153,6 @@ function showRotatingBanner() {
       }
       if(shareMenu) shareMenu.classList.remove("open");
 
-      // Set initial text content
       imageQuoteText.textContent = lastQuote.text;
       if (lastQuote.author) {
         imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
@@ -1166,31 +1162,25 @@ function showRotatingBanner() {
         imageQuoteAuthor.style.display = 'none';
       }
 
-      // Manage visibility of color controls based on theme
+      // Color controls visibility is handled by CSS (body.dark .image-color-controls-container)
+      // We just need to set initial values for the pickers and preview if in light theme.
       const isDarkTheme = document.body.classList.contains('dark');
-      if (imageColorControls) { // Check if element exists
-          imageColorControls.style.display = isDarkTheme ? 'none' : 'flex';
-      }
       
-      // Set initial colors for preview and pickers (if light theme)
       if (!isDarkTheme) {
           quoteImageContent.style.backgroundColor = defaultLightImageBg;
           imageQuoteText.style.color = defaultLightImageText;
-          // Also set author and watermark to their light theme defaults explicitly
-          imageQuoteAuthor.style.color = getComputedStyle(document.documentElement).getPropertyValue('--image-author-light').trim();
-          imageWatermark.style.color = getComputedStyle(document.documentElement).getPropertyValue('--image-author-light').trim();
-
+          imageQuoteAuthor.style.color = defaultLightImageAuthor; // Use fetched default
+          imageWatermark.style.color = defaultLightImageAuthor; // Use fetched default for watermark too
 
           if (imageBgColorPicker) imageBgColorPicker.value = defaultLightImageBg;
           if (imageTextColorPicker) imageTextColorPicker.value = defaultLightImageText;
       } else {
-          // Ensure dark theme styles are applied from CSS if controls are hidden
-          quoteImageContent.style.backgroundColor = ''; // Revert to CSS
-          imageQuoteText.style.color = ''; // Revert to CSS
-          imageQuoteAuthor.style.color = ''; // Revert to CSS
-          imageWatermark.style.color = ''; // Revert to CSS
+          // Ensure styles revert to CSS for dark theme if previously manipulated by light theme pickers
+          quoteImageContent.style.backgroundColor = ''; 
+          imageQuoteText.style.color = '';
+          imageQuoteAuthor.style.color = '';
+          imageWatermark.style.color = '';
       }
-
 
       adjustTextToFit({
           textElement: imageQuoteText,
@@ -1208,7 +1198,6 @@ function showRotatingBanner() {
           html2canvas(quoteImageContent, {
               allowTaint: true,
               useCORS: true,
-              // Ensure html2canvas uses the dynamically set background, not just the initial CSS one
               backgroundColor: quoteImageContent.style.backgroundColor || getComputedStyle(quoteImageContent).backgroundColor, 
               scale: 2, 
               logging: false 
@@ -1225,45 +1214,51 @@ function showRotatingBanner() {
     });
   }
 
-  // NEW: Event listeners for color pickers
+  // Event listeners for color pickers
   if (imageBgColorPicker) {
     imageBgColorPicker.addEventListener('input', (event) => {
-        if (!document.body.classList.contains('dark')) { // Only apply if light theme
+        if (!document.body.classList.contains('dark')) { 
             quoteImageContent.style.backgroundColor = event.target.value;
-            // Regenerate canvas preview immediately
-            if (currentCanvas) generateImagePreviewOnly();
+            if (currentCanvas) generateImagePreviewOnly(); // Regenerate canvas preview
         }
     });
   }
 
   if (imageTextColorPicker) {
     imageTextColorPicker.addEventListener('input', (event) => {
-        if (!document.body.classList.contains('dark')) { // Only apply if light theme
-            imageQuoteText.style.color = event.target.value;
-            // Note: You might want to also change author/watermark if they should match
-            // imageQuoteAuthor.style.color = event.target.value; 
-            // imageWatermark.style.color = event.target.value; 
-            // Regenerate canvas preview immediately
-            if (currentCanvas) generateImagePreviewOnly();
+        if (!document.body.classList.contains('dark')) { 
+            const newTextColor = event.target.value;
+            imageQuoteText.style.color = newTextColor;
+            // Also update author and watermark to a lighter/contrasting version of text or a fixed light color
+            // For simplicity, let's make them a lighter shade of the main text color or a default light color
+            // This is a basic approach; more sophisticated contrast calculation might be needed for arbitrary colors.
+            // For now, let's try setting author/watermark to a generally light color that contrasts with most dark backgrounds
+            // or make it related to the new text color.
+            // If newTextColor is very light, author might become invisible on light backgrounds.
+            // A simple solution: if custom text is very dark, make author light. If custom text is light, make author a bit darker or default.
+            // For now, let's keep author and watermark tied to the --image-author-light CSS var or a derivative of text color
+            imageQuoteAuthor.style.color = defaultLightImageAuthor; // Or derive from newTextColor
+            imageWatermark.style.color = defaultLightImageAuthor; // Or derive from newTextColor
+            
+            if (currentCanvas) generateImagePreviewOnly(); // Regenerate canvas preview
         }
     });
   }
   
-  // NEW: Function to regenerate only the canvas preview without full modal setup
+  // Function to regenerate only the canvas preview without full modal setup
   function generateImagePreviewOnly() {
     if (!quoteImageContent || !html2canvas) return;
     
     downloadImageBtn.disabled = true;
     shareGeneratedImageBtn.disabled = true;
 
-    // Adjust text fit again in case colors changed how it might render (though unlikely for just color)
-     adjustTextToFit({
+     adjustTextToFit({ // Re-adjust text, though color change alone usually doesn't affect fit
         textElement: imageQuoteText,
         containerElement: quoteImageContent,
         authorElement: imageQuoteAuthor
     });
 
-    setTimeout(() => { // Ensure DOM updates before capture
+    setTimeout(() => { 
         html2canvas(quoteImageContent, {
             allowTaint: true,
             useCORS: true,
@@ -1271,14 +1266,13 @@ function showRotatingBanner() {
             scale: 2,
             logging: false
         }).then(canvas => {
-            currentCanvas = canvas; // Update the global canvas object
+            currentCanvas = canvas; 
             downloadImageBtn.disabled = false;
             shareGeneratedImageBtn.disabled = false;
         }).catch(err => {
             console.error("Error re-generating image preview:", err);
-            // Optionally notify user
         });
-    }, 50); // Shorter delay for quick updates
+    }, 50); 
   }
 
 
@@ -1287,7 +1281,6 @@ function showRotatingBanner() {
     document.body.style.overflow = '';
     currentCanvas = null; 
 
-    // Reset styles applied directly by JS to allow CSS to take over again
     quoteImageContent.style.backgroundColor = ''; 
     imageQuoteText.style.color = '';
     imageQuoteAuthor.style.color = '';
