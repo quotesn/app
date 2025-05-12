@@ -1038,7 +1038,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function recordCategoryUse(cat) {
     if (!cat) return;
-    let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
+    let usage = JSON.parse(lo    calStorage.getItem('catUsage') || '{}');
     usage[cat] = (usage[cat] || 0) + 1;
     localStorage.setItem('catUsage', JSON.stringify(usage));
   }
@@ -1072,8 +1072,11 @@ if (generateImageShareOption) {
     }
 
     // 2) show modal
-    quoteImagePreviewContainer.style.display = 'flex';
+    const modal = document.getElementById('quoteImagePreviewContainer');
+    modal.classList.add('open');
     document.body.style.overflow = 'hidden';
+    // …
+
 
     // 3) dynamic font-sizing loop
     // start large and shrink until it fits
@@ -1130,7 +1133,8 @@ if (generateImageShareOption) {
 
 // close helper
 function closeImagePreview() {
-  quoteImagePreviewContainer.style.display = 'none';
+  const modal = document.getElementById('quoteImagePreviewContainer');
+  modal.classList.remove('open');
   document.body.style.overflow = '';
   currentCanvas = null;
 }
