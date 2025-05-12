@@ -978,103 +978,145 @@ footer .author-link:focus-visible {
   text-decoration: underline;
 }
 
-/* Styles for Image Preview Modal - Text Enlargement */
-/* ... (your existing #quoteImagePreviewContainer and #quoteImageWrapper styles) ... */
+/* Styles for Image Preview Modal */
+#quoteImagePreviewContainer {
+  /* display: none; // This is set by default in the HTML/CSS to hide it initially */
+  /* opacity: 0; // This is also set by default for fade-in */
+  /* The .visible class handles making it appear */
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* MODIFIED: Matched background and blur to the generic .modal style */
+  background: rgba(40,30,70,0.25); /* Consistent with .modal */
+  backdrop-filter: blur(3px);      /* Consistent with .modal */
+  -webkit-backdrop-filter: blur(3px);/* Consistent with .modal */
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  transition: opacity 0.3s ease-out, background-color .4s; /* Added ease-out to opacity */
+  /* Initially hidden and transparent, made visible by JS adding .visible class */
+  /* These are effectively the default states before .visible is added */
+   display: none;
+   opacity: 0;
+}
+
+#quoteImagePreviewContainer.visible {
+  display: flex; /* Show the modal */
+  opacity: 1;    /* Fade it in */
+}
+
+
+#quoteImageWrapper {
+  background: var(--card);
+  color: var(--text);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+
+  width: 90vmin;
+  height: 90vmin;
+  max-width: 500px;
+  max-height: 500px;
+  aspect-ratio: 1 / 1;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 35px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+  transition: background .4s, color .4s, box-shadow .4s;
+}
 
 #imageQuoteText {
-  font-family: 'Playfair Display', serif; 
-  /* MODIFIED: Increased font size for better space utilization */
-  font-size: clamp(1.8rem, 7vmin, 2.8rem); 
-  color: var(--text); 
-  margin-bottom: 0.75em; 
-  word-wrap: break-word; 
-  line-height: 1.4; 
-  max-width: 92%; /* Slightly increased from 90% */
+  font-family: 'Playfair Display', serif;
+  color: var(--text);
+  word-wrap: break-word;
+  line-height: 1.4;
+  max-width: 100%;
+  margin-bottom: 0.6em;
   transition: color .4s;
 }
 
 #imageQuoteAuthor {
-  font-family: 'Poppins', sans-serif; 
-  /* MODIFIED: Increased font size */
-  font-size: clamp(1.2rem, 4.5vmin, 2.0rem); 
-  color: var(--light); 
-  margin-bottom: 1.5em; 
-  font-style: italic; 
-  max-width: 92%; /* Slightly increased from 90% */
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+  color: var(--light);
+  font-style: italic;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.2em;
+  margin-bottom: 1.2em;
+  display: block;
   transition: color .4s;
 }
 
 #imageWatermark {
-  font-family: 'Poppins', sans-serif; 
-  font-size: clamp(0.7rem, 2.8vmin, 0.9rem); /* Slightly increased for balance */
-  color: var(--light); 
-  opacity: 0.6; 
-  position: absolute; 
-  bottom: 12px; /* Adjusted from 15px */
-  left: 50%; 
-  transform: translateX(-50%); 
-  padding: 5px; 
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(0.6rem, 2vmin, 0.8rem);
+  color: var(--light);
+  opacity: 0.65;
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px;
   transition: color .4s, opacity .4s;
 }
 
-#quoteImageWrapper { 
-  background: var(--card); 
-  color: var(--text);    
-  border-radius: 12px;    
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
-  
-  width: 90vmin; 
-  height: 90vmin; 
-  max-width: 500px;  
-  max-height: 500px;  
-  aspect-ratio: 1 / 1; 
-  
+.image-preview-actions {
   display: flex;
-  flex-direction: column;
-  justify-content: center; 
-  align-items: center;     
-  text-align: center;        
-  padding: 20px; /* Reduced padding slightly from 25px to give text more room */          
-  position: relative;       
-  overflow: hidden;         
-  margin-bottom: 20px; 
-  transition: background .4s, color .4s, box-shadow .4s;
+  gap: 15px;
+  margin-top: 10px;
 }
 
-/* Responsive Adjustments */
 @media (max-width: 600px) {
-  header { padding: 0 0.8rem; }
-  .header-center-content { gap: 0.3rem; }
-  header h1 { font-size: 1.3rem; }
-  .streak-badge { font-size: 0.75rem; padding: 0.15rem 0.4rem; }
-  .generate-btn { bottom: 6.5rem; width: 4rem; height: 4rem; font-size: 1.7rem; }
-  .action-buttons .icon-btn { margin: 0 1.2rem; }
-  #shareMenu { min-width: auto; flex-wrap: wrap; justify-content: center; } /* Allow share icons to wrap */
-  #shareMenu .share-option { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; }
-  .feedback-btn { bottom: 6rem; right: 1rem; width: 3rem; height: 3rem; font-size: 1.4rem; }
-  
-  #quoteImageWrapper { width: 95vmin; height: 95vmin; padding: 20px; }
-  #imageQuoteText { font-size: clamp(1.1rem, 4.5vmin, 1.6rem); }
-  #imageQuoteAuthor { font-size: clamp(0.8rem, 3vmin, 1.1rem); }
-  #imageWatermark { font-size: clamp(0.5rem, 2vmin, 0.7rem); bottom: 10px; }
-  
-  .image-preview-actions .embossed-button { padding: 0.6rem; }
-  .image-preview-actions .embossed-button i { font-size: 1.2rem; }
+  #quoteImageWrapper {
+    width: 92vmin;
+    height: 92vmin;
+    padding: 25px;
+  }
+   #imageQuoteAuthor {
+    font-size: clamp(0.75rem, 2.4vw, 1rem);
+  }
+  #imageWatermark {
+    font-size: clamp(0.55rem, 1.8vmin, 0.75rem);
+    bottom: 12px;
+  }
 }
 
-@media (max-width: 380px) { 
-    header h1 { font-size: 1.1rem; }
-    .streak-badge { display: none; }
-    .home-btn { width: 2.2rem; height: 2.2rem; font-size: 1.1rem; }
-    .toggle-wrap .theme-toggle { width: 40px; height: 22px; }
-    .toggle-wrap .slider:before { height: 18px; width: 18px; }
-    .toggle-wrap .theme-toggle input:checked + .slider:before { transform: translateX(18px); }
-    .action-buttons .icon-btn { margin: 0 0.8rem; } 
-    .generate-btn { font-size: 1.5rem; width: 3.8rem; height: 3.8rem; }
-    .image-preview-actions { gap: 8px; } /* Reduce gap for very small screens */
-    .image-preview-actions .embossed-button { padding: 0.5rem; }
-    .image-preview-actions .embossed-button i { font-size: 1.1rem; }
+@media (max-width: 380px) {
+  #quoteImageWrapper {
+    width: 95vmin;
+    height: 95vmin;
+    padding: 20px;
+  }
+  #imageQuoteText {
+    line-height: 1.35;
+  }
+   #imageQuoteAuthor {
+    font-size: clamp(0.7rem, 2.2vw, 0.9rem);
+  }
+  #imageWatermark {
+    font-size: clamp(0.5rem, 1.6vmin, 0.7rem);
+    bottom: 10px;
+  }
+  .image-preview-actions {
+    gap: 10px;
+  }
 }
+
+/* ... 
 
 
 /* High contrast mode (accessibility) - Basic example */
