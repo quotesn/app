@@ -986,3 +986,107 @@ footer .author-link:focus {
   body { background: #000; color: #fff; }
   .quote-box { background: #222; }
 }
+
+
+/* ===================================================================
+   Image-share modal & square-canvas styling (enhancements)
+   =================================================================== */
+
+/* Overlay for image preview */
+#quoteImagePreviewContainer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+#quoteImagePreviewContainer.active {
+  display: flex;
+}
+
+/* Wrapper card */
+#quoteImageWrapper {
+  background: var(--card);
+  color: var(--text);
+  width: 90vw;
+  max-width: 520px;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Inner content container */
+#quoteImageContent {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Quote text */
+#imageQuoteText {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(16px, 5vw, 28px);
+  line-height: 1.4;
+  word-wrap: break-word;
+  margin-bottom: 1rem;
+}
+
+/* Author */
+#imageQuoteAuthor {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(14px, 3.5vw, 20px);
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+/* Watermark */
+#imageWatermark {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: var(--light);
+  opacity: 0.7;
+  align-self: flex-end;
+}
+
+/* Control buttons */
+.image-preview-controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.image-preview-controls button {
+  background: var(--card);
+  color: var(--primary);
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--sh-dark);
+  transition: background 0.2s;
+}
+.image-preview-controls button:hover {
+  background: var(--menu-hover);
+}
