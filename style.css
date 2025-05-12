@@ -963,9 +963,8 @@ footer .author-link:focus {
   padding: 20px; 
   border-radius: 12px;   
   text-align: center;
-  /* max-width is removed to let content define width up to var(--image-square-size) via quoteImageContent */
-  width: auto; /* Allow width to be determined by its content (the square) */
-  min-width: calc(var(--image-square-size) + 40px); /* Ensure wrapper is at least as wide as the square + padding */
+  width: auto;
+  min-width: calc(var(--image-square-size) + 40px);
   position: relative;     
   box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
   font-family: 'Poppins', sans-serif; 
@@ -977,19 +976,18 @@ footer .author-link:focus {
 #quoteImageContent {
   background: var(--card); 
   color: var(--text);
-  width: var(--image-square-size); /* Fixed width for the square */
-  height: var(--image-square-size); /* Fixed height for the square */
+  width: var(--image-square-size); 
+  height: var(--image-square-size); 
   padding: 25px; 
   border-radius: 10px; 
   text-align: center; 
   position: relative; 
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Vertically center content */
-  align-items: center; /* Horizontally center content */
-  overflow: hidden; /* Hide overflow if text is too long */
+  justify-content: center; 
+  align-items: center; 
+  overflow: hidden;
 }
-
 
 body.dark #quoteImageWrapper {
   box-shadow: 0 8px 25px rgba(0,0,0,0.4); 
@@ -999,29 +997,31 @@ body.dark #quoteImageContent {
   color: var(--text);
 }
 
-
 #imageQuoteText {
   font-family: 'Playfair Display', serif; 
   font-size: 28px; 
   color: var(--text); 
   margin-bottom: 20px; 
   word-wrap: break-word; 
-  line-height: 1.4; /* Adjusted for better spacing in a square */
+  line-height: 1.4; 
   text-align: center; 
-  max-height: 60%; /* Limit height to prevent overflow with long quotes */
-  overflow-y: auto; /* Allow scroll for very long text if needed, though ideally font size adjusts */
+  max-height: 60%; 
+  overflow-y: auto;
+  padding: 0 10px;
+  max-width: 90%;
 }
 
 #imageQuoteAuthor {
   font-family: 'Poppins', sans-serif; 
   font-size: 20px; 
   color: var(--light); 
-  margin-top: auto; /* Pushes author towards the bottom if quote is short */
-  padding-top: 15px; /* Space between quote and author */
-  margin-bottom: 30px; /* Space before watermark if author is present */
+  margin-top: auto; 
+  padding-top: 15px; 
+  margin-bottom: 30px; 
   font-style: italic; 
   text-align: center; 
-  width: 100%; /* Ensure it takes full width for centering */
+  width: 100%;
+  padding: 0 10px;
 }
 
 #imageWatermark {
@@ -1050,10 +1050,9 @@ body.dark #imageWatermark {
 }
 
 #quoteImageWrapper .embossed-button {
-    padding: 0.6rem 1rem; 
-    font-size: 0.9rem;    
+  padding: 0.6rem 1rem; 
+  font-size: 0.9rem;    
 }
-
 
 /* High contrast mode */
 @media (prefers-contrast: more) {
