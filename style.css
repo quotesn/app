@@ -3,7 +3,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  /* transition: .3s; Global transitions can impact performance. Apply selectively. */
+  transition: .3s;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -11,43 +11,39 @@
   --bg: #f0f0f3;
   --card: #f0f0f3;
   --text: #222;
-  --light: #555; /* Lighter text, often for subtext or placeholders */
+  --light: #555;
   --primary: #7c5df0;
   --gold: #FFD700;
-  --green-accent: #43b581;
+  --green-accent: #43b581; /* Added for success messages and fav animation */
   --glow: rgba(124,93,240,0.6);
   --sh-light: rgba(255,255,255,0.7);
   --sh-dark: rgba(136,165,191,0.2);
   --menu-bg: #fff;
   --menu-text: #222;
-  --menu-hover: #f3e5f5; /* Lighter purple for hover */
+  --menu-hover: #f3e5f5;
   --toggle-bg: #e0e0e0;
   --toggle-checked-bg: #7c5df0;
   --toggle-knob: #fff;
   --toggle-shadow: 0 2px 8px rgba(124,93,240,0.08);
-  --success-green: #28a745;
-  --danger-red: #dc3545; /* For close buttons or errors */
-  --orange: #ff9800; /* For streak badge or other highlights */
+  --success-green: #28a745; /* Green for success messages */
 }
 
 body.dark {
   --bg: #181826;
   --card: #232336;
   --text: #f8f8fa;
-  --light: #aaa; /* Lighter text for dark mode */
-  --primary: #b39ddb; /* Lighter purple for dark mode */
+  --light: #fff;
+  --primary: #b39ddb;
   --sh-light: rgba(60,60,60,0.3);
   --sh-dark: rgba(0,0,0,0.7);
   --menu-bg: #232336;
   --menu-text: #f8f8fa;
-  --menu-hover: #2a2450; /* Darker purple for hover in dark mode */
+  --menu-hover: #2a2450;
   --toggle-bg: #232336;
-  --toggle-checked-bg: #ffd700; /* Gold for toggle in dark mode */
+  --toggle-checked-bg: #ffd700;
   --toggle-knob: #232336;
   --toggle-shadow: 0 2px 8px rgba(255,215,0,0.13);
-  --success-green: #34c759; /* Brighter green for dark mode */
-  --danger-red: #ff4d4f; /* Brighter red for dark mode */
-  --orange: #ffb74d; /* Lighter orange for dark mode */
+  --success-green: #34c759; /* Lighter green for dark mode */
 }
 
 body {
@@ -55,49 +51,29 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Poppins', sans-serif;
-  padding-bottom: 7rem; /* Space for footer */
+  padding-bottom: 7rem;
   transition: background .4s, color .4s;
-  overflow-x: hidden; /* Prevent horizontal scrollbars */
 }
-
-/* Screen reader only class */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-.required-asterisk {
-    color: var(--danger-red);
-    margin-left: 0.2em;
-}
-
 
 /* Header */
 header {
-  width: 100%; /* Changed from 100vw to prevent potential overflow issues */
+  width: 100vw;
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 3.5rem;
   background: var(--bg);
   box-shadow: 0 2px 8px var(--sh-dark);
-  z-index: 1000; /* High z-index */
+  z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 1rem;
-  transition: background .4s, box-shadow .4s;
+  justify-content: space-between; /* Changed for better spacing */
+  padding: 0 1rem; /* Added horizontal padding */
 }
 
 .header-center-content {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.5rem; /* Space between title and streak badge */
   position: absolute; /* Center the title and streak */
   left: 50%;
   transform: translateX(-50%);
@@ -107,17 +83,16 @@ header h1 {
   font-family: 'Playfair Display', serif;
   color: var(--primary);
   font-size: 1.5rem;
-  margin: 0;
+  margin: 0; /* Removed margin auto */
   pointer-events: none;
   user-select: none;
   white-space: nowrap;
-  transition: color .4s;
 }
 
 .streak-badge {
   color: var(--orange);
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 0.9rem; /* Adjusted size */
   letter-spacing: 0.01em;
   background-color: var(--card);
   padding: 0.2rem 0.5rem;
@@ -125,17 +100,17 @@ header h1 {
   box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light);
   white-space: nowrap;
   display: none; /* Initially hidden, shown by JS */
-  transition: background-color .4s, box-shadow .4s, color .4s;
 }
 body.dark .streak-badge {
-    box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light); /* Keep consistent shadow appearance */
+    box-shadow: 1px 1px 3px var(--sh-dark), -1px -1px 3px var(--sh-light);
 }
+
 
 .home-btn {
   color: var(--primary);
   font-size: 1.3rem;
   text-decoration: none;
-  z-index: 2; /* Ensure it's clickable above other header elements if overlapping */
+  z-index: 2;
   border-radius: 50% !important;
   width: 2.6rem;
   height: 2.6rem;
@@ -143,14 +118,14 @@ body.dark .streak-badge {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-  transition: background 0.2s, color .4s;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s;
 }
-.home-btn:active { background: rgba(124,93,240,0.13); } /* Example active state */
+.home-btn:active { background: rgba(124,93,240,0.13); }
 
 /* Theme toggle */
 .toggle-wrap {
-  z-index: 2; /* Ensure it's clickable */
+  z-index: 2;
 }
 .theme-toggle {
   position: relative;
@@ -192,13 +167,13 @@ body.dark .streak-badge {
   transform: translateX(22px);
   background: var(--toggle-knob);
 }
-.theme-toggle input:focus-visible + .slider { /* Use focus-visible for better accessibility */
+.theme-toggle input:focus + .slider {
   box-shadow: 0 0 2px 2px var(--toggle-checked-bg);
 }
 
 /* Main content */
 main {
-  padding: 5rem 1rem 1rem; /* top padding for header */
+  padding: 5rem 1rem 1rem;
   text-align: center;
   position: relative;
 }
@@ -206,22 +181,16 @@ main {
 /* Special banner */
 .special-banner {
   position: fixed;
-  top: 0; 
-  left: 0; right: 0;
-  background: linear-gradient(90deg, var(--gold) 0%, var(--primary) 100%);
-  color: #fff; /* Ensure text is readable on gradient */
+  top: 0; left: 0; right: 0;
+  background: linear-gradient(90deg, #ffd700 0%, #7c5df0 100%);
+  color: #222;
   font-weight: bold;
   text-align: center;
-  padding: 1rem 2.5rem 1rem 1rem; /* Padding: top right bottom left */
+  padding: 1rem 2.5rem 1rem 1rem;
   font-size: 1.15rem;
   letter-spacing: 0.03em;
-  z-index: 1500; 
-  display: none; /* Controlled by JS */
-  transition: background .4s, color .4s;
-}
-body.dark .special-banner {
-    background: linear-gradient(90deg, var(--gold) 0%, var(--primary) 100%); /* Adjust if needed for dark theme */
-    color: #222; /* Text color on dark theme banner */
+  z-index: 2001;
+  display: none;
 }
 .special-banner .close-btn {
   position: absolute;
@@ -229,29 +198,32 @@ body.dark .special-banner {
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.5rem;
-  color: inherit; /* Inherit color from parent for theme consistency */
+  color: #222;
   background: transparent;
   border: none;
   cursor: pointer;
 }
 
 /* Quote box */
-.neomorphic { 
+.neomorphic {
   background: var(--card);
   border-radius: 1rem;
   box-shadow: 8px 8px 16px var(--sh-dark), -8px -8px 16px var(--sh-light);
-  transition: background .4s, box-shadow .4s;
 }
 .quote-box {
   position: relative;
+  background: var(--card);
+  border-radius: 1.2rem;
+  box-shadow: 8px 8px 16px var(--sh-dark), -8px -8px 16px var(--sh-light);
   max-width: 600px;
   margin: 0 auto 2rem;
-  padding: 2.5rem 2rem 2rem 4.2rem; /* Padding: top right bottom left */
+  padding: 2.5rem 2rem 2rem 4.2rem;
   text-align: left;
-  overflow: hidden; 
+  overflow: hidden;
+  transition: background .5s, box-shadow .5s;
 }
 .quote-box:hover, .quote-box.glow {
-  background: var(--menu-hover); 
+  background: var(--menu-hover);
   box-shadow: 0 0 30px var(--glow), 8px 8px 16px var(--sh-dark), -8px -8px 16px var(--sh-light);
 }
 .quote-mark {
@@ -266,23 +238,22 @@ body.dark .special-banner {
   font-family: 'Playfair Display', serif;
   line-height: 1;
   z-index: 1;
-  transition: color .4s, opacity .4s;
 }
 #quoteText {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   position: relative;
-  z-index: 2; 
+  z-index: 2;
   text-align: left;
   line-height: 1.5;
-  word-break: break-word; 
-  padding-left: 0.5rem; 
+  word-break: break-word;
+  padding-left: 0.5rem;
   opacity: 1;
-  transition: opacity 0.3s, color .4s;
+  transition: opacity 0.3s;
 }
 #quoteAuthor {
   opacity: 1;
-  transition: opacity 0.3s, color .4s;
+  transition: opacity 0.3s;
 }
 .fade-out { opacity: 0 !important; }
 
@@ -292,13 +263,12 @@ body.dark .special-banner {
   font-size: 1.08rem;
   text-align: right;
   margin-top: 0.5rem;
-  font-family: inherit; 
+  font-family: inherit;
   letter-spacing: 0.01em;
   position: relative;
-  z-index: 2; 
-  unicode-bidi: isolate; 
-  font-style: normal; 
-  transition: color .4s;
+  z-index: 2;
+  unicode-bidi: isolate;
+  font-style: normal;
 }
 
 /* Category button */
@@ -316,153 +286,125 @@ body.dark .special-banner {
   color: var(--primary);
   cursor: pointer;
   font-weight: 600;
-  transition: background .4s, box-shadow .4s, color .4s;
 }
-.category-btn i { color: var(--primary); transition: color .4s;}
+.category-btn i { color: var(--primary);}
 
-/* Modal Generic Styles */
+/* Modal */
 .modal {
-  display: none; 
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%; /* Full viewport */
-  background: rgba(40,30,70,0.25); /* Slightly darker overlay */
-  z-index: 2500; 
+  display: none;
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(40,30,70,0.14);
+  z-index: 999;
   align-items: center; justify-content: center;
-  padding: 1rem; 
-  backdrop-filter: blur(3px); /* Frosted glass effect */
-  -webkit-backdrop-filter: blur(3px);
-  transition: background-color .4s;
 }
 .modal.open { display: flex; }
-
 .modal-content {
   background: var(--menu-bg);
   border-radius: 1.5rem;
   box-shadow: 8px 8px 32px var(--sh-dark), -8px -8px 32px var(--sh-light);
   max-width: 400px; width: 94vw; max-height: 90vh; overflow-y: auto;
-  margin: 0 auto; padding: 2rem 1rem; 
-  position: relative;
+  margin: 0 auto; padding: 2rem 0; position: relative;
   display: flex; flex-direction: column; gap: 0.5rem;
-  transition: background .4s, box-shadow .4s;
 }
-.modal-content .close-btn { 
+.close-btn {
   position: absolute; top: 1.2rem; right: 1.2rem;
   background: none; border: none; color: var(--primary);
   font-size: 1.5rem; cursor: pointer;
-  padding: 0.2rem; 
-  line-height: 1;
-  transition: color .4s;
 }
 
-/* Category Menu (inside modal) */
-#categoryMenu {
-    padding: 0 0.5rem; 
-}
-.section { border-top: 1px solid var(--sh-dark); transition: border-color .4s;}
-.section:first-child { border-top: none; } 
-
+/* Sections in menu */
+.section { border-top: 1px solid var(--sh-dark);}
 .section-btn {
   width: 100%; padding: 0.8rem 1.2rem; background: var(--menu-bg); border: none;
   display: flex; align-items: center; gap: 0.85rem; cursor: pointer;
   font-size: 1.07rem; font-weight: 500;
-  border-radius: 1rem; 
+  border-radius: 1rem; transition: background .2s;
   color: var(--menu-text);
-  text-align: left; 
-  transition: background .2s, color .4s;
 }
 .section-btn:hover, .section.open .section-btn { background: var(--menu-hover);}
-.section-icon { font-size: 1.3em; color: var(--primary); transition: color .4s;}
-.section-list { display: none; list-style: none; padding-left: 1.2rem; background: var(--menu-bg); transition: background .4s;}
-/* .section.open .section-list { display: block; } JS handles this */
+.section-icon { font-size: 1.3em; color: var(--primary);}
+.section-list { display: none; list-style: none; padding-left: 1.2rem; background: var(--menu-bg);}
+.section.open .section-list { display: block; }
 .section-list li { margin: 0.5rem 0; }
-.section-list a, .section-list span[role="button"] {
+.section-list a, .section-list span {
   text-decoration: none; color: var(--menu-text) !important; font-size: 1.05rem;
   border-radius: 0.6rem; display: flex; align-items: center; gap: .7rem; padding: .38rem .7rem;
   background: var(--menu-bg);
-  transition: background 0.2s, color 0.4s;
 }
-.section-list a:hover, .section-list span[role="button"]:hover { background: var(--menu-hover); color: var(--primary) !important;}
-.has-children > span[role="button"] { display: flex; align-items: center; justify-content: space-between; cursor: pointer;}
-.has-children .nested-list { display: none; margin-left: 1.2rem; background: var(--menu-bg); transition: background .4s;}
-/* .has-children.open .nested-list { display: block; } JS handles this */
-.nested-list a i { font-size: 1.1em; color: var(--primary); transition: color .4s;}
-.section-list .fa-face-smile { color: var(--gold)!important; } 
+.section-list a:hover { background: var(--menu-hover); color: var(--primary) !important;}
+.has-children > span { display: flex; align-items: center; justify-content: space-between; cursor: pointer;}
+.has-children .nested-list { display: none; margin-left: 1.2rem; background: var(--menu-bg);}
+.has-children.open .nested-list { display: block; }
+.nested-list a i { font-size: 1.1em; color: var(--primary);}
+.section-list .fa-face-smile { color: var(--gold)!important; }
 
-/* Author search in Category Menu */
+/* Author search */
 .author-search-wrapper {
-  display: none; padding: 0.5rem 0.5rem 0.5rem 1.2rem; width: 100%; 
+  display: none; padding: 0.5rem 0.5rem 0.5rem 1.2rem; width: 90%;
 }
-.author-search-wrapper input[type="text"] {
-  width: 100%; 
-  padding: 0.6rem 1rem; border: none; border-radius: 2rem;
-  background: var(--card); 
-  border: 1.5px solid var(--primary); color: var(--text); font-size: 1rem;
+.section.search-section.open .author-search-wrapper { display: block; }
+.author-search-wrapper input {
+  width: 90%; max-width: 220px; padding: 0.6rem 1rem; border: none; border-radius: 2rem;
+  background: var(--menu-bg); border: 1.5px solid var(--primary); color: var(--menu-text); font-size: 1rem;
   margin-bottom: 0.5rem; text-align: left;
-  box-shadow: inset 2px 2px 4px var(--sh-dark), inset -2px -2px 4px var(--sh-light);
-  transition: background .4s, border-color .4s, color .4s, box-shadow .4s;
-}
-body.dark .author-search-wrapper input[type="text"] {
-    background: var(--bg); 
 }
 .suggestions-list {
   list-style: none; margin-top: 0.5rem; max-height: 120px; overflow-y: auto;
   background: var(--menu-bg); border: 1.5px solid var(--primary); border-radius: 1rem;
   box-shadow: 4px 4px 12px var(--sh-dark), -4px -4px 12px var(--sh-light);
   color: var(--menu-text);
-  transition: background .4s, border-color .4s, color .4s, box-shadow .4s;
 }
-.suggestions-list li { padding: 0.5rem 1rem; cursor: pointer; color: var(--primary); transition: background 0.2s, color 0.2s;}
-.suggestions-list li:hover { background: rgba(124,93,240,0.15); color: var(--text);} 
-body.dark .suggestions-list li:hover { color: var(--gold); }
-
+.suggestions-list li { padding: 0.5rem 1rem; cursor: pointer; color: var(--primary); transition: background 0.2s;}
+.suggestions-list li:hover { background: rgba(124,93,240,0.15); color: #fff;}
 
 /* Action buttons and round touch effect */
 .action-buttons {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0; 
-  position: relative; 
+  gap: 0;
+  position: relative;
 }
-.icon-btn, .generate-btn, .feedback-btn, .home-btn { 
-  -webkit-tap-highlight-color: transparent; 
-  border-radius: 50% !important; 
-  overflow: hidden; 
-  position: relative; 
+.icon-btn, .generate-btn, .feedback-btn, .home-btn {
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 50% !important;
+  overflow: hidden;
 }
 .icon-btn:active,
 .generate-btn:active,
 .feedback-btn:active,
 .home-btn:active {
-  background: rgba(124,93,240,0.13); 
+  background: rgba(124,93,240,0.13);
 }
-
 .action-buttons .icon-btn {
-  margin: 0 2.7rem; 
+  margin: 0 2.7rem;
 }
 .action-buttons .icon-btn.undo-btn {
-  margin: 0 1.1rem 0 0; 
+  margin: 0 1.1rem 0 0;
   font-size: 1.3rem;
-  color: var(--primary); 
+  color: #b39ddb;
   transition: color .2s, transform .2s;
   cursor: pointer;
-  display: none; /* Controlled by JS */
+}
+.action-buttons .icon-btn.undo-btn[style*="display: none"] {
+  pointer-events: none;
 }
 .action-buttons .icon-btn.undo-btn:hover,
-.action-buttons .icon-btn.undo-btn:focus-visible {
-  color: var(--green-accent);
+.action-buttons .icon-btn.undo-btn:focus {
+  color: #43b581;
   transform: scale(1.2) rotate(-20deg);
 }
 .action-buttons .icon-btn.undo-btn:active {
-  color: var(--gold);
+  color: #ffd700;
   transform: scale(1.1) rotate(-30deg);
 }
 
 /* Share Menu */
 #shareMenu {
-  display: none; 
+  display: none;
   position: absolute;
   left: 50%;
-  bottom: 120%; 
+  bottom: 120%;
   transform: translateX(-50%);
   background: var(--card);
   border-radius: 1.2rem;
@@ -470,13 +412,11 @@ body.dark .suggestions-list li:hover { color: var(--gold); }
   padding: 0.1rem 0.3rem;
   gap: 0.5rem;
   justify-content: center;
-  z-index: 1000; 
+  z-index: 4000;
   width: max-content;
-  min-width: 120px; 
-  transition: background .4s, box-shadow .4s;
+  min-width: 120px;
 }
 #shareMenu.open { display: flex; }
-
 .share-option {
   background: transparent;
   border: none;
@@ -491,20 +431,20 @@ body.dark .suggestions-list li:hover { color: var(--gold); }
   padding: 0;
   margin: 0 0.15rem;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
-.share-option:hover, .share-option:focus-visible {
+.share-option:hover, .share-option:focus {
   background: var(--green-accent);
   color: #fff;
-  box-shadow: 0 0 0 2px var(--green-accent)aa; 
+  box-shadow: 0 0 0 2px var(--green-accent)aa;
 }
-body.dark .share-option:hover, body.dark .share-option:focus-visible {
+body.dark .share-option:hover, body.dark .share-option:focus {
   background: var(--gold);
   color: #222;
   box-shadow: 0 0 0 2px #ffd700aa;
 }
 
-/* General Icon buttons (Copy, Favorite, Share) */
+/* Icon buttons */
 .icon-btn {
   background: transparent; border: none; outline: none;
   border-radius: 50%; width: 3.2rem; height: 3.2rem;
@@ -512,32 +452,30 @@ body.dark .share-option:hover, body.dark .share-option:focus-visible {
   font-size: 1.6rem; color: var(--primary);
   position: relative; cursor: pointer;
   transition: background .2s, color .2s, box-shadow .2s, transform 0.2s ease-out;
-  box-shadow: none; 
+  box-shadow: none;
 }
-.icon-btn:focus-visible { box-shadow: 0 0 0 2px var(--primary)aa;} 
-
+.icon-btn:focus { box-shadow: 0 0 0 2px var(--primary);}
 .icon-btn .btn-tooltip {
   opacity: 0; pointer-events: none;
   position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%) scale(0.95);
   background: var(--primary); color: #fff; font-size: 0.98rem; padding: 0.25rem 0.85rem;
   border-radius: 1.2rem; white-space: nowrap;
   box-shadow: 0 2px 8px var(--sh-dark);
-  transition: opacity .18s cubic-bezier(.4,0,.2,1), transform .18s cubic-bezier(.4,0,.2,1), background .4s, color .4s;
-  z-index: 2; 
+  transition: opacity .18s cubic-bezier(.4,0,.2,1), transform .18s cubic-bezier(.4,0,.2,1);
+  z-index: 2;
 }
-.icon-btn:hover .btn-tooltip, .icon-btn:focus-visible .btn-tooltip {
+.icon-btn:hover .btn-tooltip, .icon-btn:focus .btn-tooltip {
   opacity: 1; transform: translateX(-50%) scale(1);
 }
-.icon-btn.copied-feedback { color: var(--green-accent); } 
+.icon-btn.copied-feedback { color: var(--green-accent); }
 
 /* Favorite button specific styles */
-#favBtn i.fa-solid.fa-heart { 
-  color: var(--gold);
+#favBtn i.fa-solid.fa-heart { /* Solid heart when favorited */
+  color: var(--gold); /* Gold color when favorited */
   animation: heartBeat 0.5s ease-in-out;
 }
-#favBtn i.fa-regular.fa-heart { 
+#favBtn i.fa-regular.fa-heart { /* Regular heart when not favorited */
     color: var(--primary);
-    transition: color .4s;
 }
 
 @keyframes heartBeat {
@@ -546,11 +484,11 @@ body.dark .share-option:hover, body.dark .share-option:focus-visible {
   100% { transform: scale(1); }
 }
 
-.saved-popup { 
+.saved-popup {
   position: absolute;
-  bottom: 120%; 
+  bottom: 120%; /* Position above the button */
   left: 50%;
-  transform: translateX(-50%) translateY(10px); 
+  transform: translateX(-50%) translateY(10px); /* Start slightly lower */
   background-color: var(--green-accent);
   color: white;
   padding: 0.3rem 0.8rem;
@@ -559,14 +497,15 @@ body.dark .share-option:hover, body.dark .share-option:focus-visible {
   font-weight: 500;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0.3s, background-color .4s;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0.3s;
   white-space: nowrap;
-  z-index: 10; 
+  z-index: 10;
 }
+
 #favBtn.show-saved-popup .saved-popup {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0); 
+  transform: translateX(-50%) translateY(0); /* Move to final position */
 }
 
 
@@ -574,7 +513,7 @@ body.dark .share-option:hover, body.dark .share-option:focus-visible {
 .generate-btn {
   position: fixed;
   left: 50%;
-  bottom: 5.5rem; 
+  bottom: 5.5rem;
   transform: translateX(-50%);
   width: 4.5rem;
   height: 4.5rem;
@@ -588,9 +527,9 @@ body.dark .share-option:hover, body.dark .share-option:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: box-shadow .3s, transform .1s, background .18s, color .18s;
-  overflow: hidden; 
-  z-index: 200; 
+  transition: box-shadow .3s, transform .1s, background .18s;
+  overflow: hidden;
+  z-index: 200;
   user-select: none;
 }
 .generate-btn:active, .generate-btn.touched {
@@ -619,99 +558,79 @@ body.dark .magic-wand-icon.animated {
   50% { transform: rotate(-30deg) scale(1.3);}
   100% { transform: rotate(0deg) scale(1);}
 }
-.generate-btn .ripple, .icon-btn .ripple { 
+.generate-btn .ripple {
   position: absolute; border-radius: 50%; transform: scale(0);
   animation: waterRipple .8s cubic-bezier(.22,.68,.54,1.01);
-  background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(124,93,240,0.5) 80%, transparent 100%);
-  pointer-events: none; z-index: 1; 
+  background: radial-gradient(circle, #fff 0%, #7c5df0 80%, transparent 100%);
+  pointer-events: none; z-index: 10;
 }
 @keyframes waterRipple { to { transform: scale(2.5); opacity: 0; } }
 
-
-/* Submit Quote Form (inside modal) */
-#customQuoteForm {
-    width: 100%;
+/* Responsive */
+@media (max-width: 600px) {
+  header {
+    padding: 0 0.8rem; /* Adjust header padding for smaller screens */
+  }
+  .header-center-content {
+    gap: 0.3rem;
+  }
+  header h1 {
+    font-size: 1.3rem;
+  }
+  .streak-badge {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+  }
+  .generate-btn {
+    bottom: 6.5rem;
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.7rem;
+  }
+  .action-buttons .icon-btn { margin: 0 1.2rem; }
+  #shareMenu {
+    min-width: 160px; /* Adjusted for potential new icon */
+    /* font-size: 1.1rem; */ /* Keep font size consistent or adjust if needed */
+  }
+  /* Ensure share options fit if more are added */
+ #shareMenu .share-option {
+    width: 2.4rem; /* Slightly reduce size if needed */
+    height: 2.4rem;
+    font-size: 1.1rem; /* Adjust icon size */
+  }
 }
-#customQuoteForm label {
-    display: block;
-    text-align: left;
-    margin-bottom: 0.3rem;
-    font-size: 0.95rem;
-    color: var(--text);
-    transition: color .4s;
-}
-#customQuoteForm input[type="text"] {
-  background: var(--card);
-  border: 1.5px solid var(--primary);
-  border-radius: 1.2rem;
-  padding: 0.7rem 1.1rem;
-  margin-bottom: 1rem;
-  width: 100%;
-  font-size: 1.03rem;
-  box-shadow: inset 2px 2px 4px var(--sh-dark), inset -2px -2px 4px var(--sh-light);
-  color: var(--text);
-  transition: border .2s, box-shadow .2s, background .4s, color .4s;
-}
-#customQuoteForm input[type="text"]:focus {
-  border-color: var(--primary); /* Ensure focus border color matches primary */
-  outline: none;
-  box-shadow: 0 0 5px var(--primary)aa, inset 2px 2px 4px var(--sh-dark), inset -2px -2px 4px var(--sh-light);
-}
-body.dark #customQuoteForm input[type="text"] {
-    background: var(--bg); 
-}
-body.dark #customQuoteForm input::placeholder {
-  color: var(--light);
-}
-
-
-/* Form success messages */
-.form-success-message {
-  display: none; 
-  color: var(--success-green) !important;
-  margin-top: 1.2rem;
-  text-align: center;
-  font-size: 1.05rem;
-  font-weight: 500;
-  transition: color .4s;
-}
-
-/* Loader spinner for buttons */
-.loader-spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-left-color: var(--primary);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 1s linear infinite;
-    display: none; 
-    margin-left: 10px;
-    vertical-align: middle;
-    transition: border-left-color .4s;
-}
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-body.dark .loader-spinner {
-    border-left-color: var(--gold);
-}
-/* JS will toggle a class on submit-btn-text to hide it and show spinner */
-.submit-btn-text.hidden {
-    display: none;
-}
-.embossed-button .submit-btn-text.hidden + .loader-spinner,
-.feedback-submit-btn .submit-btn-text.hidden + .loader-spinner {
-    display: inline-block;
+@media (max-width: 380px) { /* Even smaller screens */
+    header h1 {
+        font-size: 1.1rem;
+    }
+    .streak-badge {
+        display: none; /* Hide streak badge on very small screens if it causes overflow */
+    }
+    .home-btn {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 1.1rem;
+    }
+    .toggle-wrap .theme-toggle {
+        width: 40px;
+        height: 22px;
+    }
+    .toggle-wrap .slider:before {
+        height: 18px;
+        width: 18px;
+    }
+    .toggle-wrap .theme-toggle input:checked + .slider:before {
+        transform: translateX(18px);
+    }
 }
 
 
 /* Favorites Modal */
 .fav-modal-content {
-  position: relative; 
-  padding-bottom: 4rem; 
+  position: relative;
 }
-.large-close-btn-outside { 
-  display: none; 
+.large-close-btn-outside {
+  display: none;
   position: fixed;
   left: 50%;
   bottom: 2.5rem;
@@ -724,17 +643,11 @@ body.dark .loader-spinner {
   height: 3.5rem;
   font-size: 2rem;
   box-shadow: 0 2px 12px var(--sh-dark);
-  z-index: 2501; /* Above modal overlay */
+  z-index: 2001;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: background .4s, box-shadow .4s, color .4s;
 }
-#favModal.open ~ .large-close-btn-outside { display: flex; } 
-
-#favQuotesList {
-    padding: 0 0.5rem; 
-}
+#favModal.open ~ .large-close-btn-outside { display: flex; }
 .fav-quote {
   background: var(--card);
   border-radius: 1rem;
@@ -743,19 +656,15 @@ body.dark .loader-spinner {
   padding: 1rem 1.2rem;
   position: relative;
   text-align: left;
-  transition: background .4s, box-shadow .4s;
 }
 .fav-quote p {
   margin: 0 0 0.2rem 0;
-  word-wrap: break-word;
-  transition: color .4s;
 }
 .fav-quote .author {
   font-size: 0.98rem;
   color: var(--primary);
   text-align: right;
   margin-top: 0.2rem;
-  transition: color .4s;
 }
 .fav-quote .fav-actions {
   display: flex;
@@ -763,8 +672,9 @@ body.dark .loader-spinner {
   justify-content: flex-end;
   align-items: center;
   margin-top: 0.2rem;
+  position: static;
 }
-.fav-quote .fav-action-btn { 
+.fav-quote button {
   background: none;
   border: none;
   color: var(--primary);
@@ -774,85 +684,71 @@ body.dark .loader-spinner {
   border-radius: 50%;
   transition: background 0.2s, color 0.2s;
   vertical-align: middle;
-  width: 2rem; height: 2rem; 
-  display: inline-flex; align-items: center; justify-content: center;
 }
-.fav-quote .fav-action-btn:hover {
+.fav-quote button:hover {
   background: var(--menu-hover);
   color: var(--gold);
 }
 
-/* Embossed Button Style (used for Submit, Download, Share, etc.) */
+/* Embossed Button Style */
 .embossed-button {
-  display: inline-flex; 
-  align-items: center;
-  justify-content: center;
-  margin: 0; 
+  display: block;
+  margin: 1.5rem auto 0 auto;
+  width: 60%;
   background: var(--primary);
   color: #fff;
-  font-size: 1.08rem; 
-  font-weight: 600;
+  font-size: 1.08rem;
+  font-weight: 600; /* Slightly bolder */
   border: none;
   border-radius: 2rem;
-  padding: 0.8rem 1rem; 
+  padding: 0.8rem 0; /* Increased padding */
   box-shadow:
-    inset 2px 2px 5px rgba(255, 255, 255, 0.3), 
-    inset -2px -2px 5px rgba(0, 0, 0, 0.2),    
-    4px 4px 8px var(--sh-dark),               
-    -4px -4px 8px var(--sh-light);            
+    inset 2px 2px 5px rgba(255, 255, 255, 0.3), /* Inner light shadow */
+    inset -2px -2px 5px rgba(0, 0, 0, 0.2),    /* Inner dark shadow */
+    4px 4px 8px var(--sh-dark),               /* Outer shadow */
+    -4px -4px 8px var(--sh-light);            /* Outer light shadow for neomorphism */
   cursor: pointer;
   transition: background .2s, color .2s, box-shadow .2s, transform 0.1s;
   outline: none;
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
-  line-height: 1; 
-}
-.embossed-button i { 
-    font-size: 1.2rem; 
-    /* If button has text + icon, add margin: e.g., margin-right: 0.5em; */
+  position: relative;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.2); /* Subtle text shadow for depth */
 }
 
 .embossed-button:hover,
-.embossed-button:focus-visible {
-  background: #6a46e0; 
+.embossed-button:focus {
+  background: var(--primary-hover, #6a46e0); /* Define --primary-hover or use a slightly darker/lighter shade */
   color: #fff;
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.4),
     inset -1px -1px 3px rgba(0, 0, 0, 0.3),
     2px 2px 5px var(--sh-dark),
     -2px -2px 5px var(--sh-light);
-  transform: translateY(1px);
+  transform: translateY(1px); /* Slight press effect */
 }
+
 .embossed-button:active {
-  background: #5e3cc0; 
+  background: var(--primary-active, #5e3cc0); /* Define --primary-active or use a darker shade */
   box-shadow:
-    inset 2px 2px 5px rgba(0, 0, 0, 0.3),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.2);
-  transform: translateY(2px);
-}
-.embossed-button:disabled {
-    background: var(--light) !important; /* Important to override other states */
-    color: var(--text) !important;
-    opacity: 0.7;
-    cursor: not-allowed !important;
-    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.1) !important;
-    transform: none !important;
+    inset 2px 2px 5px rgba(0, 0, 0, 0.3),    /* Stronger inner dark shadow */
+    inset -2px -2px 5px rgba(255, 255, 255, 0.2); /* Stronger inner light shadow */
+  transform: translateY(2px); /* More pronounced press effect */
 }
 
 
 body.dark .embossed-button {
-  background: var(--primary);
-  color: var(--text); 
+  background: var(--primary); /* Use the dark theme primary color */
+  color: var(--text); /* Dark theme text color */
   box-shadow:
-    inset 2px 2px 5px rgba(255, 255, 255, 0.1),
-    inset -2px -2px 5px rgba(0, 0, 0, 0.4),
-    4px 4px 10px rgba(0,0,0,0.5),
-    -4px -4px 10px rgba(255,255,255,0.05);
+    inset 2px 2px 5px rgba(255, 255, 255, 0.1),  /* Softer inner light for dark */
+    inset -2px -2px 5px rgba(0, 0, 0, 0.4),     /* Stronger inner dark for dark */
+    4px 4px 10px rgba(0,0,0,0.5),                /* Darker outer shadow */
+    -4px -4px 10px rgba(255,255,255,0.05);       /* Very subtle outer light */
   text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
 }
+
 body.dark .embossed-button:hover,
-body.dark .embossed-button:focus-visible {
-  background: #c7aefb; 
-  color: #222; 
+body.dark .embossed-button:focus {
+  background: var(--primary-hover-dark, #c7aefb); /* Lighter shade for hover in dark */
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.15),
     inset -1px -1px 3px rgba(0, 0, 0, 0.5),
@@ -860,15 +756,51 @@ body.dark .embossed-button:focus-visible {
     -2px -2px 6px rgba(255,255,255,0.07);
 }
 body.dark .embossed-button:active {
-  background: #d0bcfc; 
-  color: #222; 
+  background: var(--primary-active-dark, #d0bcfc);
   box-shadow:
     inset 2px 2px 5px rgba(0, 0, 0, 0.5),
     inset -2px -2px 5px rgba(255, 255, 255, 0.1);
 }
-body.dark .embossed-button:disabled {
-    background: var(--sh-dark) !important;
-    color: var(--light) !important;
+
+
+/* Submit Quote Form */
+#customQuoteForm input[type="text"] {
+  background: var(--card);
+  border: 1.5px solid var(--primary);
+  border-radius: 1.2rem;
+  padding: 0.7rem 1.1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  font-size: 1.03rem;
+  box-shadow: 2px 2px 8px var(--sh-dark), -2px -2px 8px var(--sh-light);
+  transition: border .2s;
+  color: var(--text); /* Ensure text color is inherited */
+}
+#customQuoteForm input[type="text"]:focus {
+  border: 2px solid var(--primary);
+  outline: none;
+}
+
+.form-success-message { /* General style for success messages */
+  display: none; /* Hidden by default */
+  color: var(--success-green) !important; /* Important to override other styles if needed */
+  margin-top: 1.2rem;
+  text-align: center;
+  font-size: 1.05rem; /* Slightly larger */
+  font-weight: 500;
+}
+
+
+body.dark #submitQuoteModal input,
+body.dark #submitQuoteModal label,
+body.dark #submitQuoteModal h2
+{
+  color: var(--text) !important; /* Use dark theme text color */
+  background-color: var(--card) !important; /* Use dark theme card background */
+  border-color: var(--primary) !important; /* Use dark theme primary for borders */
+}
+body.dark #submitQuoteModal input::placeholder {
+  color: var(--light); /* Dark theme light color for placeholder */
 }
 
 
@@ -876,8 +808,8 @@ body.dark .embossed-button:disabled {
 .feedback-btn {
   position: fixed;
   right: 1.5rem;
-  bottom: 4.5rem; 
-  z-index: 1000; 
+  bottom: 4.5rem;
+  z-index: 3000;
   background: var(--primary);
   color: #fff;
   border-radius: 50%;
@@ -890,22 +822,18 @@ body.dark .embossed-button:disabled {
   box-shadow: 0 2px 12px var(--sh-dark);
   border: none;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.2s, box-shadow .4s;
+  transition: background 0.2s, color 0.2s;
 }
-.feedback-btn:hover, .feedback-btn:focus-visible {
+.feedback-btn:hover, .feedback-btn:focus {
   background: var(--gold);
   color: #222;
-  transform: scale(1.1);
 }
 .feedback-modal-content {
   min-width: 300px;
   max-width: 360px;
   padding: 2rem 1.3rem 1.5rem 1.3rem;
-  align-items: center; 
+  align-items: center;
   gap: 0.5rem;
-}
-#feedbackForm {
-    width: 100%; display: flex; flex-direction: column; align-items: center;
 }
 #feedbackTextarea {
   width: 100%;
@@ -915,29 +843,21 @@ body.dark .embossed-button:disabled {
   padding: 0.7rem 1.1rem;
   margin-bottom: 1rem;
   font-size: 1.03rem;
-  box-shadow: inset 2px 2px 4px var(--sh-dark), inset -2px -2px 4px var(--sh-light);
+  box-shadow: 2px 2px 8px var(--sh-dark), -2px -2px 8px var(--sh-light);
   resize: vertical;
   background: var(--card);
   color: var(--text);
-  transition: background .4s, color .4s, border-color .4s, box-shadow .4s;
 }
-body.dark #feedbackTextarea {
-    background: var(--bg); 
-}
-body.dark #feedbackTextarea::placeholder {
-    color: var(--light);
+.feedback-submit-btn { /* This is now .embossed-button */
+  width: 80%;
+  margin-bottom: 1rem; /* Keep margin from original */
 }
 
-.feedback-submit-btn { 
-  width: 80%; 
-  margin: 0 auto 1rem auto; /* Center button */
-}
 .feedback-links {
   width: 100%;
   display: flex;
-  justify-content: space-around; 
+  justify-content: space-between;
   margin-bottom: 0.7rem;
-  margin-top: 0.5rem; 
 }
 .feedback-links a {
   color: var(--primary);
@@ -948,21 +868,32 @@ body.dark #feedbackTextarea::placeholder {
 .feedback-links a:hover { color: var(--gold);}
 
 
+body.dark #feedbackTextarea,
+body.dark .feedback-modal-content
+{
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--primary) !important;
+}
+body.dark #feedbackTextarea::placeholder {
+    color: var(--light);
+}
+
+
 /* Footer */
 footer {
-  width: 100%; /* Changed from 100vw */
+  width: 100vw;
   position: fixed;
   left: 0; right: 0; bottom: 0;
   text-align: center;
   padding: 0.6rem 0 0.3rem 0;
   background: var(--card);
   box-shadow: 0 -1px 8px var(--sh-dark);
-  z-index: 150; 
+  z-index: 150;
   font-size: 0.92rem;
   color: var(--primary);
   font-weight: normal;
   line-height: 1.2;
-  transition: background .4s, box-shadow .4s, color .4s;
 }
 footer .author-link {
   font-weight: normal;
@@ -971,177 +902,88 @@ footer .author-link {
   margin-left: 0.2rem;
   font-size: inherit;
   letter-spacing: 0.01em;
-  transition: color .4s;
 }
 footer .author-link:hover,
-footer .author-link:focus-visible {
+footer .author-link:focus {
   text-decoration: underline;
 }
 
 /* Styles for Image Preview Modal */
 #quoteImagePreviewContainer {
-  /* display: none; // This is set by default in the HTML/CSS to hide it initially */
-  /* opacity: 0; // This is also set by default for fade-in */
-  /* The .visible class handles making it appear */
-
+  display: none; /* Initially hidden */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  /* MODIFIED: Matched background and blur to the generic .modal style */
-  background: rgba(40,30,70,0.25); /* Consistent with .modal */
-  backdrop-filter: blur(3px);      /* Consistent with .modal */
-  -webkit-backdrop-filter: blur(3px);/* Consistent with .modal */
-  z-index: 3000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  background: rgba(0,0,0,0.7); /* Semi-transparent background */
   justify-content: center;
-  padding: 1rem;
-  transition: opacity 0.3s ease-out, background-color .4s; /* Added ease-out to opacity */
-  /* Initially hidden and transparent, made visible by JS adding .visible class */
-  /* These are effectively the default states before .visible is added */
-   display: none;
-   opacity: 0;
+  align-items: center;
+  z-index: 3000; /* Ensure it's above other content */
+  padding: 1rem; /* Padding for smaller screens */
+  overflow-y: auto; /* Allow scrolling if content is too tall */
 }
-
-#quoteImagePreviewContainer.visible {
-  display: flex; /* Show the modal */
-  opacity: 1;    /* Fade it in */
-}
-
 
 #quoteImageWrapper {
-  background: var(--card);
-  color: var(--text);
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-
-  width: 90vmin;
-  height: 90vmin;
-  max-width: 500px;
-  max-height: 500px;
-  aspect-ratio: 1 / 1;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  background: var(--card); /* Uses theme variable for background */
+  color: var(--text);     /* Uses theme variable for main text color */
+  padding: 30px 25px;     /* Padding inside the image box */
+  border-radius: 12px;    /* Rounded corners */
   text-align: center;
-  padding: 35px;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 20px;
-  transition: background .4s, color .4s, box-shadow .4s;
+  max-width: 500px;       /* Max width for the image content */
+  width: 90%;             /* Responsive width */
+  position: relative;     /* For watermark positioning */
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Subtle shadow */
+  font-family: 'Poppins', sans-serif; /* Default font, can be overridden by specific elements */
+}
+
+body.dark #quoteImageWrapper {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* Darker shadow for dark mode */
 }
 
 #imageQuoteText {
-  font-family: 'Playfair Display', serif;
-  color: var(--text);
-  word-wrap: break-word;
-  line-height: 1.4;
-  max-width: 100%;
-  margin-bottom: 0.6em;
-  transition: color .4s;
+  font-family: 'Playfair Display', serif; /* Specific font for quote text */
+  font-size: 28px; /* As per HTML */
+  color: var(--text); /* Inherits from quoteImageWrapper or set explicitly */
+  margin-bottom: 20px; /* As per HTML */
+  word-wrap: break-word; /* As per HTML */
+  line-height: 1.5; /* Improved readability */
 }
 
 #imageQuoteAuthor {
-  font-family: 'Poppins', sans-serif;
-  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-  color: var(--light);
-  font-style: italic;
-  max-width: 90%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 0.2em;
-  margin-bottom: 1.2em;
-  display: block;
-  transition: color .4s;
+  font-family: 'Poppins', sans-serif; /* Specific font for author */
+  font-size: 20px; /* As per HTML */
+  color: var(--light); /* Uses theme variable for author text color */
+  margin-bottom: 30px; /* As per HTML */
+  font-style: italic; /* Make author italic */
 }
 
 #imageWatermark {
-  font-family: 'Poppins', sans-serif;
-  font-size: clamp(0.6rem, 2vmin, 0.8rem);
-  color: var(--light);
-  opacity: 0.65;
-  position: absolute;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 3px;
-  transition: color .4s, opacity .4s;
+  font-family: 'Poppins', sans-serif; /* As per HTML */
+  font-size: 14px; /* As per HTML */
+  color: var(--light); /* Use a theme-aware color */
+  opacity: 0.7; /* Slightly transparent */
+  position: absolute; /* As per HTML */
+  bottom: 15px; /* As per HTML */
+  right: 20px; /* As per HTML */
 }
 
-.image-preview-actions {
-  display: flex;
-  gap: 15px;
-  margin-top: 10px;
+body.dark #imageWatermark {
+  color: var(--light); /* Ensure it's visible in dark mode */
+  opacity: 0.5; /* Adjust opacity for dark mode if needed */
 }
 
-@media (max-width: 600px) {
-  #quoteImageWrapper {
-    width: 92vmin;
-    height: 92vmin;
-    padding: 25px;
-  }
-   #imageQuoteAuthor {
-    font-size: clamp(0.75rem, 2.4vw, 1rem);
-  }
-  #imageWatermark {
-    font-size: clamp(0.55rem, 1.8vmin, 0.75rem);
-    bottom: 12px;
-  }
+/* Styling for buttons within the preview modal */
+#quoteImageWrapper .embossed-button {
+    padding: 0.6rem 1rem; /* Adjust padding for smaller buttons */
+    font-size: 0.9rem;    /* Adjust font size for smaller buttons */
+    min-width: 100px;     /* Ensure buttons have a decent tap/click target size */
+    margin: 5px;          /* Add some margin around buttons */
 }
 
-@media (max-width: 380px) {
-  #quoteImageWrapper {
-    width: 95vmin;
-    height: 95vmin;
-    padding: 20px;
-  }
-  #imageQuoteText {
-    line-height: 1.35;
-  }
-   #imageQuoteAuthor {
-    font-size: clamp(0.7rem, 2.2vw, 0.9rem);
-  }
-  #imageWatermark {
-    font-size: clamp(0.5rem, 1.6vmin, 0.7rem);
-    bottom: 10px;
-  }
-  .image-preview-actions {
-    gap: 10px;
-  }
-}
 
-/* ... 
-
-
-/* High contrast mode (accessibility) - Basic example */
+/* High contrast mode */
 @media (prefers-contrast: more) {
-  body { background: #000 !important; color: #fff !important; }
-  .quote-box, :root { 
-    --card: #111 !important; 
-    --menu-bg: #111 !important; 
-    --primary: #0ff !important; /* Cyan */
-    --gold: #ff0 !important; /* Yellow */
-    --text: #fff !important;
-    --light: #ccc !important;
-    --sh-dark: rgba(255,255,255,0.3) !important;
-    --sh-light: rgba(255,255,255,0.5) !important;
-  }
-  .embossed-button, .generate-btn, .feedback-btn {
-    background: #000 !important;
-    color: #fff !important;
-    border: 2px solid #fff !important;
-    box-shadow: none !important;
-  }
-  .embossed-button:hover, .generate-btn:hover, .feedback-btn:hover {
-    background: #222 !important;
-  }
-  #quoteImageWrapper {
-    border: 2px solid #fff;
-  }
+  body { background: #000; color: #fff; }
+  .quote-box { background: #222; }
 }
