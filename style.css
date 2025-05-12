@@ -26,13 +26,15 @@
   --toggle-knob: #fff;
   --toggle-shadow: 0 2px 8px rgba(124,93,240,0.08);
   --success-green: #28a745;
-  --image-square-size: 480px; /* Define a variable for the square size */
+  --image-square-size: 480px; 
   --image-bg-light: #7c5df0; 
   --image-text-light: #ffffff; 
   --image-author-light: #e0e0ff; 
   --image-bg-dark: #2c2c40; 
   --image-text-dark: #f0f0f8; 
-  --image-author-dark: #b0b0c0; 
+  --image-author-dark: #b0b0c0;
+  --default-image-bg-picker: #7c5df0;
+  --default-image-text-picker: #ffffff;
 }
 
 body.dark {
@@ -903,11 +905,11 @@ body.dark #quoteImageWrapper {
   width: var(--image-square-size);
   height: var(--image-square-size);
   padding: 35px; 
-  border-radius: 10px; 
+  border-radius: 25px; /* INCREASED for softer corners */
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Vertically center content blocks */
-  align-items: center;     /* Horizontally center content blocks */
+  justify-content: center; 
+  align-items: center;     
   text-align: center;
   position: relative;      
   box-sizing: border-box;  
@@ -921,15 +923,13 @@ body.dark #quoteImageContent {
 /* Text of the quote in the image */
 #imageQuoteText {
   font-family: 'Playfair Display', serif;
-  /* font-size is set by JavaScript in adjustTextToFit */
-  line-height: 1.4; /* Good for readability */
+  line-height: 1.4; 
   width: 100%; 
   word-wrap: break-word; 
   overflow-wrap: break-word; 
   box-sizing: border-box;
   text-align: center;
-  margin-bottom: 15px; /* Space between quote and author */
-  /* max-height, overflow-y, etc. are handled by JS logic */
+  margin-bottom: 15px; 
 }
 
 /* Author text in the image */
@@ -937,8 +937,7 @@ body.dark #quoteImageContent {
   font-family: 'Poppins', sans-serif;
   font-size: 18px; 
   color: var(--image-author-light); 
-  /* MODIFICATION: Changed margin-top for better flex centering */
-  margin-top: 15px; /* Was: margin-top: auto; */
+  margin-top: 15px; 
   padding: 10px 5px 5px;
   font-style: italic;
   text-align: center;
@@ -946,7 +945,7 @@ body.dark #quoteImageContent {
   flex-shrink: 0; 
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: normal; /* Allow author to wrap if very long */
+  white-space: normal; 
 }
 body.dark #imageQuoteAuthor {
   color: var(--image-author-dark);
@@ -988,6 +987,64 @@ body.dark #imageWatermark {
   cursor: not-allowed;
 }
 
+/* Styles for Color Customization Controls */
+.image-color-controls-container {
+  display: flex;
+  gap: 20px; 
+  margin-top: 15px;
+  padding: 10px;
+  background-color: var(--card); 
+  border-radius: 8px;
+  box-shadow: inset 2px 2px 5px var(--sh-dark), inset -2px -2px 5px var(--sh-light);
+  width: auto; 
+  max-width: 90%;
+}
+
+.color-picker-group {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  gap: 5px; 
+}
+
+.image-color-controls-container label {
+  font-size: 0.9rem;
+  color: var(--text); 
+  font-weight: 500;
+}
+
+.image-color-controls-container input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 40px; 
+  height: 40px;
+  background-color: transparent; 
+  border: 1px solid var(--sh-dark); 
+  border-radius: 8px; 
+  cursor: pointer;
+  padding: 0; 
+}
+
+.image-color-controls-container input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0; 
+  border-radius: 7px; 
+}
+.image-color-controls-container input[type="color"]::-webkit-color-swatch {
+  border: none; 
+  border-radius: 7px;
+}
+.image-color-controls-container input[type="color"]::-moz-color-swatch {
+  border: none; 
+  border-radius: 7px;
+}
+
+
+/* Hide color controls in dark mode */
+body.dark .image-color-controls-container {
+  display: none;
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
@@ -1020,20 +1077,29 @@ body.dark #imageWatermark {
     font-size: 1.1rem;
   }
 
-  /* Adjust image square size for smaller screens */
   :root {
     --image-square-size: 85vw; 
   }
   #quoteImageContent {
     padding: 25px; 
+    border-radius: 20px; /* Softer corners on smaller screens too */
   }
   #imageQuoteAuthor {
-    font-size: 16px; /* Slightly smaller author font on smaller image */
+    font-size: 16px; 
   }
   #imageWatermark {
     font-size: 12px;
     bottom: 10px;
     right: 15px;
+  }
+  .image-color-controls-container {
+    flex-direction: column; 
+    align-items: center;
+    gap: 10px;
+  }
+  .color-picker-group {
+    width: 100%;
+    justify-content: center; 
   }
 }
 
@@ -1065,6 +1131,7 @@ body.dark #imageWatermark {
     }
     #quoteImageContent {
       padding: 20px;
+      border-radius: 15px; /* Adjust for very small screens */
     }
     #imageQuoteAuthor {
       font-size: 14px;
