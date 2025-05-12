@@ -978,28 +978,48 @@ footer .author-link:focus-visible {
   text-decoration: underline;
 }
 
-/* Styles for Image Preview Modal */
-#quoteImagePreviewContainer {
-  display: none; 
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.75); 
-  flex-direction: column; 
-  justify-content: center;
-  align-items: center;
-  z-index: 3000; 
-  padding: 1rem;
-  overflow-y: auto; 
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+/* Styles for Image Preview Modal - Text Enlargement */
+/* ... (your existing #quoteImagePreviewContainer and #quoteImageWrapper styles) ... */
+
+#imageQuoteText {
+  font-family: 'Playfair Display', serif; 
+  /* MODIFIED: Increased font size for better space utilization */
+  font-size: clamp(1.8rem, 7vmin, 2.8rem); 
+  color: var(--text); 
+  margin-bottom: 0.75em; 
+  word-wrap: break-word; 
+  line-height: 1.4; 
+  max-width: 92%; /* Slightly increased from 90% */
+  transition: color .4s;
+}
+
+#imageQuoteAuthor {
+  font-family: 'Poppins', sans-serif; 
+  /* MODIFIED: Increased font size */
+  font-size: clamp(1.2rem, 4.5vmin, 2.0rem); 
+  color: var(--light); 
+  margin-bottom: 1.5em; 
+  font-style: italic; 
+  max-width: 92%; /* Slightly increased from 90% */
+  transition: color .4s;
+}
+
+#imageWatermark {
+  font-family: 'Poppins', sans-serif; 
+  font-size: clamp(0.7rem, 2.8vmin, 0.9rem); /* Slightly increased for balance */
+  color: var(--light); 
+  opacity: 0.6; 
+  position: absolute; 
+  bottom: 12px; /* Adjusted from 15px */
+  left: 50%; 
+  transform: translateX(-50%); 
+  padding: 5px; 
+  transition: color .4s, opacity .4s;
 }
 
 #quoteImageWrapper { 
   background: var(--card); 
-  color: var(--text);     
+  color: var(--text);    
   border-radius: 12px;    
   box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
   
@@ -1013,50 +1033,12 @@ footer .author-link:focus-visible {
   flex-direction: column;
   justify-content: center; 
   align-items: center;     
-  text-align: center;      
-  padding: 25px;           
-  position: relative;      
-  overflow: hidden;        
+  text-align: center;        
+  padding: 20px; /* Reduced padding slightly from 25px to give text more room */          
+  position: relative;       
+  overflow: hidden;         
   margin-bottom: 20px; 
   transition: background .4s, color .4s, box-shadow .4s;
-}
-
-body.dark #quoteImageWrapper {
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4); 
-}
-
-#imageQuoteText {
-  font-family: 'Playfair Display', serif; 
-  font-size: clamp(1.2rem, 5vmin, 1.8rem); 
-  color: var(--text); 
-  margin-bottom: 0.75em; 
-  word-wrap: break-word; 
-  line-height: 1.4; 
-  max-width: 90%;   
-  transition: color .4s;
-}
-
-#imageQuoteAuthor {
-  font-family: 'Poppins', sans-serif; 
-  font-size: clamp(0.9rem, 3.5vmin, 1.3rem); 
-  color: var(--light); 
-  margin-bottom: 1.5em; 
-  font-style: italic; 
-  max-width: 90%;
-  transition: color .4s;
-}
-
-#imageWatermark {
-  font-family: 'Poppins', sans-serif; 
-  font-size: clamp(0.6rem, 2.5vmin, 0.8rem); 
-  color: var(--light); 
-  opacity: 0.6; 
-  position: absolute; 
-  bottom: 15px; 
-  left: 50%; 
-  transform: translateX(-50%); 
-  padding: 5px; 
-  transition: color .4s, opacity .4s;
 }
 
 body.dark #imageWatermark {
