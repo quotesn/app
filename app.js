@@ -107,7 +107,6 @@ function generateQuoteImage() {
   const author = lastQuote && lastQuote.author ? lastQuote.author : (qAuth ? qAuth.textContent : "Unknown");
   const watermark = "wordsofwisdom.in";
 
-  // Canvas setup
   const size = 1024;
   const padding = size * 0.08;
   const canvas = document.createElement('canvas');
@@ -159,23 +158,28 @@ function generateQuoteImage() {
     && fontSize > 28
   );
 
-  // Center vertically with author
+  // Calculate total height (quote lines + author)
   const quoteBlockHeight = lines.length * fontSize * 1.2;
-  let y = padding + (size * 0.25 - quoteBlockHeight) / 2;
+  const authorFontSize = Math.round(fontSize * 0.7);
+  const authorHeight = authorFontSize * 1.4;
+  const totalBlockHeight = quoteBlockHeight + authorHeight;
+
+  // Center block vertically
+  let y = (size - totalBlockHeight) / 2;
 
   // Draw quote lines
   ctx.font = `bold ${fontSize}px 'Georgia', serif`;
+  ctx.fillStyle = "#222";
   lines.forEach(line => {
     ctx.fillText(line, size / 2, y);
     y += fontSize * 1.2;
   });
 
   // Author (italic, below quote)
-  ctx.font = `italic ${Math.round(fontSize * 0.7)}px 'Georgia', serif`;
+  ctx.font = `italic ${authorFontSize}px 'Georgia', serif`;
   ctx.fillStyle = "#666";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  y += fontSize * 0.7;
   ctx.fillText(`- ${author}`, size / 2, y);
 
   // Watermark (bottom right)
@@ -186,31 +190,26 @@ function generateQuoteImage() {
   ctx.fillText(watermark, size - padding, size - padding/2);
 
   currentCanvas = canvas;
-  // Set preview image src
   document.getElementById('quoteImagePreview').src = canvas.toDataURL('image/png');
 }
+
 // --- END IMAGE GENERATION LOGIC ---
 
-  // Show preview modal when "Share as Image" is clicked
-shareGeneratedImageBtn.addEventListener('click', () => {
+document.getElementById('shareGeneratedImageBtn').addEventListener('click', () => {
   generateQuoteImage();
   quoteImagePreviewContainer.style.display = 'flex';
   setTimeout(() => {
     quoteImagePreviewContainer.classList.add('visible');
   }, 10);
 });
-
-// Close modal
-closeImagePreviewBtn.addEventListener('click', () => {
+document.getElementById('closeImagePreviewBtn').addEventListener('click', () => {
   quoteImagePreviewContainer.classList.remove('visible');
   setTimeout(() => {
     quoteImagePreviewContainer.style.display = 'none';
     document.getElementById('quoteImagePreview').src = '';
   }, 300);
 });
-
-// Download image
-downloadImageBtn.addEventListener('click', () => {
+document.getElementById('downloadImageBtn').addEventListener('click', () => {
   if (!currentCanvas) return;
   const link = document.createElement('a');
   link.download = 'quote.png';
@@ -218,6 +217,8 @@ downloadImageBtn.addEventListener('click', () => {
   link.click();
 });
 
+// Share image (Web Share API)
+shareGeneratedImageBtn.addEventListener('dblclick', async () => {
 // Share image (Web Share API)
 shareGeneratedImageBtn.addEventListener('dblclick', async () => {
   if (!currentCanvas) return;
