@@ -203,10 +203,22 @@
     </div>
   </footer>
 
-<div id="quoteImagePreviewContainer" class="image-modal"> <div id="quoteImageWrapper"> <div id="quoteImageContent">
+<div id="quoteImagePreviewContainer" class="image-modal">
+  <div id="quoteImageWrapper">
+    <div id="quoteImageContent">
       <p id="imageQuoteText"></p>
       <p id="imageQuoteAuthor"></p>
       <p id="imageWatermark">wordsofwisdom.in</p>
+    </div>
+    <div id="imageColorControls" class="image-color-controls-container">
+      <div class="color-picker-group">
+        <label for="imageBgColorPicker">Background:</label>
+        <input type="color" id="imageBgColorPicker" aria-label="Background Color">
+      </div>
+      <div class="color-picker-group">
+        <label for="imageTextColorPicker">Text:</label>
+        <input type="color" id="imageTextColorPicker" aria-label="Text Color">
+      </div>
     </div>
     <div class="image-buttons-container">
       <button id="downloadImageBtn" class="icon-btn" aria-label="Download" disabled>
@@ -239,7 +251,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('/sw.js') // Ensure sw.js is in the root directory if served from root
+          .register('/sw.js') 
           .then(reg => console.log('SW registered:', reg.scope))
           .catch(err => console.error('SW registration failed:', err));
       });
