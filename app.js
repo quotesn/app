@@ -1401,4 +1401,3 @@ document.addEventListener("DOMContentLoaded", () => {
     scheduleDailyNotification();
     console.log("App initialization complete.");
   })();
-});
