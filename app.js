@@ -594,17 +594,18 @@ shareGeneratedImageBtn.addEventListener('dblclick', async () => {
           }
           categoryMenu.appendChild(sec); // Append section to categoryMenu
           // Add click listener for section toggle
-          sec.querySelector('.section-btn').addEventListener('click', function() {
-            const list = sec.querySelector('.section-list');
-            const isExpanded = this.getAttribute('aria-expanded') === 'true';
-            this.setAttribute('aria-expanded', !isExpanded);
-            list.style.display = isExpanded ? 'none' : 'block';
-            const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up'); // Chevron toggle
-            if(icon){
-                icon.classList.toggle('fa-chevron-down');
-                icon.classList.toggle('fa-chevron-up');
-            }
-          });
+sec.querySelector('.section-btn').addEventListener('click', function() {
+  const list = sec.querySelector('.section-list');
+  const isExpanded = this.getAttribute('aria-expanded') === 'true';
+  this.setAttribute('aria-expanded', !isExpanded);
+  list.style.display = isExpanded ? 'none' : 'block';
+  const icon = this.querySelector('.fa-chevron-down') || this.querySelector('.fa-chevron-up');
+  // Optionally, toggle icon class here
+  if (icon) {
+    icon.classList.toggle('fa-chevron-down');
+    icon.classList.toggle('fa-chevron-up');
+  }
+});
         }
       });
     }
