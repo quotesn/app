@@ -1056,27 +1056,27 @@ function showRotatingBanner() {
   function scheduleDailyNotification() { /* Placeholder */ }
 
 
-  // --- ADJUST TEXT TO FIT FUNCTION (Using the enhanced version for larger text) ---
+  // --- ADJUST TEXT TO FIT FUNCTION (Enhanced for larger text and readability) ---
   /**
    * Adjusts the font size of the text element to fit within the container.
    * @param {object} options - Configuration options.
    * @param {HTMLElement} options.textElement - The HTML element containing the text.
    * @param {HTMLElement} options.containerElement - The HTML element the text should fit within.
    * @param {HTMLElement} [options.authorElement] - Optional: The HTML element for the author.
-   * @param {number} [options.initialFontSize=48] - Starting font size in pixels.
-   * @param {number} [options.minFontSize=16] - Minimum font size in pixels.
-   * @param {number} [options.maxFontSize=68] - Maximum font size for short quotes.
+   * @param {number} [options.initialFontSize=56] - Starting font size in pixels. INCREASED
+   * @param {number} [options.minQuoteFontSize=22] - Minimum font size for the quote. INCREASED & RENAMED
+   * @param {number} [options.maxFontSize=80] - Maximum font size for short quotes. INCREASED
    */
   function adjustTextToFit({
       textElement,
       containerElement,
       authorElement,
-      initialFontSize = 48, 
-      minFontSize = 16,     
-      maxFontSize = 68      
+      initialFontSize = 56, // INCREASED: Start with a larger font for quotes
+      minQuoteFontSize = 22,  // INCREASED & RENAMED: Ensure quote is larger than author
+      maxFontSize = 80      // INCREASED: Max for very short quotes
   }) {
       textElement.style.fontSize = initialFontSize + 'px';
-      textElement.style.lineHeight = '1.4'; // Good for readability
+      textElement.style.lineHeight = '1.35'; // Adjusted for potentially larger fonts
 
       const containerStyle = getComputedStyle(containerElement);
       const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
@@ -1087,12 +1087,17 @@ function showRotatingBanner() {
       const targetWidth = containerElement.clientWidth - containerPaddingLeft - containerPaddingRight;
 
       let authorActualHeight = 0;
+      let authorFontSize = 18; // Default author font size from CSS
       if (authorElement && getComputedStyle(authorElement).display !== 'none') {
           const authorStyle = getComputedStyle(authorElement);
           authorActualHeight = authorElement.offsetHeight +
                                parseFloat(authorStyle.marginTop) +
                                parseFloat(authorStyle.marginBottom);
+          authorFontSize = parseFloat(authorStyle.fontSize) || 18;
       }
+      
+      // Ensure minQuoteFontSize is always greater than authorFontSize
+      const effectiveMinQuoteFontSize = Math.max(minQuoteFontSize, authorFontSize + 4); // At least 4px larger
 
       const textMarginBottom = parseFloat(getComputedStyle(textElement).marginBottom) || 0;
       const targetHeight = containerElement.clientHeight -
@@ -1103,43 +1108,39 @@ function showRotatingBanner() {
 
       let currentFontSize = initialFontSize;
 
-      // Helper to check overflow
       const checkOverflow = () => {
-          textElement.style.fontSize = currentFontSize + 'px'; // Apply current size for measurement
+          textElement.style.fontSize = currentFontSize + 'px';
           const isOverflownY = textElement.scrollHeight > targetHeight;
           const isOverflownX = textElement.scrollWidth > targetWidth;
           return isOverflownY || isOverflownX;
       };
-      
-      // Decrease font size if overflowing
-      while (checkOverflow() && currentFontSize > minFontSize) {
+
+      while (checkOverflow() && currentFontSize > effectiveMinQuoteFontSize) {
           currentFontSize--;
-          // textElement.style.fontSize = currentFontSize + 'px'; // Moved into checkOverflow for efficiency
       }
-      textElement.style.fontSize = currentFontSize + 'px'; // Set final shrunk size
+      textElement.style.fontSize = currentFontSize + 'px';
 
-      // If still overflowing at minFontSize, log a warning
-      if (currentFontSize === minFontSize && checkOverflow()) {
-          console.warn(`Text might be cut off. Min font size: ${minFontSize}px. Content: "${textElement.textContent.substring(0, 50)}..."`);
+      if (currentFontSize === effectiveMinQuoteFontSize && checkOverflow()) {
+          console.warn(`Text might be cut off. Min font size enforced: ${effectiveMinQuoteFontSize}px. Content: "${textElement.textContent.substring(0, 50)}..."`);
       }
 
-      // Try to increase font size for short quotes if there's space, up to maxFontSize
       const quoteLength = textElement.textContent.length;
       // Adjusted threshold for "short" quote to better utilize maxFontSize
-      if (quoteLength < 70 && currentFontSize < maxFontSize) { 
+      // Also ensure we don't shrink below effectiveMinQuoteFontSize here.
+      if (quoteLength < 100 && currentFontSize < maxFontSize) { 
           let testSize = currentFontSize;
           while (testSize < maxFontSize) {
               testSize++;
               textElement.style.fontSize = testSize + 'px';
               if (textElement.scrollHeight > targetHeight || textElement.scrollWidth > targetWidth) {
-                  testSize--; // Revert if overflow
+                  testSize--;
                   textElement.style.fontSize = testSize + 'px';
                   break;
               }
           }
-          currentFontSize = testSize; // Update currentFontSize with the potentially larger size
+          currentFontSize = Math.max(testSize, effectiveMinQuoteFontSize); // Ensure it doesn't go below min
       }
-      textElement.style.fontSize = currentFontSize + 'px'; // Ensure final (potentially increased) size is set
+      textElement.style.fontSize = currentFontSize + 'px';
   }
 
 
@@ -1147,8 +1148,6 @@ function showRotatingBanner() {
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
       if (!lastQuote || !lastQuote.text) {
-        // Using a more modern notification than alert, if available, or a custom modal.
-        // For simplicity, keeping alert as per original structure if no custom modal is ready.
         alert("Please generate a quote first!"); 
         if(shareMenu) shareMenu.classList.remove("open");
         return;
@@ -1164,14 +1163,14 @@ function showRotatingBanner() {
         imageQuoteAuthor.style.display = 'none';
       }
 
-      // Call the text fitting function
       adjustTextToFit({
           textElement: imageQuoteText,
-          containerElement: quoteImageContent, // This is the div with padding
+          containerElement: quoteImageContent, 
           authorElement: imageQuoteAuthor,
-          initialFontSize: 48, // Using the enhanced defaults
-          minFontSize: 16,
-          maxFontSize: 68
+          // Parameters will use the new defaults in the enhanced function
+          // initialFontSize: 56, 
+          // minQuoteFontSize: 22, // This will be dynamically adjusted if author font is larger
+          // maxFontSize: 80
       });
 
       if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
@@ -1180,14 +1179,13 @@ function showRotatingBanner() {
       downloadImageBtn.disabled = true;
       shareGeneratedImageBtn.disabled = true;
 
-      // Delay for rendering before canvas capture
       setTimeout(() => {
           html2canvas(quoteImageContent, {
               allowTaint: true,
               useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, // Ensure dynamic background
-              scale: 2, // For "Retina" quality
-              logging: false // Disable html2canvas logging unless debugging
+              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, 
+              scale: 2, 
+              logging: false 
           }).then(canvas => {
               currentCanvas = canvas;
               downloadImageBtn.disabled = false;
@@ -1197,14 +1195,14 @@ function showRotatingBanner() {
               alert("Sorry, couldn't generate the image. Please try again.");
               closeImagePreview();
           });
-      }, 150); // Small delay for DOM updates
+      }, 150); 
     });
   }
 
   function closeImagePreview() {
     if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
     document.body.style.overflow = '';
-    currentCanvas = null; // Clear the stored canvas
+    currentCanvas = null; 
   }
 
   if (closeImagePreviewBtn) {
@@ -1220,7 +1218,6 @@ function showRotatingBanner() {
       const imageURL = currentCanvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = imageURL;
-      // Sanitize file name
       const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'Unknown';
       const quoteStartForFile = lastQuote.text.substring(0,20).replace(/[^a-z0-9]/gi, '_').toLowerCase();
       a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
@@ -1259,15 +1256,14 @@ function showRotatingBanner() {
             if (navigator.canShare && navigator.canShare({ files: filesArray })) {
                 await navigator.share(shareData);
             } else {
-                // Fallback to sharing text and URL if files aren't supported by the target
                 await navigator.share({
                     title: `Quote by ${authorName}`,
                     text: `"${lastQuote.text}" — ${lastQuote.author || ''}\nShared via wordsofwisdom.in`,
-                    url: window.location.href // Optional: share the app's URL too
+                    url: window.location.href 
                 });
             }
           } catch (err) {
-            if (err.name !== 'AbortError') { // Don't show error if user simply cancelled sharing
+            if (err.name !== 'AbortError') { 
                 console.error('Error sharing image:', err);
                 alert('Sharing failed. You can try downloading the image instead.');
             }
@@ -1307,10 +1303,8 @@ function showRotatingBanner() {
     selectedCat = initialCategory;
     if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
 
-    showRotatingBanner(); // This might change selectedCat
+    showRotatingBanner(); 
 
-    // Display a quote based on the potentially updated selectedCat from banner
-    // or initial logic if banner didn't override.
     if (!lastQuote || !lastQuote.text || (lastQuote && lastQuote.category !== selectedCat && selectedCat !== bannerThemes.find(b => b.text === bannerText.textContent)?.cat) ) {
         displayQuote();
     }
