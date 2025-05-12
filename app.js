@@ -1053,129 +1053,149 @@ document.addEventListener("DOMContentLoaded", () => {
   function sendDailyQuoteNotification() { /* console.log("Placeholder: Send Daily Quote Notification"); */ }
   function scheduleDailyNotification() { /* console.log("Placeholder: Schedule Daily Notification"); */ }
 
+// --- Image Generation Feature Logic ---
+if (generateImageShareOption) {
+  generateImageShareOption.addEventListener('click', () => {
+    if (!lastQuote || !lastQuote.text) {
+      alert("Please generate a quote first!"); 
+      return;
+    }
 
-  // --- Image Generation Feature Logic ---
-  if (generateImageShareOption) {
-    generateImageShareOption.addEventListener('click', () => {
-      if (!lastQuote || !lastQuote.text) {
-        alert("Please generate a quote first!"); 
-        return;
-      }
+    // Set the quote and author
+    imageQuoteText.textContent = lastQuote.text;
+    if (lastQuote.author) {
+      imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
+      imageQuoteAuthor.style.display = 'block';
+    } else {
+      imageQuoteAuthor.textContent = '';
+      imageQuoteAuthor.style.display = 'none';
+    }
 
-      imageQuoteText.textContent = lastQuote.text;
-      if (lastQuote.author) {
-        imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
-        imageQuoteAuthor.style.display = 'block';
-      } else {
-        imageQuoteAuthor.textContent = '';
-        imageQuoteAuthor.style.display = 'none';
-      }
+    // Font size adjustment based on quote length
+    const length = lastQuote.text.length;
+    if (length > 250) {
+      imageQuoteText.style.fontSize = '20px';
+    } else if (length < 80) {
+      imageQuoteText.style.fontSize = '34px';
+    } else {
+      imageQuoteText.style.fontSize = '28px';
+    }
 
-      if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden'; 
+    quoteImagePreviewContainer.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; 
 
-      downloadImageBtn.disabled = true;
-      shareGeneratedImageBtn.disabled = true;
+    // Disable buttons until canvas is ready
+    downloadImageBtn.disabled = true;
+    shareGeneratedImageBtn.disabled = true;
 
-      setTimeout(() => {
-          html2canvas(quoteImageContent, { 
-              allowTaint: true,
-              useCORS: true,
-              backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, 
-              scale: 2, // Increase scale for better resolution, e.g., if #quoteImageContent is 500x500, output is 1000x1000
-              logging: false 
-          }).then(canvas => {
-              currentCanvas = canvas; 
+    // Delay canvas generation to allow DOM render
+    setTimeout(() => {
+      html2canvas(quoteImageContent, { 
+        allowTaint: true,
+        useCORS: true,
+        backgroundColor: getComputedStyle(quoteImageContent).backgroundColor, 
+        scale: 2,
+        logging: false 
+      }).then(canvas => {
+        currentCanvas = canvas; 
+        downloadImageBtn.disabled = false;
+        shareGeneratedImageBtn.disabled = false;
+      }).catch(err => {
+        console.error("Error generating image with html2canvas:", err);
+        alert("Sorry, couldn't generate the image. Please try again.");
+        closeImagePreview(); 
+      });
+    }, 100);
+  });
+}
 
-              downloadImageBtn.disabled = false;
-              shareGeneratedImageBtn.disabled = false;
+// Close preview and clean up
+function closeImagePreview() {
+  if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
+  document.body.style.overflow = ''; 
+  currentCanvas = null; 
+}
 
-          }).catch(err => {
-              console.error("Error generating image with html2canvas:", err);
-              alert("Sorry, couldn't generate the image. Please try again.");
-              closeImagePreview(); 
-          });
-      }, 100); 
-    });
-  }
+// Handle close button
+if (closeImagePreviewBtn) {
+  closeImagePreviewBtn.addEventListener('click', closeImagePreview);
+}
 
-  function closeImagePreview() {
-    if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
-    document.body.style.overflow = ''; 
-    currentCanvas = null; 
-  }
+// Download generated image
+if (downloadImageBtn) {
+  downloadImageBtn.addEventListener('click', () => {
+    if (!currentCanvas) {
+      alert("Image not generated yet.");
+      return;
+    }
 
-  if (closeImagePreviewBtn) {
-    closeImagePreviewBtn.addEventListener('click', closeImagePreview);
-  }
+    const imageURL = currentCanvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = imageURL;
+    const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'unknown';
+    const quoteStartForFile = lastQuote.text.substring(0, 15).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+}
 
-  if (downloadImageBtn) {
-    downloadImageBtn.addEventListener('click', () => {
-      if (!currentCanvas) {
-          alert("Image not generated yet.");
+// Share generated image via Web Share API
+if (shareGeneratedImageBtn) {
+  shareGeneratedImageBtn.addEventListener('click', async () => {
+    if (!currentCanvas) {
+      alert("Image not generated yet.");
+      return;
+    }
+
+    if (navigator.share && navigator.canShare) {
+      currentCanvas.toBlob(async (blob) => {
+        if (!blob) {
+          alert("Error creating image blob for sharing.");
           return;
-      }
-      const imageURL = currentCanvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = imageURL;
-      const authorNameForFile = lastQuote.author ? lastQuote.author.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'Unknown';
-      const quoteStartForFile = lastQuote.text.substring(0,15).replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      a.download = `WOW_Quote_${quoteStartForFile}_${authorNameForFile}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-  }
+        }
 
-  if (shareGeneratedImageBtn) {
-    shareGeneratedImageBtn.addEventListener('click', async () => {
-      if (!currentCanvas) {
-          alert("Image not generated yet.");
-          return;
-      }
+        const authorName = lastQuote.author || 'Unknown';
+        const filesArray = [
+          new File([blob], `WOW_Quote_${authorName}.png`, { 
+            type: 'image/png',
+            lastModified: new Date().getTime()
+          })
+        ];
 
-      if (navigator.share && navigator.canShare) { 
-        currentCanvas.toBlob(async (blob) => { 
-          if (!blob) {
-              alert("Error creating image blob for sharing.");
-              return;
+        const shareData = {
+          files: filesArray,
+          title: `Quote by ${authorName} - Words of Wisdom`,
+          text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
+        };
+
+        try {
+          if (navigator.canShare({ files: filesArray })) {
+            await navigator.share(shareData);
+            console.log('Image shared successfully');
+          } else {
+            // Fallback: share only text and URL
+            await navigator.share({
+              title: `Quote by ${authorName} - Words of Wisdom`,
+              text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
+              url: window.location.href
+            });
+            console.log('Shared text content and URL as fallback.');
           }
-          const authorName = lastQuote.author || 'Unknown';
-          const filesArray = [
-            new File([blob], `WOW_Quote_${authorName}.png`, { 
-              type: 'image/png',
-              lastModified: new Date().getTime()
-            })
-          ];
-          const shareData = {
-            files: filesArray,
-            title: `Quote by ${authorName} - Words of Wisdom`,
-            text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
-          };
-          try {
-            if (navigator.canShare({ files: filesArray })) {
-                await navigator.share(shareData);
-                console.log('Image shared successfully');
-            } else {
-                await navigator.share({
-                    title: `Quote by ${authorName} - Words of Wisdom`,
-                    text: `"${lastQuote.text}" — ${authorName}\nShared via wordsofwisdom.in`,
-                    url: window.location.href 
-                });
-                console.log('Shared text content and URL as fallback.');
-            }
-          } catch (err) {
-            if (err.name !== 'AbortError') { 
-                console.error('Error sharing image:', err);
-                alert('Sharing failed. You can try downloading the image instead.');
-            }
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error('Error sharing image:', err);
+            alert('Sharing failed. You can try downloading the image instead.');
           }
-        }, 'image/png'); 
-      } else {
-        alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
-      }
-    });
-  }
+        }
+      }, 'image/png');
+    } else {
+      alert('Sharing images this way is not supported on your browser. Please download the image to share it.');
+    }
+  });
+}
+
 
   (async function initApp(){
     if(qText) qText.textContent = "✨ Loading Wisdom..."; 
