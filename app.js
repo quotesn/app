@@ -1387,19 +1387,16 @@ document.addEventListener("DOMContentLoaded", () => {
         displayQuote();
     }
 
-
     // Final check if still loading after everything
     if ((!lastQuote || !lastQuote.text) && qText && qText.textContent.includes("Loading Wisdom")) {
         qText.textContent = "Sorry, we couldn't load any quotes right now. Please try again later.";
         if(qAuth) qAuth.textContent = "";
     }
 
-    // Initialize streak and favorite button state
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     showStreak(streak.count);
-    updateFavoriteButtonState(); // Call this after a quote might have been displayed
+    updateFavoriteButtonState(); 
 
-    // Placeholders for future notification features
     requestNotificationPermission();
     scheduleDailyNotification();
     console.log("App initialization complete.");
