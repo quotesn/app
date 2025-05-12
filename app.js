@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
   const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
   const generateImageShareOption = document.getElementById('generateImageShareOption');
-  const shareMenu = document.getElementById("shareMenu"); // Ensure shareMenu is defined
 
   let categories = [];
   let quotes = {};
