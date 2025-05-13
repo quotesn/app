@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // DOM references from your original code
+  // --- DOM Elements ---
   const qText = document.getElementById("quoteText"),
     qAuth = document.getElementById("quoteAuthor"),
     quoteBox = document.getElementById("quoteBox"),
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     openMenuBtn = document.getElementById("openMenuBtn"),
     categoryModal = document.getElementById("categoryModal"),
     closeMenuBtn = document.getElementById("closeMenuBtn"),
-    currentCategory = document.getElementById("currentCategory"),
+    currentCategoryDisplay = document.getElementById("currentCategory"), // Renamed for clarity
     categoryMenu = document.getElementById("categoryMenu"),
     streakBadge = document.getElementById("streakBadge"),
     shareMenu = document.getElementById("shareMenu"),
@@ -36,35 +36,40 @@ document.addEventListener("DOMContentLoaded", () => {
     submitFeedbackBtn = document.getElementById('submitFeedbackBtn'),
     feedbackSuccess = document.getElementById('feedbackSuccess'),
     magicSound = document.getElementById('magicSound'),
-    favSound = document.getElementById('favSound');
+    favSound = document.getElementById('favSound'),
+    appNotificationElement = document.getElementById('appNotification'); // For app-wide notifications
 
-  // DOM references for Image Generation Modal
-  const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer');
-  const quoteImageWrapper = document.getElementById('quoteImageWrapper');
-  const quoteImageContent = document.getElementById('quoteImageContent');
-  const imageQuoteText = document.getElementById('imageQuoteText');
-  const imageQuoteAuthor = document.getElementById('imageQuoteAuthor');
-  const imageWatermark = document.getElementById('imageWatermark');
-  const downloadImageBtn = document.getElementById('downloadImageBtn');
-  const shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn');
-  const closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn');
-  const generateImageShareOption = document.getElementById('generateImageShareOption');
+  // Image Generation Modal Elements
+  const quoteImagePreviewContainer = document.getElementById('quoteImagePreviewContainer'),
+    quoteImageWrapper = document.getElementById('quoteImageWrapper'),
+    quoteImageContent = document.getElementById('quoteImageContent'),
+    imageQuoteText = document.getElementById('imageQuoteText'),
+    imageQuoteAuthor = document.getElementById('imageQuoteAuthor'),
+    imageWatermark = document.getElementById('imageWatermark'),
+    downloadImageBtn = document.getElementById('downloadImageBtn'),
+    shareGeneratedImageBtn = document.getElementById('shareGeneratedImageBtn'),
+    closeImagePreviewBtn = document.getElementById('closeImagePreviewBtn'),
+    generateImageShareOption = document.getElementById('generateImageShareOption');
 
-  // Global variables from your original code
+  // --- Global State ---
   let categories = [];
   let quotes = {};
   let authors = {};
   let selectedCat = "inspiration";
   let lastQuote = null;
-  let quoteHistory = [];
+  let quoteHistory = []; // Max 5 entries
   let authorMode = false;
   let authorQuotes = [];
   let authorName = "";
   let authorQuoteIndex = 0;
   let debounceTimer = null;
   let currentCanvas = null;
+  let previouslyFocusedElement; // For modal accessibility
 
-  // Banner themes and styles (from your original code)
+  const MAX_QUOTE_HISTORY = 5;
+  const VAPID_PUBLIC_KEY = 'YOUR_GENERATED_VAPID_PUBLIC_KEY'; // REPLACE THIS!
+
+  // Banner themes and styles (unchanged from original)
   const bannerThemes = [
     {cat: "inspiration",    text: "Ignite fresh ideas to fuel your week."},
     {cat: "motivation",     text: "Power up your ambition and take the lead."},
@@ -96,64 +101,109 @@ document.addEventListener("DOMContentLoaded", () => {
     {cat: "perseverance",   text: "Advance onward-steady and unyielding."}
   ];
   const bannerStyles = {
-    inspiration:    { color: "#7c5df0", icon: "💡" },
-    motivation:     { color: "#ff9800", icon: "⚡" },
-    positivethinking: { color: "#43b581", icon: "🌈" },
-    happiness:      { color: "#ffd700", icon: "😊" },
-    love:           { color: "#e57373", icon: "❤️" },
-    gratitude:      { color: "#4caf50", icon: "🙏" },
-    resilience:     { color: "#2196f3", icon: "🛡️" },
-    courage:        { color: "#ff5722", icon: "🦁" },
-    change:         { color: "#00bcd4", icon: "🔄" },
-    lifelessons:    { color: "#3f51b5", icon: "📚" },
-    dreams:         { color: "#9c27b0", icon: "🌠" },
-    kindness:       { color: "#8bc34a", icon: "🤝" },
-    beauty:         { color: "#f06292", icon: "🌸" },
-    wisdom:         { color: "#607d8b", icon: "🦉" },
-    sufiwisdom:     { color: "#009688", icon: "🕊️" },
-    truth:          { color: "#795548", icon: "🔎" },
-    time:           { color: "#607d8b", icon: "⏳" },
-    mortality:      { color: "#455a64", icon: "🌑" },
-    freedom:        { color: "#00bfae", icon: "🕊️" },
-    society:        { color: "#ffb300", icon: "🌍" },
-    learning:       { color: "#3949ab", icon: "🧠" },
-    simplicity:     { color: "#bdbdbd", icon: "🍃" },
-    selfcare:       { color: "#f48fb1", icon: "🛁" },
-    mindfulness:    { color: "#aeea00", icon: "🧘" },
-    selfknowledge:  { color: "#ab47bc", icon: "🔮" },
-    innerpeace:     { color: "#81d4fa", icon: "🌊" },
-    spirituality:   { color: "#ba68c8", icon: "✨" },
-    perseverance:   { color: "#6d4c41", icon: "🚀" }
+    inspiration:    { color: "#7c5df0", icon: "💡" }, motivation:     { color: "#ff9800", icon: "⚡" },
+    positivethinking: { color: "#43b581", icon: "🌈" }, happiness:      { color: "#ffd700", icon: "😊" },
+    love:           { color: "#e57373", icon: "❤️" }, gratitude:      { color: "#4caf50", icon: "🙏" },
+    resilience:     { color: "#2196f3", icon: "🛡️" }, courage:        { color: "#ff5722", icon: "🦁" },
+    change:         { color: "#00bcd4", icon: "🔄" }, lifelessons:    { color: "#3f51b5", icon: "📚" },
+    dreams:         { color: "#9c27b0", icon: "🌠" }, kindness:       { color: "#8bc34a", icon: "🤝" },
+    beauty:         { color: "#f06292", icon: "🌸" }, wisdom:         { color: "#607d8b", icon: "🦉" },
+    sufiwisdom:     { color: "#009688", icon: "🕊️" }, truth:          { color: "#795548", icon: "🔎" },
+    time:           { color: "#607d8b", icon: "⏳" }, mortality:      { color: "#455a64", icon: "🌑" },
+    freedom:        { color: "#00bfae", icon: "🕊️" }, society:        { color: "#ffb300", icon: "🌍" },
+    learning:       { color: "#3949ab", icon: "🧠" }, simplicity:     { color: "#bdbdbd", icon: "🍃" },
+    selfcare:       { color: "#f48fb1", icon: "🛁" }, mindfulness:    { color: "#aeea00", icon: "🧘" },
+    selfknowledge:  { color: "#ab47bc", icon: "🔮" }, innerpeace:     { color: "#81d4fa", icon: "🌊" },
+    spirituality:   { color: "#ba68c8", icon: "✨" }, perseverance:   { color: "#6d4c41", icon: "🚀" }
   };
 
-  // --- Helper Functions (capitalize, fetchJSON, etc. from your original code) ---
+  // --- Utility Functions ---
   function capitalize(str) {
     if (!str) return "";
     return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  function getYesterday() {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  let notificationTimeout;
+  function showAppNotification(message, type = 'info', duration = 3000) {
+    if (!appNotificationElement) return;
+    appNotificationElement.textContent = message;
+    appNotificationElement.className = 'app-notification show'; // Reset classes
+    if (type === 'error') appNotificationElement.classList.add('error');
+    else if (type === 'success') appNotificationElement.classList.add('success');
+
+
+    clearTimeout(notificationTimeout);
+    notificationTimeout = setTimeout(() => {
+      appNotificationElement.classList.remove('show');
+    }, duration);
   }
 
   async function fetchJSON(url, cacheKey) {
     try {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
-        return JSON.parse(cached);
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          console.warn(`Invalid JSON in localStorage for ${cacheKey}. Clearing item.`, e);
+          localStorage.removeItem(cacheKey); // Clear corrupted cache entry
+        }
       }
       const res = await fetch(url);
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status} for ${url}`);
+        throw new Error(`HTTP error! Status: ${res.status} for ${url}`);
       }
       const data = await res.json();
-      localStorage.setItem(cacheKey, JSON.stringify(data));
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+      } catch (e) {
+          console.warn(`Could not save to localStorage (possibly full) for ${cacheKey}:`, e);
+          showAppNotification('Could not save data locally. Storage might be full.', 'error', 5000);
+      }
       return data;
     } catch (e) {
       console.error(`Failed to fetch or parse ${url}:`, e.message);
-      throw e;
+      showAppNotification(`Error loading data: ${e.message}. Please check your connection.`, 'error', 5000);
+      throw e; // Re-throw for the caller to handle if necessary
     }
   }
 
-function showRotatingBanner() {
+  // --- Modal Management ---
+  function openModal(modalElement, focusElement) {
+    previouslyFocusedElement = document.activeElement;
+    modalElement.classList.add('open');
+    if (focusElement) {
+        focusElement.focus();
+    } else {
+        const firstFocusable = modalElement.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusable) firstFocusable.focus();
+    }
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal(modalElement) {
+    modalElement.classList.remove('open');
+    if (previouslyFocusedElement) {
+        previouslyFocusedElement.focus();
+        previouslyFocusedElement = null;
+    }
+    // Check if any other modal is open before re-enabling body scroll
+    const anyModalOpen = document.querySelector('.modal.open, .image-modal[style*="display: flex"]');
+    if (!anyModalOpen) {
+        document.body.style.overflow = "";
+    }
+  }
+
+  // --- Banner Logic ---
+  function showRotatingBanner() {
     const today = new Date();
-    const startDate = new Date("2025-05-05");
+    const startDate = new Date("2025-05-05"); // Ensure this date is in the past or current for immediate effect
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const idx = ((daysSinceStart % bannerThemes.length) + bannerThemes.length) % bannerThemes.length;
     const theme = bannerThemes[idx];
@@ -187,23 +237,32 @@ function showRotatingBanner() {
 
     selectedCat = theme.cat;
     authorMode = false;
-    if(currentCategory) currentCategory.textContent = capitalize(theme.cat);
+    if(currentCategoryDisplay) currentCategoryDisplay.textContent = capitalize(theme.cat);
     localStorage.setItem("wowBannerDate", todayStr);
     localStorage.setItem("lastAutoSelectedCategory", theme.cat);
   }
 
+  // --- Data Loading and Processing ---
   async function loadCategoriesAndQuotes() {
     try {
       try {
         categories = await fetchJSON('data/categories.json', 'wowCategories');
       } catch (e) {
         console.warn("Could not load categories.json from data/, trying root...");
-        categories = await fetchJSON('categories.json', 'wowCategoriesRoot');
+        try {
+            categories = await fetchJSON('categories.json', 'wowCategoriesRoot');
+        } catch (finalError) {
+            showAppNotification('Critical: Could not load category definitions.', 'error', 7000);
+            if(qText) qText.textContent = "Error: Main category file could not be loaded.";
+            if(qAuth) qAuth.textContent = "";
+            return; // Essential data missing
+        }
       }
 
       if (!categories || categories.length === 0) {
         console.error("CRITICAL: categories.json is empty or could not be loaded.");
-        if(qText) qText.textContent = "Error: Main category file could not be loaded.";
+        showAppNotification("Error: No categories found. App may not function correctly.", 'error', 7000);
+        if(qText) qText.textContent = "Error: Category data missing.";
         if(qAuth) qAuth.textContent = "";
         return;
       }
@@ -214,11 +273,11 @@ function showRotatingBanner() {
           if (cat.children) {
             collectCategories(cat.children);
           } else if (cat.file) {
-            const originalPath = cat.file;
+            const originalPath = cat.file; // e.g., data/quotes_inspiration.json
             let pathAttempt1 = originalPath;
-            let pathAttempt2 = null;
+            let pathAttempt2 = null; // For fallback if originalPath starts with 'data/'
             if (originalPath && originalPath.startsWith('data/')) {
-                pathAttempt2 = originalPath.substring(5);
+                pathAttempt2 = originalPath.substring(5); // e.g., quotes_inspiration.json
             }
 
             const fetchAndProcessQuoteFile = async (filePath, cacheKeyPrefix) => {
@@ -227,17 +286,20 @@ function showRotatingBanner() {
                     if (Array.isArray(data)) {
                         quotes[cat.id] = data;
                         buildAuthorIndex(data, cat.id);
-                        return true;
+                        return true; // Success
                     }
-                    console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Received:`, data);
-                    return false;
+                    console.warn(`Invalid data structure in ${filePath} for category ${cat.id}. Expected array. Received:`, data);
+                    return false; // Data structure error
                 } catch (err) {
-                    return false;
+                    // fetchJSON already shows a notification
+                    return false; // Fetch error
                 }
             };
+
             quotePromises.push(
                 fetchAndProcessQuoteFile(pathAttempt1, 'wowQuotes_').then(success => {
                     if (!success && pathAttempt2) {
+                        console.warn(`Failed to load ${pathAttempt1}, trying ${pathAttempt2}`);
                         return fetchAndProcessQuoteFile(pathAttempt2, 'wowQuotesRoot_');
                     }
                     return success;
@@ -249,19 +311,26 @@ function showRotatingBanner() {
       collectCategories(categories);
 
       if (localStorage.getItem('userQuotes')) {
-        const userQuotesData = JSON.parse(localStorage.getItem('userQuotes'));
-        quotes['user'] = userQuotesData;
-        buildAuthorIndex(userQuotesData, 'user');
+        try {
+            const userQuotesData = JSON.parse(localStorage.getItem('userQuotes'));
+            quotes['user'] = userQuotesData;
+            buildAuthorIndex(userQuotesData, 'user');
+        } catch (e) {
+            console.warn("Error parsing userQuotes from localStorage", e);
+            localStorage.removeItem('userQuotes'); // Remove corrupted data
+        }
       }
       await Promise.all(quotePromises);
 
-      if (Object.keys(quotes).length === 0 && (!localStorage.getItem('userQuotes') || JSON.parse(localStorage.getItem('userQuotes')).length === 0)) {
+      if (Object.keys(quotes).length === 0 && (!localStorage.getItem('userQuotes') || JSON.parse(localStorage.getItem('userQuotes') || '[]').length === 0)) {
           if(qText) qText.textContent = "No quote data could be loaded. Please check your connection or try again later.";
           if(qAuth) qAuth.textContent = "";
+          showAppNotification("No quotes could be loaded. The app might be empty.", 'error', 7000);
       }
     } catch (err) {
       console.error('CRITICAL FAILURE in loadCategoriesAndQuotes:', err);
-      if(qText) qText.textContent = "A critical error occurred while loading app data.";
+      showAppNotification('A critical error occurred while loading app data. Please refresh.', 'error', 7000);
+      if(qText) qText.textContent = "A critical error occurred. Please refresh the page.";
       if(qAuth) qAuth.textContent = "";
     }
   }
@@ -282,85 +351,62 @@ function showRotatingBanner() {
     });
   }
 
+  // --- Menu Rendering and Interaction ---
   function renderMenu() {
     if (!categoryMenu) return;
-    categoryMenu.innerHTML = "";
+    categoryMenu.innerHTML = ""; // Clear previous menu
     function renderCategoryList(catArray, parentUl) {
       catArray.forEach(cat => {
-        if (cat.isSearch) {
-          const sec = document.createElement("div");
-          sec.className = "section search-section";
-          sec.innerHTML = `<button class="section-btn" aria-expanded="false" aria-controls="authorSearchWrapper-${cat.id || 'search'}"><i class="fa-solid fa-user section-icon"></i>Search by Author <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
-            <div id="authorSearchWrapper-${cat.id || 'search'}" class="author-search-wrapper" style="display: none;">
-              <input id="authorSearch" type="text" placeholder="Type author name…" autocomplete="off" aria-label="Search by author name" />
-              <ul id="authorList" class="suggestions-list" role="listbox"></ul>
+        if (cat.isSearch) { // Author Search and other static items
+          const searchSectionHTML = `
+            <div class="section search-section">
+              <button class="section-btn" aria-expanded="false" aria-controls="authorSearchWrapper-${cat.id || 'search'}">
+                <i class="fa-solid fa-user section-icon"></i>Search by Author
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+              </button>
+              <div id="authorSearchWrapper-${cat.id || 'search'}" class="author-search-wrapper" style="display: none;">
+                <input id="authorSearch" type="text" placeholder="Type author name…" autocomplete="off" aria-label="Search by author name" />
+                <ul id="authorList" class="suggestions-list" role="listbox"></ul>
+              </div>
             </div>`;
-          categoryMenu.appendChild(sec);
-          sec.querySelector('.section-btn').addEventListener('click', function() {
-            const wrapper = sec.querySelector('.author-search-wrapper');
-            const isExpanded = this.getAttribute('aria-expanded') === 'true';
-            this.setAttribute('aria-expanded', !isExpanded);
-            wrapper.style.display = isExpanded ? 'none' : 'block';
-            if (!isExpanded) wrapper.querySelector('input').focus();
-          });
+          categoryMenu.insertAdjacentHTML('beforeend', searchSectionHTML);
 
-          const favSec = document.createElement("div");
-          favSec.className = "section";
-          favSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-heart section-icon" aria-hidden="true"></i>View Favorites</button>`;
-          favSec.querySelector(".section-btn").addEventListener("click", () => {
-            openFavoritesModal();
-            closeMenu();
-          });
-          categoryMenu.appendChild(favSec);
+          const favSectionHTML = `
+            <div class="section">
+              <button class="section-btn" id="viewFavoritesBtn"><i class="fa-solid fa-heart section-icon" aria-hidden="true"></i>View Favorites</button>
+            </div>`;
+          categoryMenu.insertAdjacentHTML('beforeend', favSectionHTML);
 
-          const myFavCatSec = document.createElement("div");
-          myFavCatSec.className = "section";
-          myFavCatSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-star section-icon" aria-hidden="true"></i>Quotes from My Favorites</button>`;
-          myFavCatSec.querySelector(".section-btn").addEventListener("click", () => {
-            selectedCat = "myfavorites";
-            authorMode = false;
-            if(currentCategory) currentCategory.textContent = "My Favorites";
-            closeMenu();
-            displayQuote();
-          });
-          categoryMenu.appendChild(myFavCatSec);
+          const myFavCatHTML = `
+            <div class="section">
+              <button class="section-btn" id="myFavoritesCategoryBtn"><i class="fa-solid fa-star section-icon" aria-hidden="true"></i>Quotes from My Favorites</button>
+            </div>`;
+          categoryMenu.insertAdjacentHTML('beforeend', myFavCatHTML);
 
+          const submitSectionHTML = `
+            <div class="section">
+              <button class="section-btn" id="openSubmitQuoteModalBtn"><i class="fa-solid fa-plus section-icon" aria-hidden="true"></i>Submit a Quote</button>
+            </div>`;
+          categoryMenu.insertAdjacentHTML('beforeend', submitSectionHTML);
 
-          const submitSec = document.createElement("div");
-          submitSec.className = "section";
-          submitSec.innerHTML = `<button class="section-btn"><i class="fa-solid fa-plus section-icon" aria-hidden="true"></i>Submit a Quote</button>`;
-          submitSec.querySelector(".section-btn").addEventListener("click", () => {
-            if(submitQuoteModal) submitQuoteModal.classList.add('open');
-            document.body.style.overflow = "hidden";
-            if(customQuoteForm) customQuoteForm.reset();
-            if(quoteFormSuccess) {
-                quoteFormSuccess.style.display = "none";
-                quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
-            }
-            const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
-            const submitSpinner = submitCustomQuoteBtn.querySelector('.loader-spinner');
-            if(submitBtnText) submitBtnText.style.display = 'inline';
-            if(submitSpinner) submitSpinner.style.display = 'none';
-            submitCustomQuoteBtn.disabled = false;
-            closeMenu();
-          });
-          categoryMenu.appendChild(submitSec);
-
-        } else {
-          const sec = document.createElement("div");
-          sec.className = "section";
+        } else { // Regular categories with children
           const sectionId = `section-list-${cat.id || Math.random().toString(36).substring(2,9)}`;
-          sec.innerHTML = `<button class="section-btn" aria-expanded="false" aria-controls="${sectionId}">
-            ${cat.icon ? `<i class="fa-solid ${cat.icon} section-icon" aria-hidden="true"></i>` : ""}
-            ${cat.name} <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-          </button>
-          <ul class="section-list" id="${sectionId}" style="display: none;"></ul>`;
-          const ul = sec.querySelector(".section-list");
+          const sectionHTML = `
+            <div class="section">
+              <button class="section-btn" aria-expanded="false" aria-controls="${sectionId}">
+                ${cat.icon ? `<i class="fa-solid ${cat.icon} section-icon" aria-hidden="true"></i>` : ""}
+                ${cat.name} <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+              </button>
+              <ul class="section-list" id="${sectionId}" style="display: none;"></ul>
+            </div>`;
+          categoryMenu.insertAdjacentHTML('beforeend', sectionHTML);
+          const currentSectionDiv = categoryMenu.lastElementChild;
+          const ul = currentSectionDiv.querySelector(".section-list");
 
           if (cat.children) {
             cat.children.forEach(child => {
               const li = document.createElement("li");
-              if (child.children) {
+              if (child.children) { // Nested sub-categories
                 li.className = "has-children";
                 const subSectionId = `subsection-list-${child.id || Math.random().toString(36).substring(2,9)}`;
                 li.innerHTML = `<span role="button" tabindex="0" aria-expanded="false" aria-controls="${subSectionId}">
@@ -377,7 +423,7 @@ function showRotatingBanner() {
                   </a>`;
                   subul.appendChild(subli);
                 });
-              } else {
+              } else { // Direct child category
                 li.innerHTML = `<a href="#" data-cat="${child.id}">
                   ${child.icon ? `<i class="fa-solid ${child.icon}" aria-hidden="true"></i>` : ""}
                   ${child.name}
@@ -386,23 +432,36 @@ function showRotatingBanner() {
               ul.appendChild(li);
             });
           }
-          categoryMenu.appendChild(sec);
-          sec.querySelector('.section-btn').addEventListener('click', function() {
-            const list = sec.querySelector('.section-list');
-            const isExpanded = this.getAttribute('aria-expanded') === 'true';
-            this.setAttribute('aria-expanded', !isExpanded);
-            list.style.display = isExpanded ? 'none' : 'block';
-            const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up');
-            if(icon){
-                icon.classList.toggle('fa-chevron-down');
-                icon.classList.toggle('fa-chevron-up');
-            }
-          });
         }
       });
     }
-    renderCategoryList(categories, categoryMenu);
 
+    renderCategoryList(categories, categoryMenu);
+    attachMenuEventListeners(); // Attach listeners after HTML is rendered
+  }
+
+  function attachMenuEventListeners() {
+    // Toggle for main category sections
+    categoryMenu.querySelectorAll('.section > .section-btn').forEach(btn => {
+      const list = btn.nextElementSibling; // Could be .author-search-wrapper or .section-list
+      if (list) { // Ensure there's a next element to control
+        btn.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', !isExpanded);
+          list.style.display = isExpanded ? 'none' : 'block';
+          const icon = this.querySelector('.fa-chevron-down, .fa-chevron-up');
+          if (icon) {
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+          }
+          if (!isExpanded && list.id.includes('authorSearchWrapper')) {
+            list.querySelector('input#authorSearch')?.focus();
+          }
+        });
+      }
+    });
+
+    // Toggle for nested lists
     categoryMenu.querySelectorAll('.has-children > span').forEach(span => {
       span.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -418,24 +477,25 @@ function showRotatingBanner() {
       });
       span.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this.click();
+          e.preventDefault(); this.click();
         }
       });
     });
 
+    // Category link clicks
     categoryMenu.querySelectorAll('.section-list a, .nested-list a').forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
         selectedCat = link.dataset.cat;
         authorMode = false;
-        if(currentCategory) currentCategory.textContent = capitalize(link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim());
-        closeMenu();
+        if(currentCategoryDisplay) currentCategoryDisplay.textContent = capitalize(link.textContent.replace(/^[^\w]*([\w\s]+)/, '$1').trim());
+        closeModal(categoryModal);
         displayQuote();
         recordCategoryUse(selectedCat);
       });
     });
 
+    // Author search input
     const authorInput = categoryMenu.querySelector("#authorSearch");
     const authorListUL = categoryMenu.querySelector("#authorList");
     if (authorInput && authorListUL) {
@@ -448,19 +508,19 @@ function showRotatingBanner() {
           Object.keys(authors)
             .filter(name => name.includes(query))
             .sort()
-            .slice(0, 10)
+            .slice(0, 10) // Limit results
             .forEach(nameKey => {
               const li = document.createElement("li");
               li.setAttribute('role', 'option');
-              li.textContent = authors[nameKey][0].author;
-              li.tabIndex = -1;
+              li.textContent = authors[nameKey][0].author; // Display capitalized author name
+              li.tabIndex = -1; // For keyboard navigation if implemented
               li.addEventListener("click", () => {
                 authorMode = true;
                 authorName = nameKey;
-                authorQuotes = [...authors[nameKey]];
+                authorQuotes = [...authors[nameKey]]; // Create a copy
                 authorQuoteIndex = 0;
-                if(currentCategory) currentCategory.textContent = "Author: " + authors[nameKey][0].author;
-                closeMenu();
+                if(currentCategoryDisplay) currentCategoryDisplay.textContent = "Author: " + authors[nameKey][0].author;
+                closeModal(categoryModal);
                 showAuthorQuote();
               });
               authorListUL.appendChild(li);
@@ -468,30 +528,53 @@ function showRotatingBanner() {
         }, 300);
       });
     }
+
+    // Static menu item listeners
+    const viewFavoritesBtn = document.getElementById('viewFavoritesBtn');
+    if(viewFavoritesBtn) viewFavoritesBtn.addEventListener("click", () => {
+        openModal(favModal, closeFavModal);
+        showFavorites();
+        closeModal(categoryModal);
+    });
+
+    const myFavoritesCategoryBtn = document.getElementById('myFavoritesCategoryBtn');
+    if(myFavoritesCategoryBtn) myFavoritesCategoryBtn.addEventListener("click", () => {
+        selectedCat = "myfavorites";
+        authorMode = false;
+        if(currentCategoryDisplay) currentCategoryDisplay.textContent = "My Favorites";
+        closeModal(categoryModal);
+        displayQuote();
+    });
+
+    const openSubmitQuoteModalBtn = document.getElementById('openSubmitQuoteModalBtn');
+    if(openSubmitQuoteModalBtn) openSubmitQuoteModalBtn.addEventListener("click", () => {
+        openModal(submitQuoteModal, customQuoteForm.elements[0] || closeSubmitQuoteModal);
+        if(customQuoteForm) customQuoteForm.reset();
+        if(quoteFormSuccess) {
+            quoteFormSuccess.style.display = "none";
+            quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
+        }
+        const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
+        const submitSpinner = submitCustomQuoteBtn.querySelector('.loader-spinner');
+        if(submitBtnText) submitBtnText.style.display = 'inline';
+        if(submitSpinner) submitSpinner.style.display = 'none';
+        submitCustomQuoteBtn.disabled = false;
+        closeModal(categoryModal);
+    });
   }
 
-  function openMenu() {
-    renderMenu();
-    if(categoryModal) categoryModal.classList.add("open");
-    document.body.style.overflow = "hidden";
-    if(closeMenuBtn) closeMenuBtn.focus();
-  }
-  function closeMenu() {
-    if(categoryModal) categoryModal.classList.remove("open");
-    document.body.style.overflow = "";
-    if(openMenuBtn) openMenuBtn.focus();
-  }
-  if(openMenuBtn) openMenuBtn.addEventListener("click", openMenu);
-  if(closeMenuBtn) closeMenuBtn.addEventListener("click", closeMenu);
-  if(categoryModal) categoryModal.addEventListener("click", function(e) {
-    if (e.target === categoryModal) closeMenu();
+  if(openMenuBtn) openMenuBtn.addEventListener("click", () => {
+    renderMenu(); // Re-render menu each time to ensure listeners are fresh if DOM changes
+    openModal(categoryModal, closeMenuBtn);
+  });
+  if(closeMenuBtn) closeMenuBtn.addEventListener("click", () => closeModal(categoryModal));
+  if(categoryModal) categoryModal.addEventListener("click", (e) => {
+    if (e.target === categoryModal) closeModal(categoryModal);
   });
 
-  if(closeSubmitQuoteModal) closeSubmitQuoteModal.addEventListener('click', () => {
-    if(submitQuoteModal) submitQuoteModal.classList.remove('open');
-    document.body.style.overflow = "";
-  });
 
+  // --- Quote Submission ---
+  if(closeSubmitQuoteModal) closeSubmitQuoteModal.addEventListener('click', () => closeModal(submitQuoteModal));
   if(customQuoteForm) customQuoteForm.addEventListener('submit', function(e) {
     e.preventDefault();
     const submitBtnText = submitCustomQuoteBtn.querySelector('.submit-btn-text');
@@ -501,10 +584,12 @@ function showRotatingBanner() {
     if(spinner) spinner.style.display = 'inline-block';
     submitCustomQuoteBtn.disabled = true;
 
+    // Simulate submission (replace with actual submission logic if you have a backend)
     setTimeout(() => {
         if(quoteFormSuccess) {
             quoteFormSuccess.textContent = "Thank you! Your quote was submitted.";
             quoteFormSuccess.style.display = 'block';
+            showAppNotification('Quote submitted successfully!', 'success');
         }
 
         if(submitBtnText) submitBtnText.style.display = 'inline';
@@ -514,16 +599,18 @@ function showRotatingBanner() {
 
         setTimeout(() => {
           if(quoteFormSuccess) quoteFormSuccess.style.display = 'none';
-          if(submitQuoteModal) submitQuoteModal.classList.remove('open');
-          document.body.style.overflow = "";
+          closeModal(submitQuoteModal);
         }, 2500);
     }, 1500);
   });
 
-  function showQuote(item, cat, fromUndo = false) {
+  // --- Quote Display Logic ---
+  function showQuote(item, category, fromUndo = false) {
     if (!item || (typeof item.text === 'undefined' && typeof item.quote === 'undefined' && typeof item.message === 'undefined')) {
-        if(qText) qText.textContent = "No quote available. Try another category or inspire me again!";
+        const noQuoteMsg = "No quote available. Try another category or inspire me again!";
+        if(qText) qText.textContent = noQuoteMsg;
         if(qAuth) qAuth.textContent = "";
+        showAppNotification(noQuoteMsg, 'info');
         lastQuote = null;
         if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
         updateFavoriteButtonState();
@@ -532,7 +619,7 @@ function showRotatingBanner() {
 
     if (!fromUndo && lastQuote) {
       quoteHistory.unshift(lastQuote);
-      if (quoteHistory.length > 5) quoteHistory.length = 5;
+      if (quoteHistory.length > MAX_QUOTE_HISTORY) quoteHistory.length = MAX_QUOTE_HISTORY;
     }
     if(undoBtn) undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
 
@@ -545,11 +632,7 @@ function showRotatingBanner() {
 
       if(qText) qText.textContent = txt;
       if(qAuth) {
-        if (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") {
-          qAuth.textContent = "";
-        } else {
-          qAuth.innerHTML = `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
-        }
+        qAuth.innerHTML = (!by || by.toLowerCase() === "anonymous" || by.toLowerCase() === "unknown") ? "" : `<span style="font-size:1.3em;vertical-align:middle;">&#8213;</span> ${by}`;
       }
       if(quoteMark) {
         quoteMark.textContent = "“";
@@ -559,7 +642,7 @@ function showRotatingBanner() {
       if(qText) qText.classList.remove('fade-out');
       if(qAuth) qAuth.classList.remove('fade-out');
 
-      lastQuote = { text: txt, author: by, category: cat };
+      lastQuote = { text: txt, author: by, category: category };
       updateStreak();
       updateFavoriteButtonState();
     }, 300);
@@ -569,6 +652,7 @@ function showRotatingBanner() {
     if (!authorQuotes.length) {
       if(qText) qText.textContent = "No quotes found for this author.";
       if(qAuth) qAuth.textContent = "";
+      showAppNotification("No quotes found for this author.", 'info');
       return;
     }
     const quote = authorQuotes[authorQuoteIndex % authorQuotes.length];
@@ -601,18 +685,21 @@ function showRotatingBanner() {
       pool = quotes[selectedCat].filter(isValidQuote);
     }
 
-
-    if (!pool || pool.length === 0) {
+    if (!pool || pool.length === 0) { // Fallback to all quotes if category is empty or invalid
+        console.warn(`No quotes in category "${selectedCat}", falling back to all quotes.`);
         const allQuotesRaw = Object.values(quotes).flat();
         pool = allQuotesRaw.filter(isValidQuote);
-        if (pool.length > 0 && currentCategory && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
-            if(currentCategory) currentCategory.textContent = "All Quotes";
+        if (pool.length > 0 && currentCategoryDisplay && (!selectedCat || !(quotes[selectedCat] && Array.isArray(quotes[selectedCat])))) {
+            if(currentCategoryDisplay) currentCategoryDisplay.textContent = "All Quotes";
+            // Optionally, set selectedCat to a general identifier if you want to track this state
         }
     }
 
     if (!pool || pool.length === 0) {
-        if(qText) qText.textContent = "No valid quotes available for this selection or any category.";
+        const criticalMsg = "No valid quotes available for this selection or any category.";
+        if(qText) qText.textContent = criticalMsg;
         if(qAuth) qAuth.textContent = "";
+        showAppNotification(criticalMsg, 'error', 5000);
         lastQuote = null;
         updateFavoriteButtonState();
         console.error("CRITICAL: Pool is empty after all fallbacks. No quotes to display.");
@@ -623,19 +710,19 @@ function showRotatingBanner() {
     showQuote(pool[randomIndex], selectedCat || "all_fallback");
   }
 
-
   if(undoBtn) undoBtn.addEventListener("click", () => {
     if (quoteHistory.length > 0) {
-      const prev = quoteHistory.shift();
-      showQuote(prev, prev.category, true);
+      const prev = quoteHistory.shift(); // Removes and returns the first element
+      showQuote(prev, prev.category, true); // Display it
     }
     undoBtn.style.display = quoteHistory.length > 0 ? "flex" : "none";
   });
 
+  // --- UI Effects and Interactions ---
   function triggerGenerateEffects() {
     if (magicSound) {
       magicSound.currentTime = 0;
-      magicSound.play().catch(e => console.warn("Audio play failed:", e));
+      magicSound.play().catch(e => console.warn("Audio play failed (magicSound):", e.name, e.message));
     }
     if(quoteBox) quoteBox.classList.add('glow');
     setTimeout(() => { if(quoteBox) quoteBox.classList.remove('glow'); }, 400);
@@ -645,15 +732,18 @@ function showRotatingBanner() {
       wand.classList.add('animated');
       setTimeout(() => wand.classList.remove('animated'), 700);
     }
-    if(genBtn) genBtn.classList.add('touched');
-    setTimeout(() => {if(genBtn) genBtn.classList.remove('touched');}, 400);
+    if(genBtn) {
+        genBtn.classList.add('touched');
+        setTimeout(() => {if(genBtn) genBtn.classList.remove('touched');}, 400);
 
-    const ripple = document.createElement('span');
-    ripple.className = 'ripple';
-    ripple.style.left = "50%";
-    ripple.style.top = "50%";
-    if(genBtn) genBtn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 700);
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        // Center ripple on the button regardless of click position for this specific button
+        ripple.style.left = "50%";
+        ripple.style.top = "50%";
+        genBtn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 700);
+    }
   }
 
   if(genBtn) {
@@ -663,12 +753,16 @@ function showRotatingBanner() {
     });
   }
 
+  // Ripple effect for other icon buttons
   document.querySelectorAll('.icon-btn, .feedback-btn, .home-btn').forEach(btn => {
-    btn.style.webkitTapHighlightColor = "transparent";
+    btn.style.webkitTapHighlightColor = "transparent"; // Remove blue tap highlight on iOS
     btn.addEventListener('click', function(e) {
+      // Don't add ripple if it's the main generate button (it has its own)
+      if (this.id === 'generateBtn') return;
+
       const rect = btn.getBoundingClientRect();
       const ripple = document.createElement('span');
-      ripple.className = 'ripple';
+      ripple.className = 'ripple'; // Ensure this class has appropriate styles in CSS
       ripple.style.left = (e.clientX - rect.left) + 'px';
       ripple.style.top = (e.clientY - rect.top) + 'px';
       btn.appendChild(ripple);
@@ -676,28 +770,51 @@ function showRotatingBanner() {
     });
   });
 
-
+  // Share Menu
   if(shareBtn) shareBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if(shareMenu) shareMenu.classList.toggle("open");
-    if (shareMenu && shareMenu.classList.contains("open")) {
+    e.stopPropagation(); // Prevent click from immediately closing due to document listener
+    const isOpening = !shareMenu.classList.contains("open");
+    shareMenu.classList.toggle("open");
+    shareBtn.setAttribute('aria-expanded', isOpening.toString());
+
+    if (isOpening) {
+      // Use a timeout to ensure the click event that opened the menu doesn't immediately trigger the close
       setTimeout(() => {
         document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
+        document.addEventListener("keydown", closeShareMenuOnEscape, { once: true });
       }, 0);
+    } else {
+        document.removeEventListener("click", closeShareMenuOnClickOutside);
+        document.removeEventListener("keydown", closeShareMenuOnEscape);
     }
   });
 
+  function closeShareMenu() {
+      if (shareMenu && shareMenu.classList.contains("open")) {
+        shareMenu.classList.remove("open");
+        if(shareBtn) shareBtn.setAttribute('aria-expanded', 'false');
+        document.removeEventListener("click", closeShareMenuOnClickOutside);
+        document.removeEventListener("keydown", closeShareMenuOnEscape);
+      }
+  }
   function closeShareMenuOnClickOutside(event) {
-    if (shareMenu && shareMenu.classList.contains("open") && !shareMenu.contains(event.target) && event.target !== shareBtn && (shareBtn && !shareBtn.contains(event.target))) {
-      shareMenu.classList.remove("open");
-    } else if (shareMenu && shareMenu.classList.contains("open")) {
-         document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
+    if (!shareMenu.contains(event.target) && event.target !== shareBtn && !shareBtn.contains(event.target)) {
+        closeShareMenu();
+    } else { // If click was inside, re-add listener
+        document.addEventListener("click", closeShareMenuOnClickOutside, { once: true });
     }
   }
-
+  function closeShareMenuOnEscape(event) {
+      if (event.key === "Escape") {
+          closeShareMenu();
+          if(shareBtn) shareBtn.focus(); // Return focus to share button
+      } else { // If not escape, re-add listener
+         document.addEventListener("keydown", closeShareMenuOnEscape, { once: true });
+      }
+  }
 
   if(shareMenu) shareMenu.querySelectorAll('.share-option').forEach(btn => {
-    if (btn.id === 'generateImageShareOption') return;
+    if (btn.id === 'generateImageShareOption') return; // Handled separately
 
     btn.addEventListener('click', function() {
       const quoteContent = qText ? qText.textContent || "" : "";
@@ -721,24 +838,29 @@ function showRotatingBanner() {
           break;
       }
       if (shareUrl) window.open(shareUrl, "_blank", "noopener,noreferrer");
-      if(shareMenu) shareMenu.classList.remove("open");
+      closeShareMenu();
     });
   });
 
-
+  // Copy to Clipboard
   if(copyBtn) copyBtn.addEventListener("click", () => {
-    const quoteContent = qText ? qText.textContent || "" : "";
-    const cleanAuthor = lastQuote && lastQuote.author ? lastQuote.author : "";
+    if (!lastQuote || !lastQuote.text) {
+        showAppNotification("No quote to copy.", 'info');
+        return;
+    }
+    const quoteContent = qText.textContent || "";
+    const cleanAuthor = lastQuote.author || "";
     const textToCopy = `${quoteContent}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
 
     navigator.clipboard.writeText(textToCopy).then(() => {
       const iconElement = copyBtn.querySelector("i");
       const originalIcon = iconElement ? iconElement.className : "";
       if(iconElement) iconElement.className = "fa-solid fa-check";
-      copyBtn.classList.add('copied-feedback');
+      copyBtn.classList.add('copied-feedback'); // Visual feedback class
       const tooltip = copyBtn.querySelector('.btn-tooltip');
       const originalTooltipText = tooltip ? tooltip.textContent : '';
       if(tooltip) tooltip.textContent = "Copied!";
+      showAppNotification('Quote copied to clipboard!', 'success', 2000);
 
       setTimeout(() => {
         if(iconElement) iconElement.className = originalIcon;
@@ -747,6 +869,7 @@ function showRotatingBanner() {
       }, 1500);
     }).catch(err => {
       console.error('Failed to copy text: ', err);
+      showAppNotification('Failed to copy quote. Please try again.', 'error');
       const tooltip = copyBtn.querySelector('.btn-tooltip');
       if(tooltip) {
           const originalTooltipText = tooltip.textContent;
@@ -756,8 +879,12 @@ function showRotatingBanner() {
     });
   });
 
+  // Favorite Button
   if(favBtn) favBtn.addEventListener('click', () => {
-    if (!lastQuote || !lastQuote.text) return;
+    if (!lastQuote || !lastQuote.text) {
+        showAppNotification("No quote to favorite.", 'info');
+        return;
+    }
 
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     const currentQuoteText = lastQuote.text;
@@ -765,16 +892,17 @@ function showRotatingBanner() {
 
     const favIndex = favs.findIndex(q => q.text === currentQuoteText && q.author === currentAuthorText);
     const isFavorited = favIndex !== -1;
-
     const savedPopup = favBtn.querySelector('.saved-popup');
 
     if (isFavorited) {
       favs.splice(favIndex, 1);
       if(savedPopup) savedPopup.textContent = "Unsaved";
+      showAppNotification('Quote removed from favorites.', 'info', 2000);
     } else {
-      favs.push({ text: currentQuoteText, author: currentAuthorText });
-      if(favSound) favSound.play().catch(e => console.warn("Fav sound play failed", e));
+      favs.push({ text: currentQuoteText, author: currentAuthorText, category: lastQuote.category }); // Store category too
+      if(favSound) favSound.play().catch(e => console.warn("Fav sound play failed", e.name, e.message));
       if(savedPopup) savedPopup.textContent = "Saved!";
+      showAppNotification('Quote saved to favorites!', 'success', 2000);
     }
 
     localStorage.setItem('favQuotes', JSON.stringify(favs));
@@ -787,31 +915,29 @@ function showRotatingBanner() {
   });
 
   function updateFavoriteButtonState() {
-    if (!favBtn || !lastQuote || !lastQuote.text) {
-        const favIcon = favBtn ? favBtn.querySelector("i") : null;
-        if (favIcon) {
-            favIcon.className = "fa-regular fa-heart";
-        }
-        return;
-    }
-
+    if (!favBtn) return;
     const favIcon = favBtn.querySelector("i");
     if (!favIcon) return;
+
+    if (!lastQuote || !lastQuote.text) {
+        favIcon.className = "fa-regular fa-heart";
+        favBtn.setAttribute('aria-pressed', 'false');
+        return;
+    }
 
     const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     const isFavorited = favs.some(q => q.text === lastQuote.text && q.author === lastQuote.author);
 
-    if (isFavorited) {
-        favIcon.className = "fa-solid fa-heart";
-    } else {
-        favIcon.className = "fa-regular fa-heart";
-    }
+    favIcon.className = isFavorited ? "fa-solid fa-heart" : "fa-regular fa-heart";
+    favBtn.setAttribute('aria-pressed', isFavorited.toString());
   }
 
-
+  // Theme Switch
   if(themeSw) {
     const savedTheme = localStorage.getItem("wowDark");
-    if (savedTheme === "true") {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Set initial theme based on saved preference, or OS preference, or default to light.
+    if (savedTheme === "true" || (!savedTheme && prefersDark)) {
         themeSw.checked = true;
         document.body.classList.add("dark");
     } else {
@@ -820,30 +946,22 @@ function showRotatingBanner() {
     themeSw.addEventListener("change", () => {
         const isDark = themeSw.checked;
         document.body.classList.toggle("dark", isDark);
-        localStorage.setItem("wowDark", isDark);
+        localStorage.setItem("wowDark", isDark.toString());
     });
   }
 
-
+  // Streak Logic
   function updateStreak() {
     const today = new Date().toISOString().slice(0,10);
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     if (streak.last !== today) {
-      if (streak.last === getYesterday()) {
-        streak.count++;
-      } else {
-        streak.count = 1;
-      }
+      streak.count = (streak.last === getYesterday()) ? streak.count + 1 : 1;
       streak.last = today;
       localStorage.setItem('wowStreak', JSON.stringify(streak));
     }
     showStreak(streak.count);
   }
-  function getYesterday() {
-    const d = new Date();
-    d.setDate(d.getDate()-1);
-    return d.toISOString().slice(0,10);
-  }
+
   function showStreak(count) {
     if (!streakBadge) return;
     if (count > 1) {
@@ -855,43 +973,9 @@ function showRotatingBanner() {
     }
   }
 
-  if(submitFeedbackBtn) submitFeedbackBtn.addEventListener('click', async () => {
-    const feedback = feedbackTextarea ? feedbackTextarea.value.trim() : "";
-    if (!feedback) {
-        feedbackTextarea.placeholder = "Please enter your feedback first!";
-        setTimeout(() => { if(feedbackTextarea) feedbackTextarea.placeholder = "Your feedback...";}, 2000);
-        return;
-    }
-
-    const submitBtnText = submitFeedbackBtn.querySelector('.submit-btn-text');
-    const spinner = submitFeedbackBtn.querySelector('.loader-spinner');
-
-    if(submitBtnText) submitBtnText.style.display = 'none';
-    if(spinner) spinner.style.display = 'inline-block';
-    submitFeedbackBtn.disabled = true;
-
-    setTimeout(async () => {
-            if(feedbackSuccess) {
-                feedbackSuccess.textContent = "Thank you for your feedback!";
-                feedbackSuccess.style.display = 'block';
-            }
-            if(feedbackTextarea) feedbackTextarea.value = '';
-
-            if(submitBtnText) submitBtnText.style.display = 'inline';
-            if(spinner) spinner.style.display = 'none';
-            submitFeedbackBtn.disabled = false;
-
-            setTimeout(() => {
-                if(feedbackSuccess) feedbackSuccess.style.display = 'none';
-                if(feedbackModal) feedbackModal.classList.remove('open');
-                document.body.style.overflow = "";
-            }, 2500);
-    }, 1500);
-  });
-
+  // --- Feedback Modal ---
   if(feedbackBtn) feedbackBtn.addEventListener('click', () => {
-    if(feedbackModal) feedbackModal.classList.add('open');
-    document.body.style.overflow = "hidden";
+    openModal(feedbackModal, feedbackTextarea);
     if(feedbackTextarea) feedbackTextarea.value = '';
     if(feedbackSuccess) {
         feedbackSuccess.style.display = 'none';
@@ -902,37 +986,52 @@ function showRotatingBanner() {
     if(feedbackSubmitBtnText) feedbackSubmitBtnText.style.display = 'inline';
     if(feedbackSpinner) feedbackSpinner.style.display = 'none';
     submitFeedbackBtn.disabled = false;
-    if(feedbackTextarea) feedbackTextarea.focus();
   });
-  if(closeFeedbackModal) closeFeedbackModal.addEventListener('click', () => {
-    if(feedbackModal) feedbackModal.classList.remove('open');
-    document.body.style.overflow = "";
+  if(closeFeedbackModal) closeFeedbackModal.addEventListener('click', () => closeModal(feedbackModal));
+
+  if(submitFeedbackBtn) submitFeedbackBtn.addEventListener('click', async () => {
+    const feedback = feedbackTextarea ? feedbackTextarea.value.trim() : "";
+    if (!feedback) {
+        if(feedbackTextarea) feedbackTextarea.placeholder = "Please enter your feedback first!";
+        showAppNotification('Please enter your feedback before submitting.', 'info');
+        setTimeout(() => { if(feedbackTextarea) feedbackTextarea.placeholder = "Your feedback...";}, 2000);
+        return;
+    }
+
+    const submitBtnText = submitFeedbackBtn.querySelector('.submit-btn-text');
+    const spinner = submitFeedbackBtn.querySelector('.loader-spinner');
+    if(submitBtnText) submitBtnText.style.display = 'none';
+    if(spinner) spinner.style.display = 'inline-block';
+    submitFeedbackBtn.disabled = true;
+
+    // Simulate submission
+    setTimeout(async () => {
+            if(feedbackSuccess) {
+                feedbackSuccess.textContent = "Thank you for your feedback!";
+                feedbackSuccess.style.display = 'block';
+                showAppNotification('Feedback submitted. Thank you!', 'success');
+            }
+            if(feedbackTextarea) feedbackTextarea.value = '';
+            if(submitBtnText) submitBtnText.style.display = 'inline';
+            if(spinner) spinner.style.display = 'none';
+            submitFeedbackBtn.disabled = false;
+            setTimeout(() => {
+                if(feedbackSuccess) feedbackSuccess.style.display = 'none';
+                closeModal(feedbackModal);
+            }, 2500);
+    }, 1500);
   });
 
-  function openFavoritesModal() {
-    if(favModal) favModal.classList.add('open');
-    document.body.style.overflow = "hidden";
-    showFavorites();
-    const firstFocusable = favModal ? favModal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') : null;
-    if (firstFocusable) firstFocusable.focus();
-  }
-  if(closeFavModal) closeFavModal.addEventListener('click', () => {
-    if(favModal) favModal.classList.remove('open');
-    document.body.style.overflow = "";
-  });
-  if (closeFavModalLarge) {
-    closeFavModalLarge.addEventListener('click', () => {
-        if(favModal) favModal.classList.remove('open');
-        document.body.style.overflow = "";
-    });
-  }
+  // --- Favorites Modal ---
+  if(closeFavModal) closeFavModal.addEventListener('click', () => closeModal(favModal));
+  if (closeFavModalLarge) closeFavModalLarge.addEventListener('click', () => closeModal(favModal));
 
   function showFavorites() {
     if (!favQuotesList) return;
     const favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favQuotesList.innerHTML = favs.length
       ? favs.map((q, idx) => `
-        <div class="fav-quote" data-index="${idx}">
+        <div class="fav-quote" data-index="${idx}" role="listitem">
           <p>${q.text}</p>
           <p class="author">${q.author ? `&#8213; ${q.author}` : ''}</p>
           <div class="fav-actions">
@@ -950,50 +1049,38 @@ function showRotatingBanner() {
             removeFavorite(index);
         });
       });
-
       favQuotesList.querySelectorAll('.copy-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const quoteDiv = this.closest('.fav-quote');
             const index = parseInt(quoteDiv.dataset.index);
             const currentFavs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
             const favoriteQuoteObject = currentFavs[index];
-
             if (favoriteQuoteObject) {
                 copyFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author, this);
-            } else {
-                 const displayedText = quoteDiv.querySelector('p:first-child').textContent;
-                 const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
-                 copyFavorite(displayedText, displayedAuthor, this);
             }
         });
       });
-
       favQuotesList.querySelectorAll('.share-fav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const quoteDiv = this.closest('.fav-quote');
             const index = parseInt(quoteDiv.dataset.index);
             const currentFavs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
             const favoriteQuoteObject = currentFavs[index];
-
             if (favoriteQuoteObject) {
                 shareFavorite(favoriteQuoteObject.text, favoriteQuoteObject.author);
-            } else {
-                 const displayedText = quoteDiv.querySelector('p:first-child').textContent;
-                 const displayedAuthor = (quoteDiv.querySelector('p.author').textContent || "").replace(/^[\s–—]+/, "").trim();
-                 shareFavorite(displayedText, displayedAuthor);
             }
         });
       });
   }
 
-  window.removeFavorite = function(idx) {
+  window.removeFavorite = function(idx) { // Exposed to global for inline HTML, better to delegate if possible
     let favs = JSON.parse(localStorage.getItem('favQuotes') || '[]');
     favs.splice(idx, 1);
     localStorage.setItem('favQuotes', JSON.stringify(favs));
-    showFavorites();
-    updateFavoriteButtonState();
+    showFavorites(); // Re-render list
+    updateFavoriteButtonState(); // Update main heart icon if current quote was removed
+    showAppNotification('Favorite removed.', 'info', 2000);
   };
-
   window.copyFavorite = function(text, cleanAuthor, buttonElement) {
     const textToCopy = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     navigator.clipboard.writeText(textToCopy).then(() => {
@@ -1002,42 +1089,51 @@ function showRotatingBanner() {
             buttonElement.innerHTML = '<i class="fa-solid fa-check" style="color: var(--green-accent);"></i>';
             setTimeout(() => { buttonElement.innerHTML = originalIconHTML; }, 1200);
         }
-    }).catch(err => console.error("Copying favorite failed:", err));
+        showAppNotification('Favorite copied!', 'success', 2000);
+    }).catch(err => {
+        console.error("Copying favorite failed:", err);
+        showAppNotification('Failed to copy favorite.', 'error');
+    });
   };
-
   window.shareFavorite = function(text, cleanAuthor) {
     const shareText = `${text}${cleanAuthor ? ` — ${cleanAuthor}` : ''}`.trim();
     if (navigator.share) {
       navigator.share({ title: `Quote by ${cleanAuthor || 'Words of Wisdom'}`, text: shareText, url: window.location.href })
+        .then(() => showAppNotification('Favorite shared!', 'success', 2000))
         .catch(err => {
-            if (err.name !== 'AbortError') {
+            if (err.name !== 'AbortError') { // Don't show error if user cancels share
                 console.error("Sharing favorite failed:", err);
+                showAppNotification('Could not share favorite.', 'error');
             }
         });
-    } else {
-      navigator.clipboard.writeText(shareText).then(() => alert("Quote copied! You can now paste it to share."))
-                         .catch(() => alert("Could not copy quote. Please share manually."));
+    } else { // Fallback for browsers without Web Share API
+      navigator.clipboard.writeText(shareText).then(() => {
+            showAppNotification("Quote copied! You can now paste it to share.", 'info', 3000);
+        }).catch(() => {
+            showAppNotification("Could not copy quote for sharing. Please try manually.", 'error');
+        });
     }
   };
 
+  // --- Global Keydown Listener for Escape ---
   document.addEventListener('keydown', function(e) {
     if (e.key === "Escape") {
-      const openModals = document.querySelectorAll('.modal.open, .image-modal');
-      openModals.forEach(modal => {
-        if (modal.id === 'quoteImagePreviewContainer') {
+      const openModals = document.querySelectorAll('.modal.open, .image-modal[style*="display: flex"]');
+      if (openModals.length > 0) {
+        const topModal = openModals[openModals.length - 1]; // Close topmost modal
+        if (topModal.id === 'quoteImagePreviewContainer') {
             closeImagePreview();
         } else {
-            modal.classList.remove("open");
+            closeModal(topModal); // Use the generic closeModal function
         }
-      });
-      document.body.style.overflow = "";
-
-      if (shareMenu && shareMenu.classList.contains("open")) {
-          shareMenu.classList.remove("open");
+      } else if (shareMenu && shareMenu.classList.contains("open")) {
+          closeShareMenu();
+          if(shareBtn) shareBtn.focus();
       }
     }
   });
 
+  // --- Usage Tracking and Notifications (Basic Stubs) ---
   function recordCategoryUse(cat) {
     if (!cat) return;
     let usage = JSON.parse(localStorage.getItem('catUsage') || '{}');
@@ -1051,221 +1147,187 @@ function showRotatingBanner() {
     return sortedUsage[0][0];
   }
 
-  function requestNotificationPermission() { /* Placeholder */ }
-  function sendDailyQuoteNotification() { /* Placeholder */ }
-  function scheduleDailyNotification() { /* Placeholder */ }
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+  }
+
+  async function requestAndSubscribePushNotifications() {
+    if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+      showAppNotification('Push notifications are not supported by your browser.', 'info');
+      return null;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        showAppNotification('Notification permission was denied.', 'info');
+        return null;
+      }
+
+      const registration = await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY === 'YOUR_GENERATED_VAPID_PUBLIC_KEY') {
+            console.error('VAPID_PUBLIC_KEY is not set. Cannot subscribe to push notifications.');
+            showAppNotification('Push notification setup error (admin).', 'error');
+            return null;
+        }
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        console.log('New Push Subscription: ', JSON.stringify(subscription));
+        // HERE: Send the 'subscription' object to your backend server to store it.
+        // Example: sendSubscriptionToServer(subscription);
+        showAppNotification('Subscribed to daily quote notifications!', 'success');
+      } else {
+        console.log('Existing Push Subscription found.');
+        // You might want to re-send to server to ensure it's up-to-date.
+      }
+      return subscription;
+    } catch (error) {
+      console.error('Error during push notification subscription:', error);
+      showAppNotification(`Failed to subscribe: ${error.message}`, 'error');
+      return null;
+    }
+  }
+  // function sendSubscriptionToServer(subscription) { /* ... AJAX call to your backend ... */ }
+  // Example: Call requestAndSubscribePushNotifications() when a user clicks a "Subscribe to Daily Quotes" button/toggle
 
 
-  // --- ADJUST TEXT TO FIT FUNCTION (Further Enhanced for larger quote text) ---
-  /**
-   * Adjusts the font size of the text element to fit within the container.
-   * @param {object} options - Configuration options.
-   * @param {HTMLElement} options.textElement - The HTML element containing the text.
-   * @param {HTMLElement} options.containerElement - The HTML element the text should fit within.
-   * @param {HTMLElement} [options.authorElement] - Optional: The HTML element for the author.
-   * @param {number} [options.initialFontSize=64] - Starting font size in pixels. INCREASED MORE
-   * @param {number} [options.minQuoteFontSize=28] - Minimum font size for the quote. INCREASED MORE
-   * @param {number} [options.maxFontSize=90] - Maximum font size for short quotes. INCREASED MORE
-   */
-  function adjustTextToFit({
-      textElement,
-      containerElement,
-      authorElement,
-      initialFontSize = 64, // INCREASED MORE: Start with an even larger font for quotes
-      minQuoteFontSize = 28,  // INCREASED MORE: Ensure quote is significantly larger than author
-      maxFontSize = 90      // INCREASED MORE: Max for very short quotes
-  }) {
+  // --- Image Generation Feature (adjustTextToFit is only called here) ---
+  function adjustTextToFit({ textElement, containerElement, authorElement, initialFontSize = 64, minQuoteFontSize = 28, maxFontSize = 90 }) {
       textElement.style.fontSize = initialFontSize + 'px';
-      textElement.style.lineHeight = '1.3'; // Slightly adjusted for better visual with large fonts
-
+      textElement.style.lineHeight = '1.3';
       const containerStyle = getComputedStyle(containerElement);
       const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
       const containerPaddingBottom = parseFloat(containerStyle.paddingBottom) || 0;
       const containerPaddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
       const containerPaddingRight = parseFloat(containerStyle.paddingRight) || 0;
-
       const targetWidth = containerElement.clientWidth - containerPaddingLeft - containerPaddingRight;
-
       let authorActualHeight = 0;
-      let authorFontSize = 18; // Default author font size from CSS
+      let authorFontSize = 18;
       if (authorElement && getComputedStyle(authorElement).display !== 'none') {
           const authorStyle = getComputedStyle(authorElement);
-          authorActualHeight = authorElement.offsetHeight +
-                               parseFloat(authorStyle.marginTop) +
-                               parseFloat(authorStyle.marginBottom);
+          authorActualHeight = authorElement.offsetHeight + parseFloat(authorStyle.marginTop) + parseFloat(authorStyle.marginBottom);
           authorFontSize = parseFloat(authorStyle.fontSize) || 18;
       }
-
-      // Ensure minQuoteFontSize is always greater than authorFontSize by a good margin
-      const effectiveMinQuoteFontSize = Math.max(minQuoteFontSize, authorFontSize + 6); // At least 6px larger
-
+      const effectiveMinQuoteFontSize = Math.max(minQuoteFontSize, authorFontSize + 6);
       const textMarginBottom = parseFloat(getComputedStyle(textElement).marginBottom) || 0;
-      const targetHeight = containerElement.clientHeight -
-                           containerPaddingTop -
-                           containerPaddingBottom -
-                           authorActualHeight -
-                           textMarginBottom;
-
+      const targetHeight = containerElement.clientHeight - containerPaddingTop - containerPaddingBottom - authorActualHeight - textMarginBottom;
       let currentFontSize = initialFontSize;
-
       const checkOverflow = () => {
           textElement.style.fontSize = currentFontSize + 'px';
-          const isOverflownY = textElement.scrollHeight > targetHeight;
-          const isOverflownX = textElement.scrollWidth > targetWidth;
-          return isOverflownY || isOverflownX;
+          return textElement.scrollHeight > targetHeight || textElement.scrollWidth > targetWidth;
       };
-
-      // Decrease font size if overflowing, down to the effective minimum
       while (checkOverflow() && currentFontSize > effectiveMinQuoteFontSize) {
           currentFontSize--;
       }
       textElement.style.fontSize = currentFontSize + 'px';
-
-      // Log if text is still overflowing at the minimum size
       if (currentFontSize === effectiveMinQuoteFontSize && checkOverflow()) {
           console.warn(`Text might be cut off. Min font size enforced: ${effectiveMinQuoteFontSize}px. Content: "${textElement.textContent.substring(0, 50)}..."`);
       }
-
       const quoteLength = textElement.textContent.length;
-      // Try to make short quotes even larger, up to maxFontSize
-      // Ensure it doesn't shrink below effectiveMinQuoteFontSize during this expansion attempt.
-      if (quoteLength < 120 && currentFontSize < maxFontSize) { // Increased length threshold for "short"
+      if (quoteLength < 120 && currentFontSize < maxFontSize) {
           let testSize = currentFontSize;
           while (testSize < maxFontSize) {
               testSize++;
               textElement.style.fontSize = testSize + 'px';
               if (textElement.scrollHeight > targetHeight || textElement.scrollWidth > targetWidth) {
-                  testSize--; // Revert if overflow
+                  testSize--;
                   textElement.style.fontSize = testSize + 'px';
                   break;
               }
           }
-          // Ensure the final size is not smaller than the effective minimum
           currentFontSize = Math.max(testSize, effectiveMinQuoteFontSize);
       }
-      textElement.style.fontSize = currentFontSize + 'px'; // Set final size
+      textElement.style.fontSize = currentFontSize + 'px';
   }
 
-
-  // --- Image Generation Feature Logic (MODIFIED SECTION) ---
   if (generateImageShareOption) {
     generateImageShareOption.addEventListener('click', () => {
+      closeShareMenu(); // Close the share popover first
       if (!lastQuote || !lastQuote.text) {
-        // Replaced alert with a more user-friendly notification if possible,
-        // but sticking to alert for simplicity as per original code structure.
-        // Consider implementing a custom modal/toast for better UX.
-        console.warn("Image generation attempted without a quote."); // Keep console log
-        // A simple way to show a message without alert, if you have a dedicated element:
-        // const noQuoteMsg = document.getElementById('noQuoteForImageMsg');
-        // if(noQuoteMsg) { noQuoteMsg.textContent = "Please generate a quote first!"; noQuoteMsg.style.display = 'block'; setTimeout(() => noQuoteMsg.style.display = 'none', 3000); }
-        // else { alert("Please generate a quote first!"); } // Fallback to alert
-        alert("Please generate a quote first!"); // Sticking to original alert
-        if(shareMenu) shareMenu.classList.remove("open");
+        showAppNotification("Please generate a quote first to create an image.", 'info');
         return;
       }
-      if(shareMenu) shareMenu.classList.remove("open");
 
-      // Determine if dark mode is active
       const isDarkMode = document.body.classList.contains('dark');
-
-      // Set text content
       imageQuoteText.textContent = lastQuote.text;
-      if (lastQuote.author) {
-        imageQuoteAuthor.textContent = `— ${lastQuote.author}`;
-        imageQuoteAuthor.style.display = 'block';
-      } else {
-        imageQuoteAuthor.textContent = '';
-        imageQuoteAuthor.style.display = 'none';
-      }
+      imageQuoteAuthor.textContent = lastQuote.author ? `— ${lastQuote.author}` : '';
+      imageQuoteAuthor.style.display = lastQuote.author ? 'block' : 'none';
 
-      // Get styles from the main quote display
       const mainQuoteStyle = window.getComputedStyle(qText);
       const mainAuthorStyle = window.getComputedStyle(qAuth);
-
-      // Apply font family and style
       imageQuoteText.style.fontFamily = mainQuoteStyle.fontFamily;
       imageQuoteText.style.fontStyle = mainQuoteStyle.fontStyle;
-      // Font weight and size will be auto-adjusted by adjustTextToFit
-
       if (imageQuoteAuthor.style.display !== 'none') {
         imageQuoteAuthor.style.fontFamily = mainAuthorStyle.fontFamily;
         imageQuoteAuthor.style.fontStyle = mainAuthorStyle.fontStyle;
-         // Font weight and size will be auto-adjusted by adjustTextToFit (implicitly via authorElement)
       }
 
-      // Apply colors based on theme
       if (isDarkMode) {
-        quoteImageContent.style.backgroundColor = '#232336'; // Dark theme background
-        imageQuoteText.style.color = 'var(--image-text-dark, #f0f0f8)'; // Use CSS var or fallback
-        if (imageQuoteAuthor.style.display !== 'none') {
-            imageQuoteAuthor.style.color = 'var(--image-author-dark, #b0b0c0)'; // Use CSS var or fallback
-        }
+        quoteImageContent.style.backgroundColor = 'var(--image-bg-dark, #232336)';
+        imageQuoteText.style.color = 'var(--image-text-dark, #f0f0f8)';
+        if (imageQuoteAuthor.style.display !== 'none') imageQuoteAuthor.style.color = 'var(--image-author-dark, #b0b0c0)';
         imageWatermark.style.color = 'var(--image-author-dark, #b0b0c0)';
       } else {
-        quoteImageContent.style.backgroundColor = '#f0f0f3'; // Light theme background
-        imageQuoteText.style.color = '#000000'; // Black text for light theme
-        if (imageQuoteAuthor.style.display !== 'none') {
-            imageQuoteAuthor.style.color = '#000000'; // Black author text for light theme
-        }
-        // Watermark color for light theme (can be adjusted if needed, using a light gray or similar)
-        // For now, let's make it a bit lighter than pure black to be less prominent
-        imageWatermark.style.color = '#555555'; // Dark gray for light theme watermark
+        quoteImageContent.style.backgroundColor = 'var(--image-bg-light, #f0f0f3)';
+        imageQuoteText.style.color = 'var(--image-text-light, #000000)';
+        if (imageQuoteAuthor.style.display !== 'none') imageQuoteAuthor.style.color = 'var(--image-author-text-light, #000000)';
+        imageWatermark.style.color = 'var(--image-watermark-light, #555555)';
       }
 
-
-      // Call the text fitting function
-      adjustTextToFit({
+      adjustTextToFit({ // This is the only place adjustTextToFit is called
           textElement: imageQuoteText,
           containerElement: quoteImageContent,
           authorElement: imageQuoteAuthor.style.display !== 'none' ? imageQuoteAuthor : null
       });
 
-      if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'flex';
+      if (quoteImagePreviewContainer) {
+          quoteImagePreviewContainer.style.display = 'flex';
+          openModal(quoteImagePreviewContainer, closeImagePreviewBtn); // Use modal helper for consistency
+      }
       document.body.style.overflow = 'hidden';
-
       downloadImageBtn.disabled = true;
       shareGeneratedImageBtn.disabled = true;
 
-      // Delay slightly to ensure styles are applied before capturing
       setTimeout(() => {
           html2canvas(quoteImageContent, {
-              allowTaint: true,
-              useCORS: true,
-              // backgroundColor is now set directly on quoteImageContent,
-              // but html2canvas might still benefit from knowing it explicitly,
-              // especially if there are transparent parts.
+              allowTaint: true, useCORS: true,
               backgroundColor: quoteImageContent.style.backgroundColor,
-              scale: 2,
-              logging: false
+              scale: 2, logging: false
           }).then(canvas => {
               currentCanvas = canvas;
               downloadImageBtn.disabled = false;
               shareGeneratedImageBtn.disabled = false;
           }).catch(err => {
               console.error("Error generating image with html2canvas:", err);
-              alert("Sorry, couldn't generate the image. Please try again.");
+              showAppNotification("Sorry, couldn't generate the image. Please try again.", 'error');
               closeImagePreview();
           });
-      }, 200); // Increased delay slightly to ensure DOM updates
+      }, 250); // Ensure DOM updates
     });
   }
-  // --- END OF MODIFIED SECTION ---
-
 
   function closeImagePreview() {
-    if (quoteImagePreviewContainer) quoteImagePreviewContainer.style.display = 'none';
-    document.body.style.overflow = '';
+    if (quoteImagePreviewContainer) {
+        quoteImagePreviewContainer.style.display = 'none'; // Hide it first
+        closeModal(quoteImagePreviewContainer); // Then call generic closeModal
+    }
     currentCanvas = null;
   }
 
-  if (closeImagePreviewBtn) {
-    closeImagePreviewBtn.addEventListener('click', closeImagePreview);
-  }
+  if (closeImagePreviewBtn) closeImagePreviewBtn.addEventListener('click', closeImagePreview);
 
   if (downloadImageBtn) {
     downloadImageBtn.addEventListener('click', () => {
       if (!currentCanvas) {
-          alert("Image not generated yet.");
+          showAppNotification("Image not generated yet.", 'info');
           return;
       }
       const imageURL = currentCanvas.toDataURL('image/png');
@@ -1277,54 +1339,41 @@ function showRotatingBanner() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      showAppNotification('Image download started!', 'success');
     });
   }
 
   if (shareGeneratedImageBtn) {
     shareGeneratedImageBtn.addEventListener('click', async () => {
       if (!currentCanvas) {
-          alert("Image not generated yet.");
+          showAppNotification("Image not generated yet.", 'info');
           return;
       }
-
       if (navigator.share && navigator.canShare) {
         currentCanvas.toBlob(async (blob) => {
           if (!blob) {
-              alert("Error creating image blob for sharing.");
+              showAppNotification("Error creating image blob for sharing.", 'error');
               return;
           }
           const authorName = lastQuote.author || 'Words of Wisdom';
-          const filesArray = [
-            new File([blob], `WOW_Quote_${(lastQuote.author || 'Unknown').replace(/[^a-z0-9]/gi, '_')}.png`, {
-              type: 'image/png',
-              lastModified: new Date().getTime()
-            })
-          ];
-          const shareData = {
-            files: filesArray,
-            title: `Quote by ${authorName}`,
-            text: `"${lastQuote.text}" — ${lastQuote.author || ''}\nShared via wordsofwisdom.in`,
-          };
+          const filesArray = [ new File([blob], `WOW_Quote_${(lastQuote.author || 'Unknown').replace(/[^a-z0-9]/gi, '_')}.png`, { type: 'image/png', lastModified: new Date().getTime() }) ];
+          const shareData = { files: filesArray, title: `Quote by ${authorName}`, text: `"${lastQuote.text}" — ${lastQuote.author || ''}\nShared via wordsofwisdom.in` };
           try {
-            if (navigator.canShare && navigator.canShare({ files: filesArray })) {
+            if (navigator.canShare({ files: filesArray })) { // Check if files can be shared
                 await navigator.share(shareData);
-            } else {
-                // Fallback for browsers that can share but not files (e.g., some desktop browsers)
-                await navigator.share({
-                    title: `Quote by ${authorName}`,
-                    text: `"${lastQuote.text}" — ${lastQuote.author || ''}\nShared via wordsofwisdom.in`,
-                    url: window.location.href // Share URL as fallback
-                });
+            } else { // Fallback for browsers that support Web Share but not files
+                await navigator.share({ title: shareData.title, text: shareData.text, url: window.location.href });
             }
+            showAppNotification('Image shared!', 'success');
           } catch (err) {
-            if (err.name !== 'AbortError') { // Don't show error if user cancels share
+            if (err.name !== 'AbortError') {
                 console.error('Error sharing image:', err);
-                alert('Sharing failed. You can try downloading the image instead.');
+                showAppNotification('Sharing failed. You can try downloading the image.', 'error');
             }
           }
         }, 'image/png');
       } else {
-        alert('Sharing images this way is not supported on your browser/device. Please download the image to share it.');
+        showAppNotification('Sharing images this way is not supported on your browser/device. Please download the image to share it.', 'info', 5000);
       }
     });
   }
@@ -1333,47 +1382,46 @@ function showRotatingBanner() {
   (async function initApp(){
     if(qText) qText.textContent = "✨ Loading Wisdom...";
     if(qAuth) qAuth.textContent = "";
-    if(quoteMark) {
-        quoteMark.textContent = "“";
-        quoteMark.style.opacity = 0.18;
-    }
+    if(quoteMark) { quoteMark.textContent = "“"; quoteMark.style.opacity = 0.18; }
 
     await loadCategoriesAndQuotes();
-    renderMenu();
+    renderMenu(); // Initial menu render
 
     let initialCategory = "inspiration";
     const lastAutoCat = localStorage.getItem("lastAutoSelectedCategory");
     const todayStrInit = new Date().toISOString().slice(0,10);
     const lastBannerDateInit = localStorage.getItem("wowBannerDate");
 
-    if (lastBannerDateInit === todayStrInit && lastAutoCat) {
+    if (lastBannerDateInit === todayStrInit && lastAutoCat && categories.some(c => c.id === lastAutoCat || c.children?.some(ch => ch.id === lastAutoCat))) {
         initialCategory = lastAutoCat;
     } else {
         const mostUsed = getMostUsedCategory();
-        if (mostUsed) {
+        if (mostUsed && categories.some(c => c.id === mostUsed || c.children?.some(ch => ch.id === mostUsed))) {
             initialCategory = mostUsed;
         }
     }
     selectedCat = initialCategory;
-    if (currentCategory) currentCategory.textContent = capitalize(selectedCat);
+    if (currentCategoryDisplay) currentCategoryDisplay.textContent = capitalize(selectedCat);
 
-    showRotatingBanner();
+    showRotatingBanner(); // This might change selectedCat
 
+    // Ensure a quote is displayed, respecting banner's potential category change
     if (!lastQuote || !lastQuote.text || (lastQuote && lastQuote.category !== selectedCat && selectedCat !== bannerThemes.find(b => b.text === bannerText.textContent)?.cat) ) {
         displayQuote();
     }
 
-
     if ((!lastQuote || !lastQuote.text) && qText && qText.textContent.includes("Loading Wisdom")) {
-        qText.textContent = "Sorry, we couldn't load any quotes right now. Please try again later.";
+        const noQuotesMsg = "Sorry, we couldn't load any quotes right now. Please try again later.";
+        qText.textContent = noQuotesMsg;
         if(qAuth) qAuth.textContent = "";
+        showAppNotification(noQuotesMsg, 'error', 6000);
     }
 
     let streak = JSON.parse(localStorage.getItem('wowStreak')) || { last: '', count: 0 };
     showStreak(streak.count);
     updateFavoriteButtonState();
 
-    requestNotificationPermission();
-    scheduleDailyNotification();
+    // Example of how you might prompt for notifications, perhaps after a few visits or specific actions
+    // setTimeout(requestAndSubscribePushNotifications, 15000); // Auto-prompt after 15s (consider UX)
   })();
 });
